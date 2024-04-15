@@ -6,9 +6,7 @@ class ImagePaths {
 
 class StorageFields {
   static const String profilePics = 'profilePics';
-  static const String proofOfLicenses = 'proofOfLicenses';
-  static const String vehicleImages = 'vehicleImages';
-  static const String proofOfOwnerships = 'proofOfOwnerships';
+  static const String windows = 'windows';
 }
 
 class UserTypes {
@@ -21,7 +19,7 @@ class Collections {
   static const String faqs = 'faqs';
   static const String windows = 'windows';
   static const String payments = 'payments';
-  static const String purchase = 'purchases';
+  static const String orders = 'orders';
 }
 
 class UserFields {
@@ -32,6 +30,27 @@ class UserFields {
   static const String userType = 'userType';
   static const String profileImageURL = 'profileImageURL';
   static const String address = 'address';
+}
+
+class WindowFields {
+  static const String name = 'name';
+  static const String price = 'price';
+  static const String description = 'description';
+  static const String imageURL = 'imageURL';
+  static const String minWidth = 'minWidth';
+  static const String maxWidth = 'maxWidth';
+  static const String minHeight = 'minHeight';
+  static const String maxHeight = 'maxHeight';
+  static const String isAvailable = 'isAvailable';
+}
+
+class OrderFields {
+  static const String clientID = 'clientID';
+  static const String productID = 'productID';
+  static const String quantity = 'quantity';
+  static const String purchaseStatus = 'purchaseStatus';
+  static const String datePickedUp = 'datePickedUp';
+  static const String rating = 'rating';
 }
 
 class FAQFields {

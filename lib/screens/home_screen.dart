@@ -49,10 +49,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         final users = await getAllClientDocs();
         usersCount = users.length;
-        /*final owners = await getAllOwnerDocs();
-        ownersCount = owners.length;
-        final vehicles = await getAllVehicleDocs();
-        vehiclesCount = vehicles.length;*/
+        final windows = await getAllWindowDocs();
+        windowsCount = windows.length;
+        final orders = await getAllOrderDocs();
+        ordersCount = orders.length;
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -137,7 +137,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         width: MediaQuery.of(context).size.width * 0.8,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: CustomColors.powderBlue,
+          color: CustomColors.slateBlue,
         ),
         child: Wrap(
           spacing: MediaQuery.of(context).size.width * 0.01,
@@ -153,12 +153,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             analyticReportWidget(context,
                 count: windowsCount.toString(),
                 demographic: 'Available Windows',
-                displayIcon: const Icon(Icons.people),
+                displayIcon: const Icon(Icons.window_outlined),
                 onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows)),
             analyticReportWidget(context,
                 count: ordersCount.toString(),
                 demographic: 'Orders',
-                displayIcon: const Icon(Icons.people),
+                displayIcon: const Icon(Icons.delivery_dining),
                 onPress: () => GoRouter.of(context).goNamed(GoRoutes.orders)),
           ],
         ),

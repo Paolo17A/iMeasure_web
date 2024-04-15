@@ -30,7 +30,7 @@ Widget backButton(BuildContext context, {required Function onPress}) {
       style: ElevatedButton.styleFrom(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-      child: montserratWhiteBold('BACK'));
+      child: montserratMidnightBlueBold('BACK'));
 }
 
 Widget viewEntryButton(BuildContext context, {required Function onPress}) {
@@ -39,7 +39,7 @@ Widget viewEntryButton(BuildContext context, {required Function onPress}) {
         onPress();
       },
       style: ElevatedButton.styleFrom(backgroundColor: CustomColors.dandelion),
-      child: const Icon(Icons.visibility, color: Colors.white));
+      child: const Icon(Icons.visibility, color: CustomColors.slateBlue));
 }
 
 Widget editEntryButton(BuildContext context, {required Function onPress}) {
@@ -48,7 +48,7 @@ Widget editEntryButton(BuildContext context, {required Function onPress}) {
         onPress();
       },
       style: ElevatedButton.styleFrom(backgroundColor: CustomColors.dandelion),
-      child: const Icon(Icons.edit, color: Colors.white));
+      child: const Icon(Icons.edit, color: CustomColors.slateBlue));
 }
 
 Widget restoreEntryButton(BuildContext context, {required Function onPress}) {
@@ -57,7 +57,7 @@ Widget restoreEntryButton(BuildContext context, {required Function onPress}) {
         onPress();
       },
       style: ElevatedButton.styleFrom(backgroundColor: CustomColors.dandelion),
-      child: const Icon(Icons.restore, color: Colors.white));
+      child: const Icon(Icons.restore, color: CustomColors.slateBlue));
 }
 
 Widget deleteEntryButton(BuildContext context, {required Function onPress}) {
@@ -66,7 +66,7 @@ Widget deleteEntryButton(BuildContext context, {required Function onPress}) {
         onPress();
       },
       style: ElevatedButton.styleFrom(backgroundColor: CustomColors.dandelion),
-      child: const Icon(Icons.delete, color: Colors.white));
+      child: const Icon(Icons.delete, color: CustomColors.slateBlue));
 }
 
 Widget uploadImageButton(String label, Function selectImage) {
@@ -76,7 +76,8 @@ Widget uploadImageButton(String label, Function selectImage) {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
       child: Padding(
-          padding: const EdgeInsets.all(7), child: montserratWhiteBold(label)));
+          padding: const EdgeInsets.all(7),
+          child: montserratMidnightBlueBold(label)));
 }
 
 Widget navigatorButtons(BuildContext context,

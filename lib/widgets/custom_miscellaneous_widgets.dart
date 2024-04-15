@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
@@ -31,6 +33,95 @@ Widget roundedSlateBlueContainer(BuildContext context,
       child: child);
 }
 
+Container viewContentContainer(BuildContext context, {required Widget child}) {
+  return Container(
+      width: MediaQuery.of(context).size.width * 0.7,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black),
+      ),
+      child: child);
+}
+
+Widget viewContentLabelRow(BuildContext context,
+    {required List<Widget> children}) {
+  return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.7,
+      child: Row(children: children));
+}
+
+Widget viewContentEntryRow(BuildContext context,
+    {required List<Widget> children}) {
+  return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.7,
+      height: 50,
+      child: Row(children: children));
+}
+
+Widget viewFlexTextCell(String text,
+    {required int flex,
+    required Color backgroundColor,
+    required Color textColor,
+    Border? customBorder,
+    BorderRadius? customBorderRadius}) {
+  return Flexible(
+    flex: flex,
+    child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+            color: backgroundColor,
+            border: customBorder,
+            borderRadius: customBorderRadius),
+        child: ClipRRect(
+          child: Center(
+              child: SelectableText(text,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    overflow: TextOverflow.ellipsis,
+                  ))),
+        )),
+  );
+}
+
+Widget viewFlexLabelTextCell(String text, int flex) {
+  return viewFlexTextCell(text,
+      flex: flex,
+      backgroundColor: CustomColors.slateBlue,
+      textColor: CustomColors.ghostWhite);
+}
+
+Widget viewFlexActionsCell(List<Widget> children,
+    {required int flex,
+    required Color backgroundColor,
+    Border? customBorder,
+    BorderRadius? customBorderRadius}) {
+  return Flexible(
+      flex: flex,
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+            border: customBorder,
+            borderRadius: customBorderRadius,
+            color: backgroundColor),
+        child: Center(
+            child: Wrap(
+                alignment: WrapAlignment.start,
+                runAlignment: WrapAlignment.spaceEvenly,
+                spacing: 10,
+                runSpacing: 10,
+                children: children)),
+      ));
+}
+
+Widget viewContentUnavailable(BuildContext context, {required String text}) {
+  return SizedBox(
+    height: MediaQuery.of(context).size.height * 0.65,
+    child: Center(child: montserratBlackBold(text, fontSize: 44)),
+  );
+}
+
 Widget analyticReportWidget(BuildContext context,
     {required String count,
     required String demographic,
@@ -61,7 +152,8 @@ Widget analyticReportWidget(BuildContext context,
                       borderRadius: BorderRadius.circular(10),
                     )),
                     child: Center(
-                      child: montserratWhiteRegular(demographic, fontSize: 12),
+                      child:
+                          montserratMidnightBlueBold(demographic, fontSize: 12),
                     ),
                   ),
                 )
@@ -72,5 +164,61 @@ Widget analyticReportWidget(BuildContext context,
               width: MediaQuery.of(context).size.width * 0.05,
               child: Transform.scale(scale: 2, child: displayIcon))
         ])),
+  );
+}
+
+Widget buildProfileImage({required String profileImageURL}) {
+  return profileImageURL.isNotEmpty
+      ? CircleAvatar(
+          radius: 70,
+          backgroundColor: CustomColors.slateBlue,
+          backgroundImage: NetworkImage(profileImageURL),
+        )
+      : const CircleAvatar(
+          radius: 70,
+          backgroundColor: CustomColors.slateBlue,
+          child: Icon(
+            Icons.person,
+            color: Colors.white,
+            size: 80,
+          ));
+}
+
+Widget selectedMemoryImageDisplay(
+    Uint8List? imageStream, Function deleteImage) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 40),
+    child: Container(
+      decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            SizedBox(
+                width: 150, height: 150, child: Image.memory(imageStream!)),
+            const SizedBox(height: 5),
+            SizedBox(
+              width: 90,
+              child: ElevatedButton(
+                  onPressed: () => deleteImage(),
+                  child:
+                      const Icon(Icons.delete, color: CustomColors.slateBlue)),
+            )
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget selectedNetworkImageDisplay(String imageSource) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 40),
+    child: Container(
+      decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+      padding: const EdgeInsets.all(10),
+      child:
+          SizedBox(width: 150, height: 150, child: Image.network(imageSource)),
+    ),
   );
 }
