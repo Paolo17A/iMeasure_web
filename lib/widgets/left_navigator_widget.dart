@@ -66,5 +66,10 @@ Widget listTile(BuildContext context,
           title: Text(label,
               style: const TextStyle(
                   color: Colors.white, fontWeight: FontWeight.bold)),
-          onTap: () => GoRouter.of(context).goNamed(thisPath)));
+          onTap: () {
+            GoRouter.of(context).goNamed(thisPath);
+            if (thisPath == GoRoutes.home) {
+              GoRouter.of(context).pushReplacementNamed(thisPath);
+            }
+          }));
 }

@@ -128,7 +128,7 @@ class _ViewTransactionsScreenState
                   Color entryColor = CustomColors.ghostWhite;
                   Color backgroundColor = index % 2 == 0
                       ? CustomColors.slateBlue.withOpacity(0.5)
-                      : CustomColors.powderBlue;
+                      : CustomColors.slateBlue;
 
                   return viewContentEntryRow(
                     context,

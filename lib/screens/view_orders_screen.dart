@@ -129,7 +129,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                         Color entryColor = CustomColors.ghostWhite;
                         Color backgroundColor = index % 2 == 0
                             ? CustomColors.slateBlue.withOpacity(0.5)
-                            : CustomColors.powderBlue;
+                            : CustomColors.slateBlue;
 
                         return viewContentEntryRow(context, children: [
                           viewFlexTextCell(formattedName,
@@ -143,10 +143,9 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                           viewFlexActionsCell(
                             [
                               if (status == OrderStatuses.pending)
-                                montserratBlackRegular(
-                                    'PENDING PAYMENT APPROVAL')
+                                montserratWhiteBold('PENDING PAYMENT APPROVAL')
                               else if (status == OrderStatuses.denied)
-                                montserratBlackRegular('PAYMENT DENIED')
+                                montserratWhiteBold('PAYMENT DENIED')
                               else if (status == OrderStatuses.processing)
                                 ElevatedButton(
                                     onPressed: () => markOrderAsReadyForPickUp(

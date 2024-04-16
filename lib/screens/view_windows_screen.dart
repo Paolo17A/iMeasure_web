@@ -125,7 +125,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
     Color entryColor = CustomColors.ghostWhite;
     Color backgroundColor = index % 2 == 0
         ? CustomColors.slateBlue.withOpacity(0.5)
-        : CustomColors.powderBlue;
+        : CustomColors.slateBlue;
     return viewContentEntryRow(context, children: [
       viewFlexTextCell(name,
           flex: 4, backgroundColor: backgroundColor, textColor: entryColor),

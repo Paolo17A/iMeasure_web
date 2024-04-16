@@ -115,7 +115,7 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
     Color entryColor = CustomColors.ghostWhite;
     Color backgroundColor = index % 2 == 0
         ? CustomColors.slateBlue.withOpacity(0.5)
-        : CustomColors.powderBlue;
+        : CustomColors.slateBlue;
     return viewContentEntryRow(context, children: [
       viewFlexTextCell(formattedName,
           flex: 3, backgroundColor: backgroundColor, textColor: entryColor),
