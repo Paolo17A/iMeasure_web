@@ -18,7 +18,7 @@ class Collections {
   static const String users = 'users';
   static const String faqs = 'faqs';
   static const String windows = 'windows';
-  static const String payments = 'payments';
+  static const String transactions = 'transactions';
   static const String orders = 'orders';
 }
 
@@ -44,10 +44,22 @@ class WindowFields {
   static const String isAvailable = 'isAvailable';
 }
 
-class OrderFields {
+class TransactionFields {
   static const String clientID = 'clientID';
   static const String productID = 'productID';
-  static const String quantity = 'quantity';
+  static const String paidAmount = 'paidAmount';
+  static const String paymentMethod = 'paymentMethod';
+  static const String proofOfPayment = 'proofOfPayment';
+  static const String paymentStatus = 'paymentStatus';
+  static const String paymentVerified = 'paymentVerified';
+  static const String dateCreated = 'dateCreated';
+  static const String dateApproved = 'dateApproved';
+}
+
+class OrderFields {
+  static const String clientID = 'clientID';
+  static const String windowID = 'windowID';
+  static const String glassType = 'glassType';
   static const String purchaseStatus = 'purchaseStatus';
   static const String datePickedUp = 'datePickedUp';
   static const String rating = 'rating';
@@ -58,7 +70,15 @@ class FAQFields {
   static const String answer = 'answer';
 }
 
-class PaymentStatuses {
+class OrderStatuses {
+  static const String denied = 'DENIED';
+  static const String pending = 'PENDING';
+  static const String processing = 'PROCESSING';
+  static const String forPickUp = 'FOR PICK UP';
+  static const String pickedUp = 'PICKED UP';
+}
+
+class TransactionStatuses {
   static const String pending = 'PENDING';
   static const String approved = 'APPROVED';
   static const String denied = 'DENIED';

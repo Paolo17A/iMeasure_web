@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -36,6 +37,7 @@ class _SelectedWindowScreenState
   num maxLength = 0;
   String imageURL = '';
   int currentImageIndex = 0;
+  List<DocumentSnapshot> orderDocs = [];
 
   @override
   void initState() {
@@ -61,6 +63,8 @@ class _SelectedWindowScreenState
         maxLength = windowData[WindowFields.maxHeight];
         minWidth = windowData[WindowFields.minWidth];
         maxWidth = windowData[WindowFields.maxWidth];
+        orderDocs = await getAllWindowOrderDocs(widget.windowID);
+
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -90,7 +94,7 @@ class _SelectedWindowScreenState
                         children: [
                           _backButton(),
                           _windowDetails(),
-                          ordersHistory()
+                          orderHistory()
                         ],
                       )),
                 )),
@@ -111,7 +115,9 @@ class _SelectedWindowScreenState
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(20)),
+          color: Colors.white,
+          border: Border.all(color: CustomColors.slateBlue),
+          borderRadius: BorderRadius.circular(20)),
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         buildProfileImage(profileImageURL: imageURL),
@@ -152,22 +158,80 @@ class _SelectedWindowScreenState
     );
   }
 
-  Widget ordersHistory() {
+  Widget orderHistory() {
     return vertical20Pix(
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
             color: CustomColors.slateBlue,
-            borderRadius: BorderRadius.circular(20)),
-        padding: const EdgeInsets.all(20),
+            borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.all(10),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [montserratWhiteBold('ORDER HISTORY', fontSize: 36)]),
-            montserratWhiteBold('THIS WINDOW HAS NOT BEEN ORDERED YET.',
-                fontSize: 20),
+            montserratWhiteBold('ORDER HISTORY', fontSize: 36),
+            orderDocs.isNotEmpty
+                ? ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: orderDocs.length,
+                    itemBuilder: (context, index) {
+                      return _orderHistoryEntry(orderDocs[index]);
+                    })
+                : all20Pix(
+                    child: montserratWhiteBold(
+                        'THIS WINDOW HAS NOT BEEN ORDERED YET.',
+                        fontSize: 20)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _orderHistoryEntry(DocumentSnapshot orderDoc) {
+    final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+    String status = orderData[OrderFields.purchaseStatus];
+    String clientID = orderData[OrderFields.clientID];
+    String glassType = orderData[OrderFields.glassType];
+
+    return FutureBuilder(
+      future: getThisUserDoc(clientID),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            !snapshot.hasData ||
+            snapshot.hasError) return snapshotHandler(snapshot);
+
+        final clientData = snapshot.data!.data() as Map<dynamic, dynamic>;
+        String profileImageURL = clientData[UserFields.profileImageURL];
+        print(profileImageURL);
+        String firstName = clientData[UserFields.firstName];
+        String lastName = clientData[UserFields.lastName];
+
+        return all10Pix(
+            child: Container(
+          decoration: BoxDecoration(
+              color: CustomColors.slateBlue,
+              border: Border.all(color: CustomColors.midnightBlue)),
+          padding: EdgeInsets.all(10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildProfileImage(profileImageURL: profileImageURL),
+              Gap(10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  montserratWhiteBold('$firstName $lastName', fontSize: 26),
+                  montserratWhiteRegular('Glass Type: $glassType',
+                      fontSize: 18),
+                  montserratWhiteRegular('Status: $status', fontSize: 18),
+                  montserratWhiteBold('PHP ${(5000).toStringAsFixed(2)}'),
+                ],
+              ),
+            ],
+          ),
+        ));
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/loading_provider.dart';
@@ -133,12 +134,56 @@ class _ViewSelectedUserScreenState
             physics: NeverScrollableScrollPhysics(),
             itemCount: orderDocs.length,
             itemBuilder: (context, index) {
-              return Container(
-                child: montserratWhiteBold(orderDocs[index].id),
-              );
+              return _orderHistoryEntry(orderDocs[index]);
             })
         : all20Pix(
             child: montserratWhiteBold('THIS USER HAS NO ORDER HISTORY YET',
                 fontSize: 20));
+  }
+
+  Widget _orderHistoryEntry(DocumentSnapshot orderDoc) {
+    final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+    String status = orderData[OrderFields.purchaseStatus];
+    String windowID = orderData[OrderFields.windowID];
+    String glassType = orderData[OrderFields.glassType];
+
+    return FutureBuilder(
+      future: getThisWindowDoc(windowID),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            !snapshot.hasData ||
+            snapshot.hasError) return snapshotHandler(snapshot);
+
+        final productData = snapshot.data!.data() as Map<dynamic, dynamic>;
+        String imageURL = productData[WindowFields.imageURL];
+        String name = productData[WindowFields.name];
+        return all10Pix(
+            child: Container(
+          decoration: BoxDecoration(
+              color: CustomColors.slateBlue,
+              border: Border.all(color: CustomColors.midnightBlue)),
+          padding: EdgeInsets.all(10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.network(imageURL, width: 120),
+              Gap(10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  montserratWhiteBold(name, fontSize: 26),
+                  /*montserratWhiteRegular('SRP: ${price.toStringAsFixed(2)}',
+                      fontSize: 15),*/
+                  montserratWhiteRegular('Glass Type: $glassType',
+                      fontSize: 18),
+                  montserratWhiteRegular('Status: $status', fontSize: 18),
+                  montserratWhiteBold('PHP ${(5000).toStringAsFixed(2)}'),
+                ],
+              ),
+            ],
+          ),
+        ));
+      },
+    );
   }
 }

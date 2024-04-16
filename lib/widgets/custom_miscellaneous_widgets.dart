@@ -222,3 +222,25 @@ Widget selectedNetworkImageDisplay(String imageSource) {
     ),
   );
 }
+
+Container breakdownContainer(BuildContext context, {required Widget child}) {
+  return Container(
+      width: MediaQuery.of(context).size.width * 0.25,
+      height: MediaQuery.of(context).size.height * 0.4,
+      decoration: BoxDecoration(boxShadow: [
+        BoxShadow(
+            offset: const Offset(0, 3), color: Colors.grey.withOpacity(0.5))
+      ], borderRadius: BorderRadius.circular(20), color: Colors.white),
+      child: Padding(padding: const EdgeInsets.all(11), child: child));
+}
+
+Widget snapshotHandler(AsyncSnapshot snapshot) {
+  if (snapshot.connectionState == ConnectionState.waiting) {
+    return const CircularProgressIndicator();
+  } else if (!snapshot.hasData) {
+    return Text('No data found');
+  } else if (snapshot.hasError) {
+    return Text('Error gettin data: ${snapshot.error.toString()}');
+  }
+  return Container();
+}

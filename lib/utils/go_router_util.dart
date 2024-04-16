@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/screens/add_window_screen.dart';
 import 'package:imeasure/screens/edit_window_screen.dart';
+import 'package:imeasure/screens/view_orders_screen.dart';
 import 'package:imeasure/screens/view_selected_user_screen.dart';
+import 'package:imeasure/screens/view_transactions_screen.dart';
 import 'package:imeasure/screens/view_users_screen.dart';
 import 'package:imeasure/screens/view_windows_screen.dart';
 
@@ -68,6 +70,16 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 state,
                 ViewSelectedWindowScreen(
                     windowID: state.pathParameters[PathParameters.windowID]!))),
+        GoRoute(
+            name: GoRoutes.transactions,
+            path: GoRoutes.transactions,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const ViewTransactionsScreen())),
+        GoRoute(
+            name: GoRoutes.orders,
+            path: GoRoutes.orders,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ViewOrdersScreen())),
       ])
 ]);
 

@@ -9,6 +9,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/providers/orders_provider.dart';
+import 'package:imeasure/providers/transactions_provider.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
 import 'package:imeasure/providers/windows_provider.dart';
 
@@ -299,6 +301,82 @@ Future toggleWindowAvailability(BuildContext context, WidgetRef ref,
 }
 
 //==============================================================================
+//TRANSACTIONS-=================================================================
+//==============================================================================
+Future<List<DocumentSnapshot>> getAllTransactionDocs() async {
+  final transactions = await FirebaseFirestore.instance
+      .collection(Collections.transactions)
+      .get();
+  return transactions.docs
+      .map((transaction) => transaction as DocumentSnapshot)
+      .toList();
+}
+
+Future approveThisPayment(BuildContext context, WidgetRef ref,
+    {required String paymentID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    await FirebaseFirestore.instance
+        .collection(Collections.transactions)
+        .doc(paymentID)
+        .update({
+      TransactionFields.dateApproved: DateTime.now(),
+      TransactionFields.paymentVerified: true,
+      TransactionFields.paymentStatus: TransactionStatuses.approved
+    });
+
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(paymentID)
+        .update({OrderFields.purchaseStatus: OrderStatuses.processing});
+    ref
+        .read(transactionsProvider)
+        .setTransactionDocs(await getAllTransactionDocs());
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully approved this payment')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error approving this payment: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future denyThisPayment(BuildContext context, WidgetRef ref,
+    {required String paymentID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    await FirebaseFirestore.instance
+        .collection(Collections.transactions)
+        .doc(paymentID)
+        .update({
+      TransactionFields.dateApproved: DateTime.now(),
+      TransactionFields.paymentVerified: true,
+      TransactionFields.paymentStatus: TransactionStatuses.denied
+    });
+
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(paymentID)
+        .update({OrderFields.purchaseStatus: OrderStatuses.denied});
+    ref
+        .read(transactionsProvider)
+        .setTransactionDocs(await getAllTransactionDocs());
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully denied this payment')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error denying this payment: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+//==============================================================================
 //ORDERS-=======================================================================
 //==============================================================================
 Future<List<DocumentSnapshot>> getAllOrderDocs() async {
@@ -313,4 +391,57 @@ Future<List<DocumentSnapshot>> getAllClientOrderDocs(String clientID) async {
       .where(OrderFields.clientID, isEqualTo: clientID)
       .get();
   return orders.docs.map((order) => order as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> getAllWindowOrderDocs(String windowID) async {
+  final orders = await FirebaseFirestore.instance
+      .collection(Collections.orders)
+      .where(OrderFields.windowID, isEqualTo: windowID)
+      .get();
+  return orders.docs.map((order) => order as DocumentSnapshot).toList();
+}
+
+Future markOrderAsReadyForPickUp(BuildContext context, WidgetRef ref,
+    {required String orderID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({OrderFields.purchaseStatus: OrderStatuses.forPickUp});
+    ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Successfully marked order as ready for pick up.')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Error marking order as ready for pick up: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
+    {required String orderID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.purchaseStatus: OrderStatuses.pickedUp,
+      OrderFields.datePickedUp: DateTime.now()
+    });
+    ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully marked order as picked up')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error marking order as picked up: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
 }
