@@ -87,6 +87,7 @@ class TransactionStatuses {
 class PathParameters {
   static const String userID = 'userID';
   static const String windowID = 'windowID';
+  static const String faqID = 'faqID';
 }
 
 String generateRandomHexString(int length) {

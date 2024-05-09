@@ -445,3 +445,105 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
     ref.read(loadingProvider.notifier).toggleLoading(false);
   }
 }
+
+//==============================================================================
+//==FAQS========================================================================
+//==============================================================================
+Future<List<DocumentSnapshot>> getAllFAQs() async {
+  final faqs =
+      await FirebaseFirestore.instance.collection(Collections.faqs).get();
+  return faqs.docs;
+}
+
+Future<DocumentSnapshot> getThisFAQDoc(String faqID) async {
+  return await FirebaseFirestore.instance
+      .collection(Collections.faqs)
+      .doc(faqID)
+      .get();
+}
+
+Future addFAQEntry(BuildContext context, WidgetRef ref,
+    {required TextEditingController questionController,
+    required TextEditingController answerController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  if (questionController.text.isEmpty || answerController.text.isEmpty) {
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Please fill up all fields.')));
+    return;
+  }
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    String faqID = DateTime.now().millisecondsSinceEpoch.toString();
+    await FirebaseFirestore.instance
+        .collection(Collections.faqs)
+        .doc(faqID)
+        .set({
+      FAQFields.question: questionController.text.trim(),
+      FAQFields.answer: answerController.text.trim()
+    });
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Successfully added new FAQ.')));
+    goRouter.goNamed(GoRoutes.viewFAQs);
+  } catch (error) {
+    scaffoldMessenger
+        .showSnackBar(SnackBar(content: Text('Error adding FAQ: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future editFAQEntry(BuildContext context, WidgetRef ref,
+    {required String faqID,
+    required TextEditingController questionController,
+    required TextEditingController answerController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  if (questionController.text.isEmpty || answerController.text.isEmpty) {
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Please fill up all fields.')));
+    return;
+  }
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.faqs)
+        .doc(faqID)
+        .update({
+      FAQFields.question: questionController.text.trim(),
+      FAQFields.answer: answerController.text.trim()
+    });
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Successfully edited this FAQ.')));
+    goRouter.goNamed(GoRoutes.viewFAQs);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error editing this FAQ: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future deleteFAQEntry(BuildContext context, WidgetRef ref,
+    {required String faqID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.faqs)
+        .doc(faqID)
+        .delete();
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Successfully deleted this FAQ.')));
+    goRouter.pushReplacementNamed(GoRoutes.viewFAQs);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error deleting this FAQ: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}

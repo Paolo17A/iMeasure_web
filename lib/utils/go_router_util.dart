@@ -8,7 +8,10 @@ import 'package:imeasure/screens/view_transactions_screen.dart';
 import 'package:imeasure/screens/view_users_screen.dart';
 import 'package:imeasure/screens/view_windows_screen.dart';
 
+import '../screens/add_faq_screen.dart';
+import '../screens/edit_faq_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/view_faqs_screen.dart';
 import '../screens/view_selected_window_screen.dart';
 import 'string_util.dart';
 
@@ -22,6 +25,9 @@ class GoRoutes {
   static const selectedWindow = 'selectedWindow';
   static const transactions = 'transactions';
   static const orders = 'orders';
+  static const viewFAQs = 'viewFAQs';
+  static const addFAQ = 'addFAQ';
+  static const editFAQ = 'editFAQ';
 }
 
 final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
@@ -80,6 +86,25 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.orders,
             pageBuilder: (context, state) =>
                 customTransition(context, state, const ViewOrdersScreen())),
+        //  FAQs
+        GoRoute(
+            name: GoRoutes.viewFAQs,
+            path: GoRoutes.viewFAQs,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ViewFAQsScreen())),
+        GoRoute(
+            name: GoRoutes.addFAQ,
+            path: GoRoutes.addFAQ,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const AddFAQScreen())),
+        GoRoute(
+            name: GoRoutes.editFAQ,
+            path: '${GoRoutes.editFAQ}/:${PathParameters.faqID}',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                EditFAQScreen(
+                    faqID: state.pathParameters[PathParameters.faqID]!))),
       ])
 ]);
 
