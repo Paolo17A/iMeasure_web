@@ -193,6 +193,9 @@ class _SelectedWindowScreenState
     String status = orderData[OrderFields.purchaseStatus];
     String clientID = orderData[OrderFields.clientID];
     String glassType = orderData[OrderFields.glassType];
+    String color = orderData[OrderFields.color];
+    double price = orderData[OrderFields.laborPrice] +
+        orderData[OrderFields.windowOverallPrice];
 
     return FutureBuilder(
       future: getThisUserDoc(clientID),
@@ -224,8 +227,9 @@ class _SelectedWindowScreenState
                   montserratWhiteBold('$firstName $lastName', fontSize: 26),
                   montserratWhiteRegular('Glass Type: $glassType',
                       fontSize: 18),
+                  montserratWhiteRegular('Color: $color', fontSize: 18),
                   montserratWhiteRegular('Status: $status', fontSize: 18),
-                  montserratWhiteBold('PHP ${(5000).toStringAsFixed(2)}'),
+                  montserratWhiteBold('PHP ${formatPrice(price)}'),
                 ],
               ),
             ],
