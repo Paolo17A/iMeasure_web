@@ -37,6 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   };
 
   Map<String, double> orderBreakdown = {
+    OrderStatuses.generated: 0,
     OrderStatuses.pending: 0,
     OrderStatuses.processing: 0,
     OrderStatuses.denied: 0,
@@ -72,7 +73,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         for (var order in orders) {
           final orderData = order.data() as Map<dynamic, dynamic>;
           final status = orderData[OrderFields.purchaseStatus];
-          if (status == OrderStatuses.pending) {
+          if (status == OrderStatuses.generated) {
+            orderBreakdown[OrderStatuses.generated] =
+                orderBreakdown[OrderStatuses.generated]! + 1;
+          } else if (status == OrderStatuses.pending) {
             orderBreakdown[OrderStatuses.pending] =
                 orderBreakdown[OrderStatuses.pending]! + 1;
           } else if (status == OrderStatuses.processing) {

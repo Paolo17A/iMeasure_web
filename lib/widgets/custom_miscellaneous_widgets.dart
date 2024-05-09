@@ -1,6 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:imeasure/widgets/custom_padding_widgets.dart';
+import 'package:imeasure/widgets/custom_text_field_widget.dart';
+import 'package:imeasure/widgets/dropdown_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
 import '../utils/color_util.dart';
@@ -236,11 +240,220 @@ Container breakdownContainer(BuildContext context, {required Widget child}) {
 
 Widget snapshotHandler(AsyncSnapshot snapshot) {
   if (snapshot.connectionState == ConnectionState.waiting) {
-    return const CircularProgressIndicator();
+    return Center(child: const CircularProgressIndicator());
   } else if (!snapshot.hasData) {
     return Text('No data found');
   } else if (snapshot.hasError) {
     return Text('Error gettin data: ${snapshot.error.toString()}');
   }
   return Container();
+}
+
+Widget windowParameterWidget(BuildContext context,
+    {required TextEditingController nameController,
+    required bool isMandatory,
+    required Function(bool?) onCheckboxPress,
+    required String priceBasis,
+    required Function(String?) onPriceBasisChange,
+    required TextEditingController brownPriceController,
+    required TextEditingController mattBlackController,
+    required TextEditingController mattGrayController,
+    required TextEditingController woodFinishController,
+    required TextEditingController whitePriceController,
+    required Function onRemoveField}) {
+  return all10Pix(
+    child: Container(
+      decoration: BoxDecoration(
+          border: Border.all(), borderRadius: BorderRadius.circular(10)),
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    montserratBlackBold('Field Name'),
+                    CustomTextField(
+                        text: 'Field Name',
+                        controller: nameController,
+                        textInputType: TextInputType.text),
+                  ],
+                ),
+              ),
+              Gap(30),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    montserratBlackBold('Is Mandatory Field'),
+                    Checkbox(value: isMandatory, onChanged: onCheckboxPress),
+                  ],
+                ),
+              )
+            ],
+          ),
+          Gap(10),
+          vertical10Pix(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                montserratBlackBold('Price Basis'),
+                dropdownWidget(priceBasis, onPriceBasisChange,
+                    ['WIDTH', 'HEIGHT'], priceBasis, false),
+              ],
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    montserratBlackBold('Brown Price'),
+                    CustomTextField(
+                        text: 'Brown Price',
+                        controller: brownPriceController,
+                        textInputType: TextInputType.number),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    montserratBlackBold('White Price'),
+                    CustomTextField(
+                        text: 'White Price',
+                        controller: whitePriceController,
+                        textInputType: TextInputType.number),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          vertical10Pix(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      montserratBlackBold('Matt Black Price'),
+                      CustomTextField(
+                          text: 'Matt Black Price',
+                          controller: mattBlackController,
+                          textInputType: TextInputType.number),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      montserratBlackBold('Matt Gray Price'),
+                      CustomTextField(
+                          text: 'Matt Gray Price',
+                          controller: mattGrayController,
+                          textInputType: TextInputType.number),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          vertical10Pix(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      montserratBlackBold('Wood Finish Price'),
+                      CustomTextField(
+                          text: 'Wood Finish Price',
+                          controller: woodFinishController,
+                          textInputType: TextInputType.number),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          vertical20Pix(
+            child: ElevatedButton(
+                onPressed: () => onRemoveField(),
+                child: montserratMidnightBlueBold('REMOVE SUBFIELD',
+                    fontSize: 12)),
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+Widget windowAccessoryWidget(BuildContext context,
+    {required TextEditingController nameController,
+    required TextEditingController priceController,
+    required Function onRemoveField}) {
+  return all10Pix(
+    child: Container(
+      decoration: BoxDecoration(
+          border: Border.all(), borderRadius: BorderRadius.circular(10)),
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    montserratBlackBold('Accessory Name'),
+                    CustomTextField(
+                        text: 'Accessory Name',
+                        controller: nameController,
+                        textInputType: TextInputType.name),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    montserratBlackBold('Accessory Price'),
+                    CustomTextField(
+                        text: 'Accessory Price',
+                        controller: priceController,
+                        textInputType: TextInputType.number),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          vertical20Pix(
+            child: ElevatedButton(
+                onPressed: () => onRemoveField(),
+                child: montserratMidnightBlueBold('REMOVE ACCESSORY',
+                    fontSize: 12)),
+          )
+        ],
+      ),
+    ),
+  );
 }

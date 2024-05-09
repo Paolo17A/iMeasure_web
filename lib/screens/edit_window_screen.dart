@@ -6,6 +6,7 @@ import 'package:image_picker_web/image_picker_web.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
 
+import '../models/window_models.dart';
 import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
@@ -34,7 +35,9 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
   String imageURL = '';
-  final priceController = TextEditingController();
+
+  List<WindowFieldModel> windowFieldModels = [];
+  List<WindowAccessoryModel> windowAccessoryModels = [];
 
   @override
   void initState() {
@@ -65,7 +68,39 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
         minWidthController.text = windowData[WindowFields.minWidth].toString();
         maxWidthController.text = windowData[WindowFields.maxWidth].toString();
         imageURL = windowData[WindowFields.imageURL];
-        print('IMAGE URL $imageURL');
+
+        List<dynamic> windowFields = windowData[WindowFields.windowFields];
+        List<dynamic> accessoryFields =
+            windowData[WindowFields.accessoryFields];
+
+        for (var windowField in windowFields) {
+          WindowFieldModel windowFieldModel = WindowFieldModel();
+          windowFieldModel.nameController.text =
+              windowField[WindowSubfields.name];
+          windowFieldModel.isMandatory =
+              windowField[WindowSubfields.isMandatory];
+          windowFieldModel.priceBasis = windowField[WindowSubfields.priceBasis];
+          windowFieldModel.brownPriceController.text =
+              windowField[WindowSubfields.brownPrice].toString();
+          windowFieldModel.mattBlackPriceController.text =
+              windowField[WindowSubfields.mattBlackPrice].toString();
+          windowFieldModel.mattGrayPriceController.text =
+              windowField[WindowSubfields.mattGrayPrice].toString();
+          windowFieldModel.woodFinishPriceController.text =
+              windowField[WindowSubfields.woodFinishPrice].toString();
+          windowFieldModel.whitePriceController.text =
+              windowField[WindowSubfields.whitePrice].toString();
+          windowFieldModels.add(windowFieldModel);
+        }
+
+        for (var accessoryField in accessoryFields) {
+          WindowAccessoryModel windowAccessoryModel = WindowAccessoryModel();
+          windowAccessoryModel.nameController.text =
+              accessoryField[WindowAccessorySubfields.name];
+          windowAccessoryModel.priceController.text =
+              accessoryField[WindowAccessorySubfields.price].toString();
+          windowAccessoryModels.add(windowAccessoryModel);
+        }
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -91,7 +126,6 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
     maxWidthController.dispose();
     minHeightController.dispose();
     maxHeightController.dispose();
-    priceController.dispose();
   }
 
   @override
@@ -128,6 +162,10 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
                               _maxWidthWidget(),
                             ]),
                       ),
+                      Gap(20),
+                      Divider(color: CustomColors.midnightBlue),
+                      _windowFields(),
+                      _accessoryFields(),
                       _productImagesWidget(),
                       _submitButtonWidget()
                     ])),
@@ -188,8 +226,8 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
-              child:
-                  montserratBlackBold('Minimum Height (in cm)', fontSize: 24)),
+              child: montserratBlackBold('Minimum Height (in feet)',
+                  fontSize: 24)),
           CustomTextField(
               text: 'Minimum Height',
               controller: minHeightController,
@@ -207,8 +245,8 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
-              child:
-                  montserratBlackBold('Maximum Height (in cm)', fontSize: 24)),
+              child: montserratBlackBold('Maximum Height (in feet)',
+                  fontSize: 24)),
           CustomTextField(
               text: 'Maximum Length',
               controller: maxHeightController,
@@ -227,7 +265,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
         children: [
           vertical10Pix(
               child:
-                  montserratBlackBold('Minimum Width (in cm)', fontSize: 24)),
+                  montserratBlackBold('Minimum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Minimum Width',
               controller: minWidthController,
@@ -246,7 +284,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
         children: [
           vertical10Pix(
               child:
-                  montserratBlackBold('Maximum Width (in cm)', fontSize: 24)),
+                  montserratBlackBold('Maximum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Maximum Width',
               controller: maxWidthController,
@@ -257,19 +295,99 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
     );
   }
 
-  Widget _productPriceWidget() {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.2,
+  Widget _windowFields() {
+    return vertical20Pix(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          vertical20Pix(
-              child: montserratBlackBold('Price (in PHP)', fontSize: 24)),
-          CustomTextField(
-              text: 'Price',
-              controller: priceController,
-              textInputType: TextInputType.number,
-              displayPrefixIcon: null),
+          Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [montserratBlackBold('WINDOW FIELDS', fontSize: 24)]),
+          if (windowFieldModels.isNotEmpty)
+            ListView.builder(
+                shrinkWrap: true,
+                itemCount: windowFieldModels.length,
+                itemBuilder: (context, index) {
+                  return windowParameterWidget(context,
+                      nameController: windowFieldModels[index].nameController,
+                      isMandatory: windowFieldModels[index].isMandatory,
+                      onCheckboxPress: (newVal) {
+                        setState(() {
+                          windowFieldModels[index].isMandatory = newVal!;
+                        });
+                      },
+                      priceBasis: windowFieldModels[index].priceBasis,
+                      onPriceBasisChange: (newVal) {
+                        setState(() {
+                          windowFieldModels[index].priceBasis = newVal!;
+                        });
+                      },
+                      brownPriceController:
+                          windowFieldModels[index].brownPriceController,
+                      mattBlackController:
+                          windowFieldModels[index].mattBlackPriceController,
+                      mattGrayController:
+                          windowFieldModels[index].mattGrayPriceController,
+                      woodFinishController:
+                          windowFieldModels[index].woodFinishPriceController,
+                      whitePriceController:
+                          windowFieldModels[index].whitePriceController,
+                      onRemoveField: () {
+                        if (windowFieldModels.length == 1) {
+                          return;
+                        }
+                        setState(() {
+                          windowFieldModels.remove(windowFieldModels[index]);
+                        });
+                      });
+                }),
+          ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  windowFieldModels.add(WindowFieldModel());
+                });
+              },
+              child:
+                  montserratMidnightBlueBold('ADD WINDOW FIELD', fontSize: 15))
+        ],
+      ),
+    );
+  }
+
+  Widget _accessoryFields() {
+    return vertical20Pix(
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              montserratBlackBold('ACCESSORY FIELDS', fontSize: 24),
+            ],
+          ),
+          windowAccessoryModels.isNotEmpty
+              ? ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: windowAccessoryModels.length,
+                  itemBuilder: (context, index) {
+                    return windowAccessoryWidget(context,
+                        nameController:
+                            windowAccessoryModels[index].nameController,
+                        priceController: windowAccessoryModels[index]
+                            .priceController, onRemoveField: () {
+                      setState(() {
+                        windowAccessoryModels
+                            .remove(windowAccessoryModels[index]);
+                      });
+                    });
+                  })
+              : montserratBlackRegular('NO ACCESSORIES'),
+          ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  windowAccessoryModels.add(WindowAccessoryModel());
+                });
+              },
+              child: montserratMidnightBlueBold('ADD ACCESSORY FIELD',
+                  fontSize: 15))
         ],
       ),
     );
@@ -290,7 +408,8 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
                       child: selectedMemoryImageDisplay(
                           ref.read(uploadedImageProvider).uploadedImage,
                           () => ref.read(uploadedImageProvider).removeImage()))
-                else if (!ref.read(loadingProvider).isLoading)
+                else if (!ref.read(loadingProvider).isLoading &&
+                    imageURL.isNotEmpty)
                   vertical10Pix(child: selectedNetworkImageDisplay(imageURL))
               ],
             ),
@@ -311,7 +430,9 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
             minHeightController: minHeightController,
             maxHeightController: maxHeightController,
             minWidthController: minWidthController,
-            maxWidthController: maxWidthController),
+            maxWidthController: maxWidthController,
+            windowFieldModels: windowFieldModels,
+            windowAccesoryModels: windowAccessoryModels),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: montserratMidnightBlueBold('SUBMIT'),

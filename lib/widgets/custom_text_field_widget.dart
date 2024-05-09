@@ -16,7 +16,7 @@ class CustomTextField extends StatefulWidget {
       required this.text,
       required this.controller,
       required this.textInputType,
-      required this.displayPrefixIcon,
+      this.displayPrefixIcon,
       this.enabled = true,
       this.hasSearchButton = false,
       this.onSearchPress,

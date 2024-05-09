@@ -6,6 +6,7 @@ import 'package:image_picker_web/image_picker_web.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
 
+import '../models/window_models.dart';
 import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
@@ -33,6 +34,9 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
   final priceController = TextEditingController();
+
+  List<WindowFieldModel> windowFieldModels = [WindowFieldModel()];
+  List<WindowAccessoryModel> windowAccessoryModels = [];
 
   @override
   void initState() {
@@ -112,6 +116,10 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                               _maxWidthWidget(),
                             ]),
                       ),
+                      Gap(20),
+                      Divider(color: CustomColors.midnightBlue),
+                      _windowFields(),
+                      _accessoryFields(),
                       _productImagesWidget(),
                       _submitButtonWidget()
                     ])),
@@ -172,8 +180,8 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
-              child:
-                  montserratBlackBold('Minimum Height (in cm)', fontSize: 24)),
+              child: montserratBlackBold('Minimum Height (in feet)',
+                  fontSize: 24)),
           CustomTextField(
               text: 'Minimum Height',
               controller: minHeightController,
@@ -191,8 +199,8 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
-              child:
-                  montserratBlackBold('Maximum Height (in cm)', fontSize: 24)),
+              child: montserratBlackBold('Maximum Height (in feet)',
+                  fontSize: 24)),
           CustomTextField(
               text: 'Maximum Height',
               controller: maxHeightController,
@@ -211,7 +219,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
         children: [
           vertical10Pix(
               child:
-                  montserratBlackBold('Minimum Width (in cm)', fontSize: 24)),
+                  montserratBlackBold('Minimum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Minimum Width',
               controller: minWidthController,
@@ -230,28 +238,10 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
         children: [
           vertical10Pix(
               child:
-                  montserratBlackBold('Maximum Width (in cm)', fontSize: 24)),
+                  montserratBlackBold('Maximum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Maximum Width',
               controller: maxWidthController,
-              textInputType: TextInputType.number,
-              displayPrefixIcon: null),
-        ],
-      ),
-    );
-  }
-
-  Widget _productPriceWidget() {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.2,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          vertical20Pix(
-              child: montserratBlackBold('Price (in PHP)', fontSize: 24)),
-          CustomTextField(
-              text: 'Price',
-              controller: priceController,
               textInputType: TextInputType.number,
               displayPrefixIcon: null),
         ],
@@ -283,6 +273,105 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     );
   }
 
+  Widget _windowFields() {
+    return vertical20Pix(
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              montserratBlackBold('WINDOW FIELDS', fontSize: 24),
+            ],
+          ),
+          ListView.builder(
+              shrinkWrap: true,
+              itemCount: windowFieldModels.length,
+              itemBuilder: (context, index) {
+                return windowParameterWidget(context,
+                    nameController: windowFieldModels[index].nameController,
+                    isMandatory: windowFieldModels[index].isMandatory,
+                    onCheckboxPress: (newVal) {
+                      setState(() {
+                        windowFieldModels[index].isMandatory = newVal!;
+                      });
+                    },
+                    priceBasis: windowFieldModels[index].priceBasis,
+                    onPriceBasisChange: (newVal) {
+                      setState(() {
+                        windowFieldModels[index].priceBasis = newVal!;
+                      });
+                    },
+                    brownPriceController:
+                        windowFieldModels[index].brownPriceController,
+                    mattBlackController:
+                        windowFieldModels[index].mattBlackPriceController,
+                    mattGrayController:
+                        windowFieldModels[index].mattGrayPriceController,
+                    woodFinishController:
+                        windowFieldModels[index].woodFinishPriceController,
+                    whitePriceController:
+                        windowFieldModels[index].whitePriceController,
+                    onRemoveField: () {
+                      if (windowFieldModels.length == 1) {
+                        return;
+                      }
+                      setState(() {
+                        windowFieldModels.remove(windowFieldModels[index]);
+                      });
+                    });
+              }),
+          ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  windowFieldModels.add(WindowFieldModel());
+                });
+              },
+              child:
+                  montserratMidnightBlueBold('ADD WINDOW FIELD', fontSize: 15))
+        ],
+      ),
+    );
+  }
+
+  Widget _accessoryFields() {
+    return vertical20Pix(
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              montserratBlackBold('ACCESSORY FIELDS', fontSize: 24),
+            ],
+          ),
+          if (windowAccessoryModels.isNotEmpty)
+            ListView.builder(
+                shrinkWrap: true,
+                itemCount: windowAccessoryModels.length,
+                itemBuilder: (context, index) {
+                  return windowAccessoryWidget(context,
+                      nameController:
+                          windowAccessoryModels[index].nameController,
+                      priceController: windowAccessoryModels[index]
+                          .priceController, onRemoveField: () {
+                    setState(() {
+                      windowAccessoryModels
+                          .remove(windowAccessoryModels[index]);
+                    });
+                  });
+                }),
+          ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  windowAccessoryModels.add(WindowAccessoryModel());
+                });
+              },
+              child: montserratMidnightBlueBold('ADD ACCESSORY FIELD',
+                  fontSize: 15))
+        ],
+      ),
+    );
+  }
+
   Widget _submitButtonWidget() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 50),
@@ -293,7 +382,9 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
             minHeightController: minHeightController,
             maxHeightController: maxHeightController,
             minWidthController: minWidthController,
-            maxWidthController: maxWidthController),
+            maxWidthController: maxWidthController,
+            windowFieldModels: windowFieldModels,
+            windowAccesoryModels: windowAccessoryModels),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: montserratMidnightBlueBold('SUBMIT'),

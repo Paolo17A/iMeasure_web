@@ -107,7 +107,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting ||
                       !snapshot.hasData ||
-                      snapshot.hasError) return snapshotHandler(snapshot);
+                      snapshot.hasError) return Container();
 
                   final clientData =
                       snapshot.data!.data() as Map<dynamic, dynamic>;
@@ -120,7 +120,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                         if (snapshot.connectionState ==
                                 ConnectionState.waiting ||
                             !snapshot.hasData ||
-                            snapshot.hasError) return snapshotHandler(snapshot);
+                            snapshot.hasError) return Container();
 
                         final itemData =
                             snapshot.data!.data() as Map<dynamic, dynamic>;
@@ -128,7 +128,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
 
                         Color entryColor = CustomColors.ghostWhite;
                         Color backgroundColor = index % 2 == 0
-                            ? CustomColors.slateBlue.withOpacity(0.5)
+                            ? CustomColors.slateBlue.withOpacity(0.75)
                             : CustomColors.slateBlue;
 
                         return viewContentEntryRow(context, children: [
@@ -142,8 +142,26 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                               textColor: entryColor),
                           viewFlexActionsCell(
                             [
+                              if (status == OrderStatuses.generated)
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton(
+                                          onPressed: () => GoRouter.of(context)
+                                                  .goNamed(
+                                                      GoRoutes.generatedOrder,
+                                                      pathParameters: {
+                                                    PathParameters.orderID: ref
+                                                        .read(ordersProvider)
+                                                        .orderDocs[index]
+                                                        .id
+                                                  }),
+                                          child: montserratMidnightBlueRegular(
+                                              'SET LABOR COST',
+                                              fontSize: 12))
+                                    ]),
                               if (status == OrderStatuses.pending)
-                                montserratWhiteBold('PENDING PAYMENT APPROVAL')
+                                montserratWhiteBold('PENDING PAYMENT')
                               else if (status == OrderStatuses.denied)
                                 montserratWhiteBold('PAYMENT DENIED')
                               else if (status == OrderStatuses.processing)
@@ -154,7 +172,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                             .read(ordersProvider)
                                             .orderDocs[index]
                                             .id),
-                                    child: montserratMidnightBlueBold(
+                                    child: montserratWhiteBold(
                                         'MARK AS READY FOR PICK UP',
                                         fontSize: 12))
                               else if (status == OrderStatuses.forPickUp)
@@ -165,7 +183,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                             .read(ordersProvider)
                                             .orderDocs[index]
                                             .id),
-                                    child: montserratMidnightBlueBold(
+                                    child: montserratWhiteBold(
                                         'MARK AS PICKED UP',
                                         fontSize: 12))
                               else if (status == OrderStatuses.pickedUp)

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/screens/add_window_screen.dart';
 import 'package:imeasure/screens/edit_window_screen.dart';
+import 'package:imeasure/screens/view_generated_order_screen.dart';
 import 'package:imeasure/screens/view_orders_screen.dart';
 import 'package:imeasure/screens/view_selected_user_screen.dart';
 import 'package:imeasure/screens/view_transactions_screen.dart';
@@ -25,6 +26,7 @@ class GoRoutes {
   static const selectedWindow = 'selectedWindow';
   static const transactions = 'transactions';
   static const orders = 'orders';
+  static const generatedOrder = 'generatedOrder';
   static const viewFAQs = 'viewFAQs';
   static const addFAQ = 'addFAQ';
   static const editFAQ = 'editFAQ';
@@ -86,6 +88,14 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.orders,
             pageBuilder: (context, state) =>
                 customTransition(context, state, const ViewOrdersScreen())),
+        GoRoute(
+            name: GoRoutes.generatedOrder,
+            path: '${GoRoutes.orders}/:${PathParameters.orderID}',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                ViewGeneratedOrderScreen(
+                    orderID: state.pathParameters[PathParameters.orderID]!))),
         //  FAQs
         GoRoute(
             name: GoRoutes.viewFAQs,

@@ -3,6 +3,8 @@
 //==============================================================================
 // ignore_for_file: unnecessary_cast
 
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -14,6 +16,7 @@ import 'package:imeasure/providers/transactions_provider.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
 import 'package:imeasure/providers/windows_provider.dart';
 
+import '../models/window_models.dart';
 import '../providers/loading_provider.dart';
 import 'go_router_util.dart';
 import 'string_util.dart';
@@ -102,7 +105,9 @@ Future addWindowEntry(BuildContext context, WidgetRef ref,
     required TextEditingController minHeightController,
     required TextEditingController maxHeightController,
     required TextEditingController minWidthController,
-    required TextEditingController maxWidthController}) async {
+    required TextEditingController maxWidthController,
+    required List<WindowFieldModel> windowFieldModels,
+    required List<WindowAccessoryModel> windowAccesoryModels}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (nameController.text.isEmpty ||
@@ -148,8 +153,52 @@ Future addWindowEntry(BuildContext context, WidgetRef ref,
         const SnackBar(content: Text('Please upload a window image.')));
     return;
   }
+  if (WindowFieldModel.hasInvalidField(windowFieldModels)) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Please fill up all window field parameters with valid input.')));
+    return;
+  }
+
+  if (WindowAccessoryModel.hasInvalidField(windowAccesoryModels)) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Please fill up all window accessory parameters with valid input.')));
+    return;
+  }
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    List<Map<dynamic, dynamic>> windowFields = [];
+    for (var windowFieldModel in windowFieldModels) {
+      Map<dynamic, dynamic> windowField = {
+        WindowSubfields.name: windowFieldModel.nameController.text.trim(),
+        WindowSubfields.isMandatory: windowFieldModel.isMandatory,
+        WindowSubfields.priceBasis: windowFieldModel.priceBasis,
+        WindowSubfields.brownPrice:
+            double.parse(windowFieldModel.brownPriceController.text.trim()),
+        WindowSubfields.mattBlackPrice:
+            double.parse(windowFieldModel.mattBlackPriceController.text.trim()),
+        WindowSubfields.mattGrayPrice:
+            double.parse(windowFieldModel.mattGrayPriceController.text.trim()),
+        WindowSubfields.woodFinishPrice: double.parse(
+            windowFieldModel.woodFinishPriceController.text.trim()),
+        WindowSubfields.whitePrice:
+            double.parse(windowFieldModel.whitePriceController.text.trim())
+      };
+      windowFields.add(windowField);
+    }
+
+    List<Map<dynamic, dynamic>> accessoryFields = [];
+    for (var windowAccessoryModel in windowAccesoryModels) {
+      Map<dynamic, dynamic> accessoryField = {
+        WindowAccessorySubfields.name:
+            windowAccessoryModel.nameController.text.trim(),
+        WindowAccessorySubfields.price:
+            double.parse(windowAccessoryModel.priceController.text.trim())
+      };
+      accessoryFields.add(accessoryField);
+    }
 
     final windowReference =
         await FirebaseFirestore.instance.collection(Collections.windows).add({
@@ -159,7 +208,9 @@ Future addWindowEntry(BuildContext context, WidgetRef ref,
       WindowFields.maxWidth: double.parse(maxWidthController.text),
       WindowFields.minHeight: double.parse(minHeightController.text),
       WindowFields.maxHeight: double.parse(maxHeightController.text),
-      WindowFields.isAvailable: true
+      WindowFields.isAvailable: true,
+      WindowFields.windowFields: windowFields,
+      WindowFields.accessoryFields: accessoryFields
     });
 
     //  Upload Item Images to Firebase Storage
@@ -195,7 +246,9 @@ Future editWindowEntry(BuildContext context, WidgetRef ref,
     required TextEditingController minHeightController,
     required TextEditingController maxHeightController,
     required TextEditingController minWidthController,
-    required TextEditingController maxWidthController}) async {
+    required TextEditingController maxWidthController,
+    required List<WindowFieldModel> windowFieldModels,
+    required List<WindowAccessoryModel> windowAccesoryModels}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (nameController.text.isEmpty ||
@@ -236,8 +289,50 @@ Future editWindowEntry(BuildContext context, WidgetRef ref,
             'Please input a valid number greater than zero for maximum width.')));
     return;
   }
+  if (WindowFieldModel.hasInvalidField(windowFieldModels)) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Please fill up all window field parameters with valid input.')));
+  }
+
+  if (WindowAccessoryModel.hasInvalidField(windowAccesoryModels)) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Please fill up all window accessory parameters with valid input.')));
+  }
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    List<Map<dynamic, dynamic>> windowFields = [];
+    for (var windowFieldModel in windowFieldModels) {
+      Map<dynamic, dynamic> windowField = {
+        WindowSubfields.name: windowFieldModel.nameController.text.trim(),
+        WindowSubfields.isMandatory: windowFieldModel.isMandatory,
+        WindowSubfields.priceBasis: windowFieldModel.priceBasis,
+        WindowSubfields.brownPrice:
+            double.parse(windowFieldModel.brownPriceController.text.trim()),
+        WindowSubfields.mattBlackPrice:
+            double.parse(windowFieldModel.mattBlackPriceController.text.trim()),
+        WindowSubfields.mattGrayPrice:
+            double.parse(windowFieldModel.mattGrayPriceController.text.trim()),
+        WindowSubfields.woodFinishPrice: double.parse(
+            windowFieldModel.woodFinishPriceController.text.trim()),
+        WindowSubfields.whitePrice:
+            double.parse(windowFieldModel.whitePriceController.text.trim())
+      };
+      windowFields.add(windowField);
+    }
+
+    List<Map<dynamic, dynamic>> accessoryFields = [];
+    for (var windowAccessoryModel in windowAccesoryModels) {
+      Map<dynamic, dynamic> accessoryField = {
+        WindowAccessorySubfields.name:
+            windowAccessoryModel.nameController.text.trim(),
+        WindowAccessorySubfields.price:
+            double.parse(windowAccessoryModel.priceController.text.trim())
+      };
+      accessoryFields.add(accessoryField);
+    }
 
     await FirebaseFirestore.instance
         .collection(Collections.windows)
@@ -249,6 +344,8 @@ Future editWindowEntry(BuildContext context, WidgetRef ref,
       WindowFields.maxWidth: double.parse(maxWidthController.text),
       WindowFields.minHeight: double.parse(minHeightController.text),
       WindowFields.maxHeight: double.parse(maxHeightController.text),
+      WindowFields.windowFields: windowFields,
+      WindowFields.accessoryFields: accessoryFields
     });
 
     //  Upload Item Images to Firebase Storage
@@ -382,7 +479,16 @@ Future denyThisPayment(BuildContext context, WidgetRef ref,
 Future<List<DocumentSnapshot>> getAllOrderDocs() async {
   final orders =
       await FirebaseFirestore.instance.collection(Collections.orders).get();
-  return orders.docs.map((order) => order as DocumentSnapshot).toList();
+  return orders.docs.reversed
+      .map((order) => order as DocumentSnapshot)
+      .toList();
+}
+
+Future<DocumentSnapshot> getThisOrderDoc(String orderID) async {
+  return await FirebaseFirestore.instance
+      .collection(Collections.orders)
+      .doc(orderID)
+      .get();
 }
 
 Future<List<DocumentSnapshot>> getAllClientOrderDocs(String clientID) async {
@@ -443,6 +549,41 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Error marking order as picked up: $error')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future uploadQuotationPDF(BuildContext context, WidgetRef ref,
+    {required String orderID,
+    required Uint8List pdfBytes,
+    required double laborPrice}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    ref.read(loadingProvider).toggleLoading(true);
+    //  Upload Item Images to Firebase Storage
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child(StorageFields.orders)
+        .child('$orderID.pdf');
+    final uploadTask = storageRef.putData(pdfBytes);
+    final taskSnapshot = await uploadTask;
+    final downloadURL = await taskSnapshot.ref.getDownloadURL();
+
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.quotationURL: downloadURL,
+      OrderFields.laborPrice: laborPrice,
+      OrderFields.purchaseStatus: OrderStatuses.pending
+    });
+    ref.read(loadingProvider).toggleLoading(false);
+    goRouter.goNamed(GoRoutes.orders);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Error setting labor cost and creating quotation document: $error')));
+    ref.read(loadingProvider).toggleLoading(false);
   }
 }
 
