@@ -156,7 +156,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                                         .orderDocs[index]
                                                         .id
                                                   }),
-                                          child: montserratMidnightBlueRegular(
+                                          child: montserratMidnightBlueBold(
                                               'SET LABOR COST',
                                               fontSize: 12))
                                     ]),
@@ -172,7 +172,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                             .read(ordersProvider)
                                             .orderDocs[index]
                                             .id),
-                                    child: montserratWhiteBold(
+                                    child: montserratMidnightBlueBold(
                                         'MARK AS READY FOR PICK UP',
                                         fontSize: 12))
                               else if (status == OrderStatuses.forPickUp)
@@ -183,7 +183,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                             .read(ordersProvider)
                                             .orderDocs[index]
                                             .id),
-                                    child: montserratWhiteBold(
+                                    child: montserratMidnightBlueBold(
                                         'MARK AS PICKED UP',
                                         fontSize: 12))
                               else if (status == OrderStatuses.pickedUp)
