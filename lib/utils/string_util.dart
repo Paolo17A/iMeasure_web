@@ -2,6 +2,9 @@ import 'dart:math';
 
 class ImagePaths {
   static const String logo = 'assets/images/RentARide.png';
+  static const String heritageBackground =
+      'assets/images/heritage_background.jpg';
+  static const String heritageIcon = 'assets/images/heritage_icon.png';
 }
 
 class StorageFields {

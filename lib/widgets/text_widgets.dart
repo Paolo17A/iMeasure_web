@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../utils/color_util.dart';
+import 'package:imeasure/utils/color_util.dart';
 
 Text montserratWhiteBold(String label,
     {double fontSize = 20,
@@ -9,7 +8,7 @@ Text montserratWhiteBold(String label,
     TextOverflow? textOverflow}) {
   return Text(label,
       textAlign: textAlign,
-      style: GoogleFonts.montserrat(
+      style: GoogleFonts.quicksand(
           fontSize: fontSize,
           color: Colors.white,
           fontWeight: FontWeight.bold,
@@ -23,7 +22,7 @@ Text montserratBlackRegular(String label,
   return Text(
     label,
     textAlign: textAlign,
-    style: GoogleFonts.montserrat(
+    style: GoogleFonts.quicksand(
         fontSize: fontSize,
         color: Colors.black,
         textStyle: TextStyle(overflow: textOverflow)),
@@ -36,7 +35,7 @@ Text montserratWhiteRegular(String label,
     TextOverflow? textOverflow}) {
   return Text(label,
       textAlign: textAlign,
-      style: GoogleFonts.montserrat(
+      style: GoogleFonts.quicksand(
           fontSize: fontSize,
           color: Colors.white,
           textStyle: TextStyle(overflow: textOverflow)));
@@ -50,7 +49,7 @@ Text montserratBlackBold(String label,
   return Text(
     label,
     textAlign: textAlign,
-    style: GoogleFonts.montserrat(
+    style: GoogleFonts.quicksand(
         fontSize: fontSize,
         color: Colors.black,
         fontWeight: FontWeight.bold,
@@ -59,7 +58,41 @@ Text montserratBlackBold(String label,
   );
 }
 
-Text montserratMidnightBlueBold(String label,
+Text itcBaumansWhiteBold(String label,
+    {double fontSize = 20,
+    TextAlign textAlign = TextAlign.center,
+    TextDecoration? textDecoration,
+    TextOverflow? textOverflow}) {
+  return Text(
+    label,
+    textAlign: textAlign,
+    style: GoogleFonts.baumans(
+        fontSize: fontSize,
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        decoration: textDecoration,
+        textStyle: TextStyle(overflow: textOverflow)),
+  );
+}
+
+Text azureQuicksandBold(String label,
+    {double fontSize = 20,
+    TextAlign textAlign = TextAlign.center,
+    TextDecoration? textDecoration,
+    TextOverflow? textOverflow}) {
+  return Text(
+    label,
+    textAlign: textAlign,
+    style: GoogleFonts.quicksand(
+        fontSize: fontSize,
+        color: CustomColors.azure,
+        fontWeight: FontWeight.bold,
+        decoration: textDecoration,
+        textStyle: TextStyle(overflow: textOverflow)),
+  );
+}
+
+/*Text montserratMidnightBlueBold(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
     TextOverflow? textOverflow}) {
@@ -84,4 +117,4 @@ Text montserratMidnightBlueRegular(String label,
           fontSize: fontSize,
           color: CustomColors.midnightBlue,
           textStyle: TextStyle(overflow: textOverflow)));
-}
+}*/

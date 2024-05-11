@@ -218,7 +218,7 @@ class _ViewGeneratedOrderScreenState
         children: [
           ElevatedButton(
               onPressed: () async => createPDF(),
-              child: montserratMidnightBlueBold('SET LABOR COST')),
+              child: montserratBlackBold('SET LABOR COST')),
         ],
       ),
     );

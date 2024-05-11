@@ -60,7 +60,16 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
               child: switchedLoadingContainer(
                   ref.read(loadingProvider).isLoading,
                   SingleChildScrollView(
-                    child: all5Percent(context, child: _ordersContainer()),
+                    child: horizontal5Percent(context,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            vertical20Pix(
+                                child: montserratBlackBold('ORDERS',
+                                    fontSize: 40)),
+                            _ordersContainer(),
+                          ],
+                        )),
                   )))
         ],
       ),
@@ -126,72 +135,74 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                             snapshot.data!.data() as Map<dynamic, dynamic>;
                         String name = itemData[WindowFields.name];
 
-                        Color entryColor = CustomColors.ghostWhite;
-                        Color backgroundColor = index % 2 == 0
-                            ? CustomColors.slateBlue.withOpacity(0.75)
-                            : CustomColors.slateBlue;
+                        Color entryColor = Colors.black;
+                        Color backgroundColor = CustomColors.lavenderMist;
 
                         return viewContentEntryRow(context, children: [
                           viewFlexTextCell(formattedName,
                               flex: 2,
                               backgroundColor: backgroundColor,
-                              textColor: entryColor),
+                              textColor: entryColor,
+                              customBorder:
+                                  Border.symmetric(horizontal: BorderSide())),
                           viewFlexTextCell(name,
                               flex: 2,
                               backgroundColor: backgroundColor,
-                              textColor: entryColor),
-                          viewFlexActionsCell(
-                            [
-                              if (status == OrderStatuses.generated)
-                                Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      ElevatedButton(
-                                          onPressed: () => GoRouter.of(context)
-                                                  .goNamed(
-                                                      GoRoutes.generatedOrder,
-                                                      pathParameters: {
-                                                    PathParameters.orderID: ref
-                                                        .read(ordersProvider)
-                                                        .orderDocs[index]
-                                                        .id
-                                                  }),
-                                          child: montserratMidnightBlueBold(
-                                              'SET LABOR COST',
-                                              fontSize: 12))
-                                    ]),
-                              if (status == OrderStatuses.pending)
-                                montserratWhiteBold('PENDING PAYMENT')
-                              else if (status == OrderStatuses.denied)
-                                montserratWhiteBold('PAYMENT DENIED')
-                              else if (status == OrderStatuses.processing)
-                                ElevatedButton(
-                                    onPressed: () => markOrderAsReadyForPickUp(
-                                        context, ref,
-                                        orderID: ref
-                                            .read(ordersProvider)
-                                            .orderDocs[index]
-                                            .id),
-                                    child: montserratMidnightBlueBold(
-                                        'MARK AS READY FOR PICK UP',
-                                        fontSize: 12))
-                              else if (status == OrderStatuses.forPickUp)
-                                ElevatedButton(
-                                    onPressed: () => markOrderAsPickedUp(
-                                        context, ref,
-                                        orderID: ref
-                                            .read(ordersProvider)
-                                            .orderDocs[index]
-                                            .id),
-                                    child: montserratMidnightBlueBold(
-                                        'MARK AS PICKED UP',
-                                        fontSize: 12))
-                              else if (status == OrderStatuses.pickedUp)
-                                montserratWhiteBold('COMPLETED')
-                            ],
-                            flex: 2,
-                            backgroundColor: backgroundColor,
-                          ),
+                              textColor: entryColor,
+                              customBorder:
+                                  Border.symmetric(horizontal: BorderSide())),
+                          viewFlexActionsCell([
+                            if (status == OrderStatuses.generated)
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                        onPressed: () => GoRouter.of(context)
+                                                .goNamed(
+                                                    GoRoutes.generatedOrder,
+                                                    pathParameters: {
+                                                  PathParameters.orderID: ref
+                                                      .read(ordersProvider)
+                                                      .orderDocs[index]
+                                                      .id
+                                                }),
+                                        child: montserratBlackBold(
+                                            'SET LABOR COST',
+                                            fontSize: 12))
+                                  ]),
+                            if (status == OrderStatuses.pending)
+                              montserratBlackBold('PENDING PAYMENT')
+                            else if (status == OrderStatuses.denied)
+                              montserratBlackBold('PAYMENT DENIED')
+                            else if (status == OrderStatuses.processing)
+                              ElevatedButton(
+                                  onPressed: () => markOrderAsReadyForPickUp(
+                                      context, ref,
+                                      orderID: ref
+                                          .read(ordersProvider)
+                                          .orderDocs[index]
+                                          .id),
+                                  child: montserratBlackBold(
+                                      'MARK AS READY FOR PICK UP',
+                                      fontSize: 12))
+                            else if (status == OrderStatuses.forPickUp)
+                              ElevatedButton(
+                                  onPressed: () => markOrderAsPickedUp(
+                                      context, ref,
+                                      orderID: ref
+                                          .read(ordersProvider)
+                                          .orderDocs[index]
+                                          .id),
+                                  child: montserratBlackBold(
+                                      'MARK AS PICKED UP',
+                                      fontSize: 12))
+                            else if (status == OrderStatuses.pickedUp)
+                              montserratBlackBold('COMPLETED')
+                          ],
+                              flex: 2,
+                              backgroundColor: backgroundColor,
+                              customBorder:
+                                  Border.symmetric(horizontal: BorderSide())),
                         ]);
                       });
                   //  Item Variables

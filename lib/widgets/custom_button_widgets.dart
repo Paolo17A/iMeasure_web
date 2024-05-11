@@ -13,14 +13,7 @@ Widget submitButton(BuildContext context,
       padding: const EdgeInsets.all(20),
       child: ElevatedButton(
         onPressed: () => onPress(),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-              color: CustomColors.midnightBlue,
-              fontWeight: FontWeight.bold,
-              fontSize: 20),
-        ),
+        child: montserratBlackBold(label),
       ));
 }
 
@@ -30,7 +23,7 @@ Widget backButton(BuildContext context, {required Function onPress}) {
       style: ElevatedButton.styleFrom(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-      child: montserratMidnightBlueBold('BACK'));
+      child: montserratBlackBold('BACK'));
 }
 
 Widget viewEntryButton(BuildContext context, {required Function onPress}) {
@@ -38,8 +31,7 @@ Widget viewEntryButton(BuildContext context, {required Function onPress}) {
       onPressed: () {
         onPress();
       },
-      style: ElevatedButton.styleFrom(backgroundColor: CustomColors.dandelion),
-      child: const Icon(Icons.visibility, color: CustomColors.slateBlue));
+      child: const Icon(Icons.visibility, color: CustomColors.deepNavyBlue));
 }
 
 Widget editEntryButton(BuildContext context, {required Function onPress}) {
@@ -47,8 +39,7 @@ Widget editEntryButton(BuildContext context, {required Function onPress}) {
       onPressed: () {
         onPress();
       },
-      style: ElevatedButton.styleFrom(backgroundColor: CustomColors.dandelion),
-      child: const Icon(Icons.edit, color: CustomColors.slateBlue));
+      child: const Icon(Icons.edit, color: CustomColors.deepNavyBlue));
 }
 
 Widget restoreEntryButton(BuildContext context, {required Function onPress}) {
@@ -56,8 +47,7 @@ Widget restoreEntryButton(BuildContext context, {required Function onPress}) {
       onPressed: () {
         onPress();
       },
-      style: ElevatedButton.styleFrom(backgroundColor: CustomColors.dandelion),
-      child: const Icon(Icons.restore, color: CustomColors.slateBlue));
+      child: const Icon(Icons.restore, color: CustomColors.deepNavyBlue));
 }
 
 Widget deleteEntryButton(BuildContext context, {required Function onPress}) {
@@ -65,8 +55,7 @@ Widget deleteEntryButton(BuildContext context, {required Function onPress}) {
       onPressed: () {
         onPress();
       },
-      style: ElevatedButton.styleFrom(backgroundColor: CustomColors.dandelion),
-      child: const Icon(Icons.delete, color: CustomColors.slateBlue));
+      child: const Icon(Icons.delete, color: CustomColors.deepNavyBlue));
 }
 
 Widget uploadImageButton(String label, Function selectImage) {
@@ -76,8 +65,7 @@ Widget uploadImageButton(String label, Function selectImage) {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
       child: Padding(
-          padding: const EdgeInsets.all(7),
-          child: montserratMidnightBlueBold(label)));
+          padding: const EdgeInsets.all(7), child: montserratBlackBold(label)));
 }
 
 Widget navigatorButtons(BuildContext context,
@@ -110,7 +98,7 @@ Widget pageButton(BuildContext context,
     Color fontColor = Colors.black}) {
   return Container(
     decoration:
-        BoxDecoration(border: Border.all(color: CustomColors.dandelion)),
+        BoxDecoration(border: Border.all(color: CustomColors.deepNavyBlue)),
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: TextButton(

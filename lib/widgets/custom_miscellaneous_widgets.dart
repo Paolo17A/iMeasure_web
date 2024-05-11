@@ -32,7 +32,7 @@ Widget roundedSlateBlueContainer(BuildContext context,
       width: MediaQuery.of(context).size.width * 0.5,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: CustomColors.slateBlue),
+          color: CustomColors.deepNavyBlue.withOpacity(0.8)),
       padding: const EdgeInsets.all(20),
       child: child);
 }
@@ -92,8 +92,8 @@ Widget viewFlexTextCell(String text,
 Widget viewFlexLabelTextCell(String text, int flex) {
   return viewFlexTextCell(text,
       flex: flex,
-      backgroundColor: CustomColors.slateBlue,
-      textColor: CustomColors.ghostWhite);
+      backgroundColor: CustomColors.lavenderMist,
+      textColor: Colors.black);
 }
 
 Widget viewFlexActionsCell(List<Widget> children,
@@ -156,8 +156,7 @@ Widget analyticReportWidget(BuildContext context,
                       borderRadius: BorderRadius.circular(10),
                     )),
                     child: Center(
-                      child:
-                          montserratMidnightBlueBold(demographic, fontSize: 12),
+                      child: montserratBlackBold(demographic, fontSize: 12),
                     ),
                   ),
                 )
@@ -175,12 +174,12 @@ Widget buildProfileImage({required String profileImageURL}) {
   return profileImageURL.isNotEmpty
       ? CircleAvatar(
           radius: 70,
-          backgroundColor: CustomColors.slateBlue,
+          backgroundColor: CustomColors.deepNavyBlue,
           backgroundImage: NetworkImage(profileImageURL),
         )
       : const CircleAvatar(
           radius: 70,
-          backgroundColor: CustomColors.slateBlue,
+          backgroundColor: CustomColors.deepNavyBlue,
           child: Icon(
             Icons.person,
             color: Colors.white,
@@ -205,8 +204,8 @@ Widget selectedMemoryImageDisplay(
               width: 90,
               child: ElevatedButton(
                   onPressed: () => deleteImage(),
-                  child:
-                      const Icon(Icons.delete, color: CustomColors.slateBlue)),
+                  child: const Icon(Icons.delete,
+                      color: CustomColors.deepNavyBlue)),
             )
           ],
         ),
@@ -231,10 +230,10 @@ Container breakdownContainer(BuildContext context, {required Widget child}) {
   return Container(
       width: MediaQuery.of(context).size.width * 0.25,
       height: MediaQuery.of(context).size.height * 0.4,
-      decoration: BoxDecoration(boxShadow: [
-        BoxShadow(
-            offset: const Offset(0, 3), color: Colors.grey.withOpacity(0.5))
-      ], borderRadius: BorderRadius.circular(20), color: Colors.white),
+      decoration: BoxDecoration(
+          boxShadow: [],
+          borderRadius: BorderRadius.circular(20),
+          color: CustomColors.lavenderMist),
       child: Padding(padding: const EdgeInsets.all(11), child: child));
 }
 
@@ -395,8 +394,7 @@ Widget windowParameterWidget(BuildContext context,
           vertical20Pix(
             child: ElevatedButton(
                 onPressed: () => onRemoveField(),
-                child: montserratMidnightBlueBold('REMOVE SUBFIELD',
-                    fontSize: 12)),
+                child: montserratBlackBold('REMOVE SUBFIELD', fontSize: 12)),
           )
         ],
       ),
@@ -449,8 +447,7 @@ Widget windowAccessoryWidget(BuildContext context,
           vertical20Pix(
             child: ElevatedButton(
                 onPressed: () => onRemoveField(),
-                child: montserratMidnightBlueBold('REMOVE ACCESSORY',
-                    fontSize: 12)),
+                child: montserratBlackBold('REMOVE ACCESSORY', fontSize: 12)),
           )
         ],
       ),

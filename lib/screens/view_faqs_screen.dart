@@ -84,10 +84,11 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
   Widget _addFAQButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        montserratBlackBold('FREQUENTLY ASKED QUESTIONS', fontSize: 40),
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addFAQ),
-            child: montserratMidnightBlueBold('ADD FAQ'))
+            child: montserratBlackBold('ADD FAQ'))
       ]),
     );
   }
@@ -130,14 +131,18 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
     String question = faqData[FAQFields.question];
     String answer = faqData[FAQFields.answer];
     Color entryColor = Colors.black;
-    Color backgroundColor = index % 2 == 0
-        ? CustomColors.slateBlue.withOpacity(0.5)
-        : CustomColors.powderBlue;
+    Color backgroundColor = CustomColors.lavenderMist;
     return viewContentEntryRow(context, children: [
       viewFlexTextCell(question,
-          flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
+          flex: 2,
+          backgroundColor: backgroundColor,
+          textColor: entryColor,
+          customBorder: Border.symmetric(horizontal: BorderSide())),
       viewFlexTextCell(answer,
-          flex: 4, backgroundColor: backgroundColor, textColor: entryColor),
+          flex: 4,
+          backgroundColor: backgroundColor,
+          textColor: entryColor,
+          customBorder: Border.symmetric(horizontal: BorderSide())),
       viewFlexActionsCell([
         editEntryButton(context,
             onPress: () => GoRouter.of(context).goNamed(GoRoutes.editFAQ,
@@ -147,7 +152,10 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
                 message: 'Are you sure you wish to remove this FAQ?',
                 deleteEntry: () =>
                     deleteFAQEntry(context, ref, faqID: faqDoc.id)))
-      ], flex: 2, backgroundColor: backgroundColor)
+      ],
+          flex: 2,
+          backgroundColor: backgroundColor,
+          customBorder: Border.symmetric(horizontal: BorderSide()))
     ]);
   }
 }

@@ -104,7 +104,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                       _windowNameWidget(),
                       _windowDescriptionWidget(),
                       Gap(20),
-                      Divider(color: CustomColors.midnightBlue),
+                      Divider(color: CustomColors.deepNavyBlue),
                       SizedBox(
                         width: double.infinity,
                         child: Wrap(
@@ -117,7 +117,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                             ]),
                       ),
                       Gap(20),
-                      Divider(color: CustomColors.midnightBlue),
+                      Divider(color: CustomColors.deepNavyBlue),
                       _windowFields(),
                       _accessoryFields(),
                       _productImagesWidget(),
@@ -136,7 +136,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
       child: Row(children: [
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.windows),
-            child: montserratMidnightBlueBold('BACK'))
+            child: montserratBlackBold('BACK'))
       ]),
     );
   }
@@ -326,8 +326,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   windowFieldModels.add(WindowFieldModel());
                 });
               },
-              child:
-                  montserratMidnightBlueBold('ADD WINDOW FIELD', fontSize: 15))
+              child: montserratBlackBold('ADD WINDOW FIELD', fontSize: 15))
         ],
       ),
     );
@@ -365,8 +364,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   windowAccessoryModels.add(WindowAccessoryModel());
                 });
               },
-              child: montserratMidnightBlueBold('ADD ACCESSORY FIELD',
-                  fontSize: 15))
+              child: montserratBlackBold('ADD ACCESSORY FIELD', fontSize: 15))
         ],
       ),
     );
@@ -387,7 +385,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
             windowAccesoryModels: windowAccessoryModels),
         child: Padding(
           padding: const EdgeInsets.all(9),
-          child: montserratMidnightBlueBold('SUBMIT'),
+          child: montserratBlackBold('SUBMIT'),
         ),
       ),
     );

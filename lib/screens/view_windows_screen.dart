@@ -77,10 +77,11 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
   Widget _addWindowButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        montserratBlackBold('WINDOWS', fontSize: 40),
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addWindow),
-            child: montserratMidnightBlueBold('ADD NEW WINDOW'))
+            child: montserratBlackBold('ADD NEW WINDOW'))
       ]),
     );
   }
@@ -122,13 +123,14 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
     final windowData = windowDoc.data() as Map<dynamic, dynamic>;
     String name = windowData[WindowFields.name];
     bool isAvailable = windowData[WindowFields.isAvailable];
-    Color entryColor = CustomColors.ghostWhite;
-    Color backgroundColor = index % 2 == 0
-        ? CustomColors.slateBlue.withOpacity(0.5)
-        : CustomColors.slateBlue;
+    Color entryColor = Colors.black;
+    Color backgroundColor = CustomColors.lavenderMist;
     return viewContentEntryRow(context, children: [
       viewFlexTextCell(name,
-          flex: 4, backgroundColor: backgroundColor, textColor: entryColor),
+          flex: 4,
+          backgroundColor: backgroundColor,
+          textColor: entryColor,
+          customBorder: Border.symmetric(horizontal: BorderSide())),
       viewFlexActionsCell([
         if (isAvailable)
           deleteEntryButton(context,
@@ -147,7 +149,10 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
         viewEntryButton(context,
             onPress: () => GoRouter.of(context).goNamed(GoRoutes.selectedWindow,
                 pathParameters: {PathParameters.windowID: windowDoc.id}))
-      ], flex: 2, backgroundColor: backgroundColor)
+      ],
+          flex: 2,
+          backgroundColor: backgroundColor,
+          customBorder: Border.symmetric(horizontal: BorderSide()))
     ]);
   }
 }

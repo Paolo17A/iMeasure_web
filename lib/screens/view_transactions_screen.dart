@@ -66,7 +66,16 @@ class _ViewTransactionsScreenState
               child: switchedLoadingContainer(
                   ref.read(loadingProvider).isLoading,
                   SingleChildScrollView(
-                    child: all5Percent(context, child: _ordersContainer()),
+                    child: horizontal5Percent(context,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            vertical20Pix(
+                                child: montserratBlackBold('TRANSACTIONS',
+                                    fontSize: 40)),
+                            _ordersContainer(),
+                          ],
+                        )),
                   )))
         ],
       ),
@@ -125,10 +134,8 @@ class _ViewTransactionsScreenState
                       snapshot.data!.data() as Map<dynamic, dynamic>;
                   String formattedName =
                       '${clientData[UserFields.firstName]} ${clientData[UserFields.lastName]}';
-                  Color entryColor = CustomColors.ghostWhite;
-                  Color backgroundColor = index % 2 == 0
-                      ? CustomColors.slateBlue.withOpacity(0.5)
-                      : CustomColors.slateBlue;
+                  Color entryColor = Colors.black;
+                  Color backgroundColor = CustomColors.lavenderMist;
 
                   return viewContentEntryRow(
                     context,
@@ -136,25 +143,29 @@ class _ViewTransactionsScreenState
                       viewFlexTextCell(formattedName,
                           flex: 3,
                           backgroundColor: backgroundColor,
-                          textColor: entryColor),
+                          textColor: entryColor,
+                          customBorder:
+                              Border.symmetric(horizontal: BorderSide())),
                       viewFlexTextCell('PHP ${totalAmount.toStringAsFixed(2)}',
                           flex: 2,
                           backgroundColor: backgroundColor,
-                          textColor: entryColor),
-                      viewFlexActionsCell(
-                        [
-                          ElevatedButton(
-                              onPressed: () => showProofOfPaymentDialog(
-                                  paymentMethod: paymentMethod,
-                                  proofOfPayment: proofOfPayment),
-                              child: montserratMidnightBlueRegular('VIEW'))
-                        ],
-                        flex: 2,
-                        backgroundColor: backgroundColor,
-                      ),
+                          textColor: entryColor,
+                          customBorder:
+                              Border.symmetric(horizontal: BorderSide())),
+                      viewFlexActionsCell([
+                        ElevatedButton(
+                            onPressed: () => showProofOfPaymentDialog(
+                                paymentMethod: paymentMethod,
+                                proofOfPayment: proofOfPayment),
+                            child: montserratBlackBold('VIEW'))
+                      ],
+                          flex: 2,
+                          backgroundColor: backgroundColor,
+                          customBorder:
+                              Border.symmetric(horizontal: BorderSide())),
                       viewFlexActionsCell([
                         if (paymentData[TransactionFields.paymentVerified])
-                          montserratWhiteBold('VERIFIED'),
+                          montserratBlackBold('VERIFIED'),
                         if (!paymentData[TransactionFields.paymentVerified])
                           ElevatedButton(
                               onPressed: () => approveThisPayment(context, ref,
@@ -163,7 +174,7 @@ class _ViewTransactionsScreenState
                                       .transactionDocs[index]
                                       .id),
                               child: Icon(Icons.check,
-                                  color: CustomColors.slateBlue)),
+                                  color: CustomColors.deepNavyBlue)),
                         if (!paymentData[TransactionFields.paymentVerified])
                           ElevatedButton(
                               onPressed: () => displayDeleteEntryDialog(context,
@@ -177,8 +188,12 @@ class _ViewTransactionsScreenState
                                           .transactionDocs[index]
                                           .id)),
                               child: Icon(Icons.block,
-                                  color: CustomColors.slateBlue))
-                      ], flex: 2, backgroundColor: backgroundColor)
+                                  color: CustomColors.deepNavyBlue))
+                      ],
+                          flex: 2,
+                          backgroundColor: backgroundColor,
+                          customBorder:
+                              Border.symmetric(horizontal: BorderSide()))
                     ],
                   );
                 });
@@ -198,7 +213,7 @@ class _ViewTransactionsScreenState
                 height: MediaQuery.of(context).size.height * 0.7,
                 child: Column(
                   children: [
-                    montserratMidnightBlueBold('Payment Method: $paymentMethod',
+                    montserratBlackBold('Payment Method: $paymentMethod',
                         fontSize: 30),
                     const Gap(10),
                     Container(
@@ -215,7 +230,7 @@ class _ViewTransactionsScreenState
                       height: 30,
                       child: ElevatedButton(
                           onPressed: () => GoRouter.of(context).pop(),
-                          child: montserratMidnightBlueBold('CLOSE')),
+                          child: montserratBlackBold('CLOSE')),
                     )
                   ],
                 ),

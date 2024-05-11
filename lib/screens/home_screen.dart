@@ -175,11 +175,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: CustomColors.slateBlue,
+            color: CustomColors.lavenderMist,
           ),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            montserratWhiteBold(
+            montserratBlackBold(
                 'OVERALL TOTAL WINDOW SALES: PHP ${formatPrice(totalSales)}',
                 fontSize: 30),
             /*montserratWhiteBold(
@@ -194,8 +194,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         width: MediaQuery.of(context).size.width * 0.8,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: CustomColors.slateBlue,
+          color: CustomColors.lavenderMist,
         ),
         child: Wrap(
           spacing: MediaQuery.of(context).size.width * 0.01,
@@ -232,9 +231,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             PieChart(
                 dataMap: paymentBreakdown,
                 colorList: [
-                  CustomColors.midnightBlue,
-                  CustomColors.slateBlue,
-                  CustomColors.powderBlue
+                  CustomColors.deepNavyBlue,
+                  CustomColors.emeraldGreen,
+                  CustomColors.azure
                 ],
                 chartValuesOptions: ChartValuesOptions(decimalPlaces: 0)),
           ],
@@ -249,11 +248,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             PieChart(
                 dataMap: orderBreakdown,
                 colorList: [
-                  CustomColors.flaxen,
-                  CustomColors.midnightBlue,
-                  CustomColors.slateBlue,
-                  CustomColors.powderBlue,
-                  CustomColors.skyBlue,
+                  CustomColors.deepNavyBlue,
+                  CustomColors.emeraldGreen,
+                  CustomColors.azure,
+                  CustomColors.deepNavyBlue.withOpacity(0.5),
+                  CustomColors.emeraldGreen.withOpacity(0.5),
+                  CustomColors.azure.withOpacity(0.5),
                 ],
                 chartValuesOptions: ChartValuesOptions(decimalPlaces: 0)),
           ],
@@ -261,34 +261,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _logInContainer() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 40),
-      child: roundedSlateBlueContainer(context,
-          child: Column(
-            children: [
-              vertical20Pix(child: montserratWhiteBold('LOG-IN', fontSize: 40)),
-              CustomTextField(
-                  text: 'Email Address',
-                  controller: emailController,
-                  textInputType: TextInputType.emailAddress,
-                  displayPrefixIcon: const Icon(Icons.email)),
-              const Gap(16),
-              CustomTextField(
-                text: 'Password',
-                controller: passwordController,
-                textInputType: TextInputType.visiblePassword,
-                displayPrefixIcon: const Icon(Icons.lock),
-                onSearchPress: () => logInUser(context, ref,
-                    emailController: emailController,
-                    passwordController: passwordController),
+    return Container(
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height,
+      decoration: BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage(ImagePaths.heritageBackground),
+              fit: BoxFit.cover)),
+      child: Container(
+        color: Colors.black.withOpacity(0.75),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width * 0.6,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(ImagePaths.heritageIcon),
+                  itcBaumansWhiteBold('HERITAGE ALUMINUM SALES CORPORATION',
+                      fontSize: 40),
+                  itcBaumansWhiteBold(
+                    '• LOS BAÑOS •',
+                  )
+                ],
               ),
-              submitButton(context,
-                  label: 'LOG-IN',
-                  onPress: () => logInUser(context, ref,
-                      emailController: emailController,
-                      passwordController: passwordController)),
-            ],
-          )),
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.3,
+              decoration: BoxDecoration(
+                  border: Border.all(color: CustomColors.lavenderMist),
+                  borderRadius: BorderRadius.circular(10)),
+              padding: EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    vertical20Pix(
+                        child: azureQuicksandBold('LOG-IN', fontSize: 40)),
+                    CustomTextField(
+                        text: 'Email Address',
+                        controller: emailController,
+                        textInputType: TextInputType.emailAddress,
+                        fillColor: Colors.white,
+                        displayPrefixIcon: const Icon(Icons.email)),
+                    const Gap(16),
+                    CustomTextField(
+                      text: 'Password',
+                      controller: passwordController,
+                      textInputType: TextInputType.visiblePassword,
+                      fillColor: Colors.white,
+                      displayPrefixIcon: const Icon(Icons.lock),
+                      onSearchPress: () => logInUser(context, ref,
+                          emailController: emailController,
+                          passwordController: passwordController),
+                    ),
+                    submitButton(context,
+                        label: 'LOG-IN',
+                        onPress: () => logInUser(context, ref,
+                            emailController: emailController,
+                            passwordController: passwordController)),
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
     );
   }
 }

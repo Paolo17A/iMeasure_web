@@ -113,7 +113,7 @@ class _ViewSelectedUserScreenState
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-            color: CustomColors.slateBlue,
+            color: CustomColors.deepNavyBlue,
             borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.all(10),
         child: Column(
@@ -162,8 +162,8 @@ class _ViewSelectedUserScreenState
         return all10Pix(
             child: Container(
           decoration: BoxDecoration(
-              color: CustomColors.slateBlue,
-              border: Border.all(color: CustomColors.midnightBlue)),
+              color: CustomColors.deepNavyBlue,
+              border: Border.all(color: CustomColors.azure)),
           padding: EdgeInsets.all(10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

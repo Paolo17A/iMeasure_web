@@ -68,7 +68,7 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
                         children: [
                           vertical20Pix(
                               child: montserratBlackBold(
-                                  'REGISTERED RENTER ACCOUNTS',
+                                  'REGISTERED USER ACCOUNTS',
                                   fontSize: 40)),
                           viewContentContainer(context,
                               child: Column(
@@ -112,18 +112,22 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
     String formattedName =
         '${userData[UserFields.firstName]} ${userData[UserFields.lastName]}';
 
-    Color entryColor = CustomColors.ghostWhite;
-    Color backgroundColor = index % 2 == 0
-        ? CustomColors.slateBlue.withOpacity(0.5)
-        : CustomColors.slateBlue;
+    Color entryColor = Colors.black;
+    Color backgroundColor = CustomColors.lavenderMist;
     return viewContentEntryRow(context, children: [
       viewFlexTextCell(formattedName,
-          flex: 3, backgroundColor: backgroundColor, textColor: entryColor),
+          flex: 3,
+          backgroundColor: backgroundColor,
+          textColor: entryColor,
+          customBorder: Border.symmetric(horizontal: BorderSide())),
       viewFlexActionsCell([
         viewEntryButton(context,
             onPress: () => GoRouter.of(context).goNamed(GoRoutes.selectedUser,
                 pathParameters: {PathParameters.userID: userDoc.id})),
-      ], flex: 2, backgroundColor: backgroundColor)
+      ],
+          flex: 2,
+          backgroundColor: backgroundColor,
+          customBorder: Border.symmetric(horizontal: BorderSide()))
     ]);
   }
 }

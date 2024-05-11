@@ -116,44 +116,40 @@ class _SelectedWindowScreenState
       width: double.infinity,
       decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: CustomColors.slateBlue),
+          border: Border.all(color: CustomColors.deepNavyBlue),
           borderRadius: BorderRadius.circular(20)),
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         buildProfileImage(profileImageURL: imageURL),
         montserratBlackBold(name, fontSize: 40),
-        montserratMidnightBlueRegular(
-            '\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
+        montserratBlackBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
         Gap(20),
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.3,
           child: Column(
             children: [
               Row(children: [
-                montserratMidnightBlueRegular(
-                    'Minimum Width: ${minWidth.toString()}cm',
+                montserratBlackBold('Minimum Width: ${minWidth.toString()}ft',
                     fontSize: 16),
                 Gap(40),
-                montserratMidnightBlueRegular(
-                    'Minimum Length: ${minLength.toString()}cm',
+                montserratBlackBold('Minimum Length: ${minLength.toString()}ft',
                     fontSize: 16),
               ]),
               Row(
                 children: [
-                  montserratMidnightBlueRegular(
-                      'Maximum Width: ${maxWidth.toString()}cm',
+                  montserratBlackBold('Maximum Width: ${maxWidth.toString()}ft',
                       fontSize: 16),
                   Gap(40),
-                  montserratMidnightBlueRegular(
-                      'Maximum Length: ${maxLength.toString()}cm',
+                  montserratBlackBold(
+                      'Maximum Length: ${maxLength.toString()}ft',
                       fontSize: 16)
                 ],
               )
             ],
           ),
         ),
-        Divider(color: CustomColors.midnightBlue),
-        montserratMidnightBlueRegular(description)
+        Divider(color: CustomColors.deepNavyBlue),
+        montserratBlackBold(description)
       ]),
     );
   }
@@ -163,7 +159,7 @@ class _SelectedWindowScreenState
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-            color: CustomColors.slateBlue,
+            color: CustomColors.deepNavyBlue,
             borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.all(10),
         child: Column(
@@ -213,8 +209,8 @@ class _SelectedWindowScreenState
         return all10Pix(
             child: Container(
           decoration: BoxDecoration(
-              color: CustomColors.slateBlue,
-              border: Border.all(color: CustomColors.midnightBlue)),
+              color: CustomColors.deepNavyBlue,
+              border: Border.all(color: CustomColors.azure)),
           padding: EdgeInsets.all(10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -90,7 +90,7 @@ class _EditFAQScreenState extends ConsumerState<EditFAQScreen> {
       child: Row(children: [
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.viewFAQs),
-            child: montserratMidnightBlueBold('BACK'))
+            child: montserratBlackBold('BACK'))
       ]),
     );
   }
@@ -136,7 +136,7 @@ class _EditFAQScreenState extends ConsumerState<EditFAQScreen> {
             answerController: answerController),
         child: Padding(
           padding: const EdgeInsets.all(9),
-          child: montserratMidnightBlueBold('SUBMIT'),
+          child: montserratBlackBold('SUBMIT'),
         ),
       ),
     );

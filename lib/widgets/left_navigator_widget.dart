@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../utils/color_util.dart';
 import '../utils/go_router_util.dart';
@@ -10,8 +11,8 @@ Widget leftNavigator(BuildContext context, {required String path}) {
     width: MediaQuery.of(context).size.width * 0.2,
     height: MediaQuery.of(context).size.height - 60,
     decoration: BoxDecoration(
-        color: CustomColors.slateBlue,
-        border: Border.all(color: CustomColors.midnightBlue)),
+        color: CustomColors.deepNavyBlue,
+        border: Border.all(color: CustomColors.deepNavyBlue)),
     child: Column(
       children: [
         Flexible(
@@ -43,7 +44,7 @@ Widget leftNavigator(BuildContext context, {required String path}) {
             ),
             title: const Text('Log Out',
                 style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
+                    color: Colors.black, fontWeight: FontWeight.bold)),
             onTap: () {
               FirebaseAuth.instance.signOut().then((value) {
                 GoRouter.of(context).goNamed(GoRoutes.home);
@@ -61,11 +62,12 @@ Widget listTile(BuildContext context,
     required String currentPath}) {
   return Container(
       decoration: BoxDecoration(
-          color: thisPath == currentPath ? CustomColors.midnightBlue : null),
+          color: thisPath == currentPath ? CustomColors.lavenderMist : null),
       child: ListTile(
           title: Text(label,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold)),
+              style: GoogleFonts.quicksand(
+                  textStyle: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold))),
           onTap: () {
             GoRouter.of(context).goNamed(thisPath);
             if (thisPath == GoRoutes.home) {
