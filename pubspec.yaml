@@ -56,7 +56,7 @@ dev_dependencies:
 flutter_launcher_icons:
   web: 
     generate: true
-    image_path: "assets/images/imeasure.png"
+    image_path: "assets/images/heritage_icon.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
