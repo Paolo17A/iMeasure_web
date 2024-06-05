@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/transactions_provider.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
@@ -10,10 +11,9 @@ import '../utils/delete_entry_dialog_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_bar_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
-import '../widgets/left_navigator_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class ViewTransactionsScreen extends ConsumerStatefulWidget {
@@ -56,29 +56,27 @@ class _ViewTransactionsScreenState
     ref.watch(loadingProvider);
     ref.watch(transactionsProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.transactions),
-          SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: switchedLoadingContainer(
-                  ref.read(loadingProvider).isLoading,
-                  SingleChildScrollView(
-                    child: horizontal5Percent(context,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            vertical20Pix(
-                                child: montserratBlackBold('TRANSACTIONS',
-                                    fontSize: 40)),
-                            _ordersContainer(),
-                          ],
-                        )),
-                  )))
-        ],
-      ),
+      drawer: appDrawer(context, currentPath: GoRoutes.transactions),
+      body: stackedLoadingContainer(
+          context,
+          ref.read(loadingProvider).isLoading,
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                topNavigator(context, path: GoRoutes.transactions),
+                horizontal5Percent(context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        vertical20Pix(
+                            child: quicksandBlackBold('TRANSACTIONS',
+                                fontSize: 40)),
+                        _ordersContainer(),
+                      ],
+                    )),
+              ],
+            ),
+          )),
     );
   }
 
@@ -157,7 +155,7 @@ class _ViewTransactionsScreenState
                             onPressed: () => showProofOfPaymentDialog(
                                 paymentMethod: paymentMethod,
                                 proofOfPayment: proofOfPayment),
-                            child: montserratBlackBold('VIEW'))
+                            child: quicksandBlackBold('VIEW'))
                       ],
                           flex: 2,
                           backgroundColor: backgroundColor,
@@ -165,7 +163,7 @@ class _ViewTransactionsScreenState
                               Border.symmetric(horizontal: BorderSide())),
                       viewFlexActionsCell([
                         if (paymentData[TransactionFields.paymentVerified])
-                          montserratBlackBold('VERIFIED'),
+                          quicksandBlackBold('VERIFIED'),
                         if (!paymentData[TransactionFields.paymentVerified])
                           ElevatedButton(
                               onPressed: () => approveThisPayment(context, ref,
@@ -213,7 +211,7 @@ class _ViewTransactionsScreenState
                 height: MediaQuery.of(context).size.height * 0.7,
                 child: Column(
                   children: [
-                    montserratBlackBold('Payment Method: $paymentMethod',
+                    quicksandBlackBold('Payment Method: $paymentMethod',
                         fontSize: 30),
                     const Gap(10),
                     Container(
@@ -230,7 +228,7 @@ class _ViewTransactionsScreenState
                       height: 30,
                       child: ElevatedButton(
                           onPressed: () => GoRouter.of(context).pop(),
-                          child: montserratBlackBold('CLOSE')),
+                          child: quicksandBlackBold('CLOSE')),
                     )
                   ],
                 ),

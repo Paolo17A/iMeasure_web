@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/orders_provider.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_bar_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
-import '../widgets/left_navigator_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class ViewOrdersScreen extends ConsumerStatefulWidget {
@@ -50,29 +50,26 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
     ref.watch(loadingProvider);
     ref.watch(ordersProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.orders),
-          SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: switchedLoadingContainer(
-                  ref.read(loadingProvider).isLoading,
-                  SingleChildScrollView(
-                    child: horizontal5Percent(context,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            vertical20Pix(
-                                child: montserratBlackBold('ORDERS',
-                                    fontSize: 40)),
-                            _ordersContainer(),
-                          ],
-                        )),
-                  )))
-        ],
-      ),
+      drawer: appDrawer(context, currentPath: GoRoutes.orders),
+      body: stackedLoadingContainer(
+          context,
+          ref.read(loadingProvider).isLoading,
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                topNavigator(context, path: GoRoutes.orders),
+                horizontal5Percent(context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        vertical20Pix(
+                            child: quicksandBlackBold('ORDERS', fontSize: 40)),
+                        _ordersContainer(),
+                      ],
+                    )),
+              ],
+            ),
+          )),
     );
   }
 
@@ -166,14 +163,14 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                                       .orderDocs[index]
                                                       .id
                                                 }),
-                                        child: montserratBlackBold(
+                                        child: quicksandBlackBold(
                                             'SET LABOR COST',
                                             fontSize: 12))
                                   ]),
                             if (status == OrderStatuses.pending)
-                              montserratBlackBold('PENDING PAYMENT')
+                              quicksandBlackBold('PENDING PAYMENT')
                             else if (status == OrderStatuses.denied)
-                              montserratBlackBold('PAYMENT DENIED')
+                              quicksandBlackBold('PAYMENT DENIED')
                             else if (status == OrderStatuses.processing)
                               ElevatedButton(
                                   onPressed: () => markOrderAsReadyForPickUp(
@@ -182,7 +179,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                           .read(ordersProvider)
                                           .orderDocs[index]
                                           .id),
-                                  child: montserratBlackBold(
+                                  child: quicksandBlackBold(
                                       'MARK AS READY FOR PICK UP',
                                       fontSize: 12))
                             else if (status == OrderStatuses.forPickUp)
@@ -193,11 +190,10 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                           .read(ordersProvider)
                                           .orderDocs[index]
                                           .id),
-                                  child: montserratBlackBold(
-                                      'MARK AS PICKED UP',
+                                  child: quicksandBlackBold('MARK AS PICKED UP',
                                       fontSize: 12))
                             else if (status == OrderStatuses.pickedUp)
-                              montserratBlackBold('COMPLETED')
+                              quicksandBlackBold('COMPLETED')
                           ],
                               flex: 2,
                               backgroundColor: backgroundColor,

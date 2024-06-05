@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/color_util.dart';
-import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_bar_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
@@ -78,29 +78,26 @@ class _SelectedWindowScreenState
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.windows),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: switchedLoadingContainer(
-                ref.read(loadingProvider).isLoading,
-                SingleChildScrollView(
-                  child: horizontal5Percent(context,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _backButton(),
-                          _windowDetails(),
-                          orderHistory()
-                        ],
-                      )),
-                )),
-          )
-        ],
-      ),
+      drawer: appDrawer(context, currentPath: GoRoutes.windows),
+      body: stackedLoadingContainer(
+          context,
+          ref.read(loadingProvider).isLoading,
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                topNavigator(context, path: GoRoutes.windows),
+                horizontal5Percent(context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _backButton(),
+                        _windowDetails(),
+                        orderHistory()
+                      ],
+                    )),
+              ],
+            ),
+          )),
     );
   }
 
@@ -121,26 +118,26 @@ class _SelectedWindowScreenState
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         buildProfileImage(profileImageURL: imageURL),
-        montserratBlackBold(name, fontSize: 40),
-        montserratBlackBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
+        quicksandBlackBold(name, fontSize: 40),
+        quicksandBlackBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
         Gap(20),
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.3,
           child: Column(
             children: [
               Row(children: [
-                montserratBlackBold('Minimum Width: ${minWidth.toString()}ft',
+                quicksandBlackBold('Minimum Width: ${minWidth.toString()}ft',
                     fontSize: 16),
                 Gap(40),
-                montserratBlackBold('Minimum Length: ${minLength.toString()}ft',
+                quicksandBlackBold('Minimum Length: ${minLength.toString()}ft',
                     fontSize: 16),
               ]),
               Row(
                 children: [
-                  montserratBlackBold('Maximum Width: ${maxWidth.toString()}ft',
+                  quicksandBlackBold('Maximum Width: ${maxWidth.toString()}ft',
                       fontSize: 16),
                   Gap(40),
-                  montserratBlackBold(
+                  quicksandBlackBold(
                       'Maximum Length: ${maxLength.toString()}ft',
                       fontSize: 16)
                 ],
@@ -149,7 +146,7 @@ class _SelectedWindowScreenState
           ),
         ),
         Divider(color: CustomColors.deepNavyBlue),
-        montserratBlackBold(description)
+        quicksandBlackBold(description)
       ]),
     );
   }
@@ -165,7 +162,7 @@ class _SelectedWindowScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            montserratWhiteBold('ORDER HISTORY', fontSize: 36),
+            quicksandWhiteBold('ORDER HISTORY', fontSize: 36),
             orderDocs.isNotEmpty
                 ? ListView.builder(
                     shrinkWrap: true,
@@ -175,7 +172,7 @@ class _SelectedWindowScreenState
                       return _orderHistoryEntry(orderDocs[index]);
                     })
                 : all20Pix(
-                    child: montserratWhiteBold(
+                    child: quicksandWhiteBold(
                         'THIS WINDOW HAS NOT BEEN ORDERED YET.',
                         fontSize: 20)),
           ],
@@ -220,12 +217,11 @@ class _SelectedWindowScreenState
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  montserratWhiteBold('$firstName $lastName', fontSize: 26),
-                  montserratWhiteRegular('Glass Type: $glassType',
-                      fontSize: 18),
-                  montserratWhiteRegular('Color: $color', fontSize: 18),
-                  montserratWhiteRegular('Status: $status', fontSize: 18),
-                  montserratWhiteBold('PHP ${formatPrice(price)}'),
+                  quicksandWhiteBold('$firstName $lastName', fontSize: 26),
+                  quicksandWhiteRegular('Glass Type: $glassType', fontSize: 18),
+                  quicksandWhiteRegular('Color: $color', fontSize: 18),
+                  quicksandWhiteRegular('Status: $status', fontSize: 18),
+                  quicksandWhiteBold('PHP ${formatPrice(price)}'),
                 ],
               ),
             ],

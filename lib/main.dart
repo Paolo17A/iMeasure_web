@@ -19,6 +19,7 @@ class iMeasure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'iMeasure Admin Dashboard',
       theme: themeData,
       routerConfig: goRoutes,

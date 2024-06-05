@@ -1,21 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/string_util.dart';
+import 'package:imeasure/widgets/app_drawer_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
-import 'package:pie_chart/pie_chart.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
-import '../widgets/app_bar_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
-import '../widgets/left_navigator_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -26,7 +25,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   //  ADMIN
-  int usersCount = 0;
+  List<DocumentSnapshot> windowDocs = [];
+  /* int usersCount = 0;
   int windowsCount = 0;
   int ordersCount = 0;
   double totalSales = 0;
@@ -43,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     OrderStatuses.denied: 0,
     OrderStatuses.forPickUp: 0,
     OrderStatuses.pickedUp: 0
-  };
+  };*/
 
   //  LOG-IN
   final emailController = TextEditingController();
@@ -62,9 +62,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       try {
+        if (!hasLoggedInUser()) {
+          return;
+        }
         ref.read(loadingProvider.notifier).toggleLoading(true);
+        windowDocs = await getAllWindowDocs();
 
-        final users = await getAllClientDocs();
+        /*final users = await getAllClientDocs();
         usersCount = users.length;
         final windows = await getAllWindowDocs();
         windowsCount = windows.length;
@@ -109,7 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             paymentBreakdown[TransactionStatuses.denied] =
                 paymentBreakdown[TransactionStatuses.denied]! + 1;
           }
-        }
+        }*/
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -123,7 +127,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
-      appBar: appBarWidget(),
+      //appBar: appBarWidget(),
+      drawer: hasLoggedInUser()
+          ? appDrawer(context, currentPath: GoRoutes.home)
+          : null,
       body: stackedLoadingContainer(
           context,
           ref.read(loadingProvider).isLoading,
@@ -140,32 +147,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   //============================================================================
 
   Widget adminDashboard() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        leftNavigator(context, path: GoRoutes.home),
-        SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          child: switchedLoadingContainer(
-              ref.read(loadingProvider).isLoading,
-              SingleChildScrollView(
-                child: horizontal5Percent(context,
-                    child: Column(
-                      children: [
-                        _platformSummary(),
-                        _analyticsBreakdown(),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [_paymentStatuses(), _orderStatuses()])
-                      ],
-                    )),
-              )),
-        )
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          topNavigator(context, path: GoRoutes.home),
+          windowsSummary(),
+          /*horizontal5Percent(context,
+              child: Column(
+                children: [
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [_paymentStatuses(), _orderStatuses()])
+                ],
+              )),*/
+        ],
+      ),
     );
   }
 
-  Widget _platformSummary() {
+  /*Widget _platformSummary() {
     //String topRatedName = '';
     //String bestSellerName = '';
 
@@ -179,17 +179,82 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            montserratBlackBold(
+            quicksandBlackBold(
                 'OVERALL TOTAL WINDOW SALES: PHP ${formatPrice(totalSales)}',
                 fontSize: 30),
-            /*montserratWhiteBold(
+            /*quicksandWhiteBold(
                 'Best Selling Product: ${bestSellerName.isNotEmpty ? bestSellerName : 'N/A'}',
                 fontSize: 18)*/
           ])),
     );
+  }*/
+
+  Widget windowsSummary() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+          color: CustomColors.aquaMarine,
+          border: Border.symmetric(horizontal: BorderSide(width: 3))),
+      child: windowDocs.isNotEmpty
+          ? all20Pix(
+              child: Wrap(
+                spacing: 60,
+                runSpacing: 60,
+                children:
+                    windowDocs.map((window) => _windowEntry(window)).toList(),
+              ),
+            )
+          : Center(
+              child: quicksandBlackBold('NO WINDOWS AVAILABLE'),
+            ),
+    );
   }
 
-  Widget _analyticsBreakdown() {
+  Widget _windowEntry(DocumentSnapshot windowDoc) {
+    final windowData = windowDoc.data() as Map<dynamic, dynamic>;
+    String name = windowData[WindowFields.name];
+    String imageURL = windowData[WindowFields.imageURL];
+    return SizedBox(
+      width: 250,
+      child: Column(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              quicksandBlackBold('$name total sales: '),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  quicksandBlackBold('('),
+                  FutureBuilder(
+                    future: getAllWindowOrderDocs(windowDoc.id),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting ||
+                          !snapshot.hasData ||
+                          snapshot.hasError) return snapshotHandler(snapshot);
+                      final windowCount = snapshot.data!.length;
+                      return quicksandRedBold(windowCount.toString());
+                    },
+                  ),
+                  quicksandBlackBold(')'),
+                ],
+              ),
+            ],
+          ),
+          Gap(4),
+          Container(
+            width: 250,
+            height: 250,
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: NetworkImage(imageURL), fit: BoxFit.cover)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /*Widget _analyticsBreakdown() {
     return vertical20Pix(
       child: Container(
         width: MediaQuery.of(context).size.width * 0.8,
@@ -221,21 +286,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
-  }
+  }*/
 
-  Widget _paymentStatuses() {
+  /*Widget _paymentStatuses() {
     return breakdownContainer(context,
         child: Column(
           children: [
-            montserratBlackBold('TRANSACTION STATUSES'),
-            PieChart(
-                dataMap: paymentBreakdown,
-                colorList: [
-                  CustomColors.deepNavyBlue,
-                  CustomColors.emeraldGreen,
-                  CustomColors.azure
-                ],
-                chartValuesOptions: ChartValuesOptions(decimalPlaces: 0)),
+            quicksandBlackBold('TRANSACTION STATUSES'),
+            paymentBreakdown.isNotEmpty
+                ? PieChart(
+                    dataMap: paymentBreakdown,
+                    colorList: [
+                      CustomColors.deepNavyBlue,
+                      CustomColors.emeraldGreen,
+                      CustomColors.azure
+                    ],
+                    chartValuesOptions: ChartValuesOptions(decimalPlaces: 0))
+                : quicksandBlackBold('NO TRANSCATIONS YET')
           ],
         ));
   }
@@ -244,7 +311,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return breakdownContainer(context,
         child: Column(
           children: [
-            montserratBlackBold('ORDER STATUSES'),
+            quicksandBlackBold('ORDER STATUSES'),
             PieChart(
                 dataMap: orderBreakdown,
                 colorList: [
@@ -258,7 +325,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 chartValuesOptions: ChartValuesOptions(decimalPlaces: 0)),
           ],
         ));
-  }
+  }*/
 
   Widget _logInContainer() {
     return Container(

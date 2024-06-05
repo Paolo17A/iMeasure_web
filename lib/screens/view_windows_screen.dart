@@ -5,17 +5,17 @@ import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/loading_provider.dart';
 import 'package:imeasure/utils/go_router_util.dart';
 import 'package:imeasure/utils/string_util.dart';
-import 'package:imeasure/widgets/app_bar_widget.dart';
 import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
-import 'package:imeasure/widgets/left_navigator_widget.dart';
 
 import '../providers/windows_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/delete_entry_dialog_util.dart';
 import '../utils/firebase_util.dart';
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/text_widgets.dart';
+import '../widgets/top_navigator_widget.dart';
 
 class ViewWindowsScreen extends ConsumerStatefulWidget {
   const ViewWindowsScreen({super.key});
@@ -52,25 +52,25 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
     ref.watch(loadingProvider);
     ref.watch(windowsProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.windows),
+      drawer: appDrawer(context, currentPath: GoRoutes.windows),
+      body: stackedLoadingContainer(
+          context,
+          ref.read(loadingProvider).isLoading,
           SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: switchedLoadingContainer(
-                ref.read(loadingProvider).isLoading,
-                SingleChildScrollView(
-                  child: horizontal5Percent(context,
+            width: MediaQuery.of(context).size.width,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  topNavigator(context, path: GoRoutes.windows),
+                  horizontal5Percent(context,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [_addWindowButton(), _windowsContainer()],
                       )),
-                )),
-          )
-        ],
-      ),
+                ],
+              ),
+            ),
+          )),
     );
   }
 
@@ -78,52 +78,116 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        montserratBlackBold('WINDOWS', fontSize: 40),
-        ElevatedButton(
-            onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addWindow),
-            child: montserratBlackBold('ADD NEW WINDOW'))
+        quicksandBlackBold(
+            'AVAILABLE WINDOWS: ${ref.read(windowsProvider).windowDocs.length}',
+            fontSize: 40),
+        SizedBox(
+          height: 50,
+          child: ElevatedButton(
+              onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addWindow),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: CustomColors.emeraldGreen),
+              child: quicksandBlackBold('ADD NEW WINDOW')),
+        )
       ]),
     );
   }
 
   Widget _windowsContainer() {
-    return viewContentContainer(
-      context,
-      child: Column(
-        children: [
-          _windowLabelRow(),
-          ref.read(windowsProvider).windowDocs.isNotEmpty
-              ? _windowEntries()
-              : viewContentUnavailable(context, text: 'NO AVAILABLE WINDOWS'),
-        ],
-      ),
+    return Column(
+      children: [
+        //_windowLabelRow(),
+        ref.read(windowsProvider).windowDocs.isNotEmpty
+            ? _windowEntries()
+            : viewContentUnavailable(context, text: 'NO AVAILABLE WINDOWS'),
+      ],
     );
   }
 
-  Widget _windowLabelRow() {
-    return viewContentLabelRow(context, children: [
-      viewFlexLabelTextCell('Window Name', 4),
-      viewFlexLabelTextCell('Actions', 2)
-    ]);
-  }
-
   Widget _windowEntries() {
-    return SizedBox(
-        height: MediaQuery.of(context).size.height * 0.65,
-        child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: ref.read(windowsProvider).windowDocs.length,
-            itemBuilder: (context, index) {
-              return _windowEntry(
-                  ref.read(windowsProvider).windowDocs[index], index);
-            }));
+    return Wrap(
+        alignment: WrapAlignment.start,
+        spacing: 60,
+        runSpacing: 60,
+        children: ref
+            .read(windowsProvider)
+            .windowDocs
+            .map((window) => _windowEntry(window))
+            .toList());
   }
 
-  Widget _windowEntry(DocumentSnapshot windowDoc, int index) {
+  Widget _windowEntry(DocumentSnapshot windowDoc) {
     final windowData = windowDoc.data() as Map<dynamic, dynamic>;
     String name = windowData[WindowFields.name];
     bool isAvailable = windowData[WindowFields.isAvailable];
-    Color entryColor = Colors.black;
+    String imageURL = windowData[WindowFields.imageURL];
+
+    return SizedBox(
+      width: 200,
+      child: Column(
+        children: [
+          Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: NetworkImage(imageURL), fit: BoxFit.cover)),
+          ),
+          quicksandBlackBold(name),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            if (isAvailable)
+              Container(
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color.fromARGB(255, 172, 125, 122)),
+                child: all4Pix(
+                  child: deleteEntryButton(context,
+                      iconColor: CustomColors.lavenderMist,
+                      onPress: () => displayDeleteEntryDialog(context,
+                          message:
+                              'Are you sure you wish to archive this window? ',
+                          deleteWord: 'Archive',
+                          deleteEntry: () => toggleWindowAvailability(
+                              context, ref,
+                              windowID: windowDoc.id,
+                              isAvailable: isAvailable))),
+                ),
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle, color: CustomColors.emeraldGreen),
+                child: all4Pix(
+                  child: restoreEntryButton(context,
+                      onPress: () => toggleWindowAvailability(context, ref,
+                          windowID: windowDoc.id, isAvailable: isAvailable)),
+                ),
+              ),
+            Container(
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle, color: CustomColors.azure),
+              child: all4Pix(
+                child: editEntryButton(context,
+                    iconColor: CustomColors.lavenderMist,
+                    onPress: () => GoRouter.of(context)
+                            .goNamed(GoRoutes.editWindow, pathParameters: {
+                          PathParameters.windowID: windowDoc.id
+                        })),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle, border: Border.all(width: 2)),
+              child: viewEntryButton(context,
+                  onPress: () => GoRouter.of(context).goNamed(
+                      GoRoutes.selectedWindow,
+                      pathParameters: {PathParameters.windowID: windowDoc.id})),
+            )
+          ])
+        ],
+      ),
+    );
+    /*Color entryColor = Colors.black;
     Color backgroundColor = CustomColors.lavenderMist;
     return viewContentEntryRow(context, children: [
       viewFlexTextCell(name,
@@ -153,6 +217,6 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
           flex: 2,
           backgroundColor: backgroundColor,
           customBorder: Border.symmetric(horizontal: BorderSide()))
-    ]);
+    ]);*/
   }
 }

@@ -13,7 +13,7 @@ Widget submitButton(BuildContext context,
       padding: const EdgeInsets.all(20),
       child: ElevatedButton(
         onPressed: () => onPress(),
-        child: montserratBlackBold(label),
+        child: quicksandBlackBold(label),
       ));
 }
 
@@ -23,39 +23,42 @@ Widget backButton(BuildContext context, {required Function onPress}) {
       style: ElevatedButton.styleFrom(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-      child: montserratBlackBold('BACK'));
+      child: quicksandBlackBold('BACK'));
 }
 
 Widget viewEntryButton(BuildContext context, {required Function onPress}) {
-  return ElevatedButton(
+  return TextButton(
       onPressed: () {
         onPress();
       },
-      child: const Icon(Icons.visibility, color: CustomColors.deepNavyBlue));
+      child: const Icon(Icons.visibility_outlined,
+          color: CustomColors.deepNavyBlue));
 }
 
-Widget editEntryButton(BuildContext context, {required Function onPress}) {
-  return ElevatedButton(
+Widget editEntryButton(BuildContext context,
+    {required Function onPress, Color iconColor = CustomColors.deepNavyBlue}) {
+  return TextButton(
       onPressed: () {
         onPress();
       },
-      child: const Icon(Icons.edit, color: CustomColors.deepNavyBlue));
+      child: Icon(Icons.edit_outlined, color: iconColor));
 }
 
 Widget restoreEntryButton(BuildContext context, {required Function onPress}) {
-  return ElevatedButton(
+  return TextButton(
       onPressed: () {
         onPress();
       },
       child: const Icon(Icons.restore, color: CustomColors.deepNavyBlue));
 }
 
-Widget deleteEntryButton(BuildContext context, {required Function onPress}) {
-  return ElevatedButton(
+Widget deleteEntryButton(BuildContext context,
+    {required Function onPress, Color iconColor = CustomColors.deepNavyBlue}) {
+  return TextButton(
       onPressed: () {
         onPress();
       },
-      child: const Icon(Icons.delete, color: CustomColors.deepNavyBlue));
+      child: Icon(Icons.delete_outline_outlined, color: iconColor));
 }
 
 Widget uploadImageButton(String label, Function selectImage) {
@@ -65,7 +68,7 @@ Widget uploadImageButton(String label, Function selectImage) {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
       child: Padding(
-          padding: const EdgeInsets.all(7), child: montserratBlackBold(label)));
+          padding: const EdgeInsets.all(7), child: quicksandBlackBold(label)));
 }
 
 Widget navigatorButtons(BuildContext context,
@@ -120,5 +123,5 @@ Widget logOutButton(BuildContext context) {
             });
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-          child: montserratWhiteBold('LOG-OUT')));
+          child: quicksandWhiteBold('LOG-OUT')));
 }

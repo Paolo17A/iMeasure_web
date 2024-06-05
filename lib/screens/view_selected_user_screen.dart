@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_bar_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
-import '../widgets/left_navigator_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class ViewSelectedUserScreen extends ConsumerStatefulWidget {
@@ -64,27 +64,24 @@ class _ViewSelectedUserScreenState
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.users),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: switchedLoadingContainer(
-                ref.read(loadingProvider).isLoading,
-                SingleChildScrollView(
-                  child: horizontal5Percent(
-                    context,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [_backButton(), _userDetails(), orderHistory()],
-                    ),
+      drawer: appDrawer(context, currentPath: GoRoutes.users),
+      body: stackedLoadingContainer(
+          context,
+          ref.read(loadingProvider).isLoading,
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                topNavigator(context, path: GoRoutes.users),
+                horizontal5Percent(
+                  context,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [_backButton(), _userDetails(), orderHistory()],
                   ),
-                )),
-          )
-        ],
-      ),
+                ),
+              ],
+            ),
+          )),
     );
   }
 
@@ -99,11 +96,13 @@ class _ViewSelectedUserScreenState
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(20)),
+          border: Border.all(color: CustomColors.deepNavyBlue, width: 4),
+          color: CustomColors.lavenderMist,
+          borderRadius: BorderRadius.circular(20)),
       padding: const EdgeInsets.all(20),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      child: Column(children: [
         buildProfileImage(profileImageURL: profileImageURL),
-        montserratBlackBold(formattedName, fontSize: 40),
+        quicksandBlackBold(formattedName, fontSize: 40),
       ]),
     );
   }
@@ -119,7 +118,7 @@ class _ViewSelectedUserScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            montserratWhiteBold('ORDER HISTORY', fontSize: 36),
+            quicksandWhiteBold('ORDER HISTORY', fontSize: 36),
             orderEntries()
           ],
         ),
@@ -137,7 +136,7 @@ class _ViewSelectedUserScreenState
               return _orderHistoryEntry(orderDocs[index]);
             })
         : all20Pix(
-            child: montserratWhiteBold('THIS USER HAS NO ORDER HISTORY YET',
+            child: quicksandWhiteBold('THIS USER HAS NO ORDER HISTORY YET',
                 fontSize: 20));
   }
 
@@ -163,7 +162,7 @@ class _ViewSelectedUserScreenState
             child: Container(
           decoration: BoxDecoration(
               color: CustomColors.deepNavyBlue,
-              border: Border.all(color: CustomColors.azure)),
+              border: Border.all(color: CustomColors.lavenderMist)),
           padding: EdgeInsets.all(10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,12 +172,11 @@ class _ViewSelectedUserScreenState
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  montserratWhiteBold(name, fontSize: 26),
-                  montserratWhiteRegular('Glass Type: $glassType',
-                      fontSize: 18),
-                  montserratWhiteRegular('Color: $color', fontSize: 18),
-                  montserratWhiteRegular('Status: $status', fontSize: 18),
-                  montserratWhiteBold('PHP ${formatPrice(price)}'),
+                  quicksandWhiteBold(name, fontSize: 26),
+                  quicksandWhiteRegular('Glass Type: $glassType', fontSize: 18),
+                  quicksandWhiteRegular('Color: $color', fontSize: 18),
+                  quicksandWhiteRegular('Status: $status', fontSize: 18),
+                  quicksandWhiteBold('PHP ${formatPrice(price)}'),
                 ],
               ),
             ],

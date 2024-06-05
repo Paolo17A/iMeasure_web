@@ -57,6 +57,8 @@ Future logInUser(BuildContext context, WidgetRef ref,
           .update({UserFields.password: passwordController.text});
     }
     ref.read(loadingProvider.notifier).toggleLoading(false);
+    GoRouter.of(context).goNamed(GoRoutes.home);
+    GoRouter.of(context).pushReplacementNamed(GoRoutes.home);
   } catch (error) {
     scaffoldMessenger
         .showSnackBar(SnackBar(content: Text('Error logging in: $error')));

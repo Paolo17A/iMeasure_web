@@ -8,6 +8,10 @@ Padding all10Pix({required Widget child}) {
   return Padding(padding: const EdgeInsets.all(10), child: child);
 }
 
+Padding all4Pix({required Widget child}) {
+  return Padding(padding: const EdgeInsets.all(4), child: child);
+}
+
 Padding vertical10Pix({required Widget child}) {
   return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10), child: child);

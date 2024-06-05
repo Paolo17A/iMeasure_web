@@ -4,16 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/firebase_util.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/delete_entry_dialog_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_bar_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
-import '../widgets/left_navigator_widget.dart';
 
 class ViewFAQsScreen extends ConsumerStatefulWidget {
   const ViewFAQsScreen({super.key});
@@ -59,24 +59,21 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.viewFAQs),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: switchedLoadingContainer(
-              ref.read(loadingProvider).isLoading,
-              SingleChildScrollView(
-                child: horizontal5Percent(context,
-                    child: Column(
-                      children: [_addFAQButton(), _faqContainer()],
-                    )),
-              ),
-            ),
-          )
-        ],
+      drawer: appDrawer(context, currentPath: GoRoutes.viewFAQs),
+      body: stackedLoadingContainer(
+        context,
+        ref.read(loadingProvider).isLoading,
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              topNavigator(context, path: GoRoutes.viewFAQs),
+              horizontal5Percent(context,
+                  child: Column(
+                    children: [_addFAQButton(), _faqContainer()],
+                  )),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -85,10 +82,10 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        montserratBlackBold('FREQUENTLY ASKED QUESTIONS', fontSize: 40),
+        quicksandBlackBold('FREQUENTLY ASKED QUESTIONS', fontSize: 40),
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addFAQ),
-            child: montserratBlackBold('ADD FAQ'))
+            child: quicksandBlackBold('ADD FAQ'))
       ]),
     );
   }

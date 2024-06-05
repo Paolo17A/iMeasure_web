@@ -5,18 +5,18 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../models/window_models.dart';
 import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_bar_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
-import '../widgets/left_navigator_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class AddWindowScreen extends ConsumerStatefulWidget {
@@ -87,46 +87,43 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     ref.watch(loadingProvider);
     ref.watch(uploadedImageProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.windows),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: switchedLoadingContainer(
-              ref.read(loadingProvider).isLoading,
-              SingleChildScrollView(
-                child: horizontal5Percent(context,
-                    child: Column(children: [
-                      _backButton(),
-                      _newWindowHeaderWidget(),
-                      _windowNameWidget(),
-                      _windowDescriptionWidget(),
-                      Gap(20),
-                      Divider(color: CustomColors.deepNavyBlue),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Wrap(
-                            alignment: WrapAlignment.spaceBetween,
-                            children: [
-                              _minHeightWidget(),
-                              _maxHeightWidget(),
-                              _minWidthWidget(),
-                              _maxWidthWidget(),
-                            ]),
-                      ),
-                      Gap(20),
-                      Divider(color: CustomColors.deepNavyBlue),
-                      _windowFields(),
-                      _accessoryFields(),
-                      _productImagesWidget(),
-                      _submitButtonWidget()
-                    ])),
-              ),
-            ),
-          )
-        ],
+      drawer: appDrawer(context, currentPath: GoRoutes.windows),
+      body: stackedLoadingContainer(
+        context,
+        ref.read(loadingProvider).isLoading,
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              topNavigator(context, path: GoRoutes.windows),
+              horizontal5Percent(context,
+                  child: Column(children: [
+                    _backButton(),
+                    _newWindowHeaderWidget(),
+                    _windowNameWidget(),
+                    _windowDescriptionWidget(),
+                    Gap(20),
+                    Divider(color: CustomColors.deepNavyBlue),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          children: [
+                            _minHeightWidget(),
+                            _maxHeightWidget(),
+                            _minWidthWidget(),
+                            _maxWidthWidget(),
+                          ]),
+                    ),
+                    Gap(20),
+                    Divider(color: CustomColors.deepNavyBlue),
+                    _windowFields(),
+                    _accessoryFields(),
+                    _productImagesWidget(),
+                    _submitButtonWidget()
+                  ])),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -136,13 +133,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
       child: Row(children: [
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.windows),
-            child: montserratBlackBold('BACK'))
+            child: quicksandBlackBold('BACK'))
       ]),
     );
   }
 
   Widget _newWindowHeaderWidget() {
-    return montserratBlackBold(
+    return quicksandBlackBold(
       'NEW WINDOW',
       textAlign: TextAlign.center,
       fontSize: 38,
@@ -151,7 +148,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _windowNameWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      vertical10Pix(child: montserratBlackBold('Window Name', fontSize: 24)),
+      vertical10Pix(child: quicksandBlackBold('Window Name', fontSize: 24)),
       CustomTextField(
           text: 'Window Name',
           controller: nameController,
@@ -164,7 +161,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   Widget _windowDescriptionWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       vertical10Pix(
-          child: montserratBlackBold('Window Description', fontSize: 24)),
+          child: quicksandBlackBold('Window Description', fontSize: 24)),
       CustomTextField(
           text: 'Window Description',
           controller: descriptionController,
@@ -175,13 +172,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _minHeightWidget() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.3,
+      width: MediaQuery.of(context).size.width * 0.4,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
-              child: montserratBlackBold('Minimum Height (in feet)',
-                  fontSize: 24)),
+              child:
+                  quicksandBlackBold('Minimum Height (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Minimum Height',
               controller: minHeightController,
@@ -194,13 +191,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _maxHeightWidget() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.3,
+      width: MediaQuery.of(context).size.width * 0.4,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
-              child: montserratBlackBold('Maximum Height (in feet)',
-                  fontSize: 24)),
+              child:
+                  quicksandBlackBold('Maximum Height (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Maximum Height',
               controller: maxHeightController,
@@ -213,13 +210,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _minWidthWidget() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.3,
+      width: MediaQuery.of(context).size.width * 0.4,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
               child:
-                  montserratBlackBold('Minimum Width (in feet)', fontSize: 24)),
+                  quicksandBlackBold('Minimum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Minimum Width',
               controller: minWidthController,
@@ -232,13 +229,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _maxWidthWidget() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.3,
+      width: MediaQuery.of(context).size.width * 0.4,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
               child:
-                  montserratBlackBold('Maximum Width (in feet)', fontSize: 24)),
+                  quicksandBlackBold('Maximum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Maximum Width',
               controller: maxWidthController,
@@ -280,7 +277,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              montserratBlackBold('WINDOW FIELDS', fontSize: 24),
+              quicksandBlackBold('WINDOW FIELDS', fontSize: 24),
             ],
           ),
           ListView.builder(
@@ -326,7 +323,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   windowFieldModels.add(WindowFieldModel());
                 });
               },
-              child: montserratBlackBold('ADD WINDOW FIELD', fontSize: 15))
+              child: quicksandBlackBold('ADD WINDOW FIELD', fontSize: 15))
         ],
       ),
     );
@@ -339,7 +336,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              montserratBlackBold('ACCESSORY FIELDS', fontSize: 24),
+              quicksandBlackBold('ACCESSORY FIELDS', fontSize: 24),
             ],
           ),
           if (windowAccessoryModels.isNotEmpty)
@@ -364,7 +361,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   windowAccessoryModels.add(WindowAccessoryModel());
                 });
               },
-              child: montserratBlackBold('ADD ACCESSORY FIELD', fontSize: 15))
+              child: quicksandBlackBold('ADD ACCESSORY FIELD', fontSize: 15))
         ],
       ),
     );
@@ -385,7 +382,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
             windowAccesoryModels: windowAccessoryModels),
         child: Padding(
           padding: const EdgeInsets.all(9),
-          child: montserratBlackBold('SUBMIT'),
+          child: quicksandBlackBold('SUBMIT'),
         ),
       ),
     );

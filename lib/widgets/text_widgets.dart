@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:imeasure/utils/color_util.dart';
 
-Text montserratWhiteBold(String label,
+Text quicksandWhiteBold(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
     TextOverflow? textOverflow}) {
@@ -15,7 +15,7 @@ Text montserratWhiteBold(String label,
           textStyle: TextStyle(overflow: textOverflow)));
 }
 
-Text montserratBlackRegular(String label,
+Text quicksandBlackRegular(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
     TextOverflow? textOverflow}) {
@@ -29,7 +29,7 @@ Text montserratBlackRegular(String label,
   );
 }
 
-Text montserratWhiteRegular(String label,
+Text quicksandWhiteRegular(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
     TextOverflow? textOverflow}) {
@@ -41,7 +41,7 @@ Text montserratWhiteRegular(String label,
           textStyle: TextStyle(overflow: textOverflow)));
 }
 
-Text montserratBlackBold(String label,
+Text quicksandBlackBold(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
     TextDecoration? textDecoration,
@@ -52,6 +52,23 @@ Text montserratBlackBold(String label,
     style: GoogleFonts.quicksand(
         fontSize: fontSize,
         color: Colors.black,
+        fontWeight: FontWeight.bold,
+        decoration: textDecoration,
+        textStyle: TextStyle(overflow: textOverflow)),
+  );
+}
+
+Text quicksandRedBold(String label,
+    {double fontSize = 20,
+    TextAlign textAlign = TextAlign.center,
+    TextDecoration? textDecoration,
+    TextOverflow? textOverflow}) {
+  return Text(
+    label,
+    textAlign: textAlign,
+    style: GoogleFonts.quicksand(
+        fontSize: fontSize,
+        color: Colors.red,
         fontWeight: FontWeight.bold,
         decoration: textDecoration,
         textStyle: TextStyle(overflow: textOverflow)),

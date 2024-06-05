@@ -13,4 +13,5 @@ class CustomColors {
   static const Color emeraldGreen = Color.fromARGB(255, 0, 191, 99);
   static const Color lavenderMist = Color.fromARGB(255, 240, 238, 246);
   static const Color azure = Color.fromARGB(255, 56, 182, 255);
+  static const Color aquaMarine = Color.fromARGB(255, 149, 209, 165);
 }

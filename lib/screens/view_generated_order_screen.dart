@@ -8,15 +8,15 @@ import 'package:imeasure/providers/loading_provider.dart';
 import 'package:imeasure/utils/firebase_util.dart';
 import 'package:imeasure/utils/go_router_util.dart';
 import 'package:imeasure/utils/string_util.dart';
-import 'package:imeasure/widgets/app_bar_widget.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
-import '../widgets/left_navigator_widget.dart';
 
 class ViewGeneratedOrderScreen extends ConsumerStatefulWidget {
   final String orderID;
@@ -89,29 +89,27 @@ class _ViewGeneratedOrderScreenState
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.orders),
-          SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: switchedLoadingContainer(
-                  ref.read(loadingProvider).isLoading,
-                  SingleChildScrollView(
-                    child: horizontal5Percent(context,
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _backButton(),
-                              _selectedDetails(),
-                              _mandatoryBreakdownWidget(),
-                              _orderLaborCost(),
-                              setLaborPriceButton()
-                            ])),
-                  )))
-        ],
-      ),
+      drawer: appDrawer(context, currentPath: GoRoutes.orders),
+      body: stackedLoadingContainer(
+          context,
+          ref.read(loadingProvider).isLoading,
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                topNavigator(context, path: GoRoutes.orders),
+                horizontal5Percent(context,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _backButton(),
+                          _selectedDetails(),
+                          _mandatoryBreakdownWidget(),
+                          _orderLaborCost(),
+                          setLaborPriceButton()
+                        ])),
+              ],
+            ),
+          )),
     );
   }
 
@@ -126,14 +124,14 @@ class _ViewGeneratedOrderScreenState
     return all10Pix(
       child: Row(children: [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          montserratBlackBold('Inputted Window Details'),
-          montserratBlackRegular('Window: $windowName'),
-          montserratBlackRegular('Width: ${width.toStringAsFixed(1)} ft',
+          quicksandBlackBold('Inputted Window Details'),
+          quicksandBlackRegular('Window: $windowName'),
+          quicksandBlackRegular('Width: ${width.toStringAsFixed(1)} ft',
               fontSize: 14),
-          montserratBlackRegular('Height: ${height.toStringAsFixed(1)} ft',
+          quicksandBlackRegular('Height: ${height.toStringAsFixed(1)} ft',
               fontSize: 14),
-          montserratBlackRegular('Glass Type: $glassType', fontSize: 14),
-          montserratBlackRegular('Color: $color', fontSize: 14),
+          quicksandBlackRegular('Glass Type: $glassType', fontSize: 14),
+          quicksandBlackRegular('Color: $color', fontSize: 14),
           Gap(10),
         ]),
       ]),
@@ -146,7 +144,7 @@ class _ViewGeneratedOrderScreenState
         decoration: BoxDecoration(border: Border.all()),
         padding: EdgeInsets.all(5),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          montserratBlackBold('Window Cost Breakdown'),
+          quicksandBlackBold('Window Cost Breakdown'),
           Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: mandatoryMap
@@ -161,7 +159,7 @@ class _ViewGeneratedOrderScreenState
                   .map((mapEntry) => orderBreakdownWidget(mapEntry))
                   .toList()),
           Divider(),
-          montserratBlackBold(
+          quicksandBlackBold(
               'Window Overall Price: PHP ${formatPrice(windowOverallPrice.toDouble())}',
               fontSize: 16)
         ]),
@@ -173,10 +171,9 @@ class _ViewGeneratedOrderScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        montserratBlackRegular(
-            '${orderBreakdownMap[OrderBreakdownMap.field]}: ',
+        quicksandBlackRegular('${orderBreakdownMap[OrderBreakdownMap.field]}: ',
             fontSize: 14),
-        montserratBlackRegular(
+        quicksandBlackRegular(
             ' PHP ${formatPrice(orderBreakdownMap[OrderBreakdownMap.breakdownPrice].toDouble())}',
             fontSize: 14),
       ],
@@ -201,7 +198,7 @@ class _ViewGeneratedOrderScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          montserratBlackBold('Labor Cost'),
+          quicksandBlackBold('Labor Cost'),
           CustomTextField(
               text: 'Labor Cost',
               controller: laborPriceController,
@@ -218,7 +215,7 @@ class _ViewGeneratedOrderScreenState
         children: [
           ElevatedButton(
               onPressed: () async => createPDF(),
-              child: montserratBlackBold('SET LABOR COST')),
+              child: quicksandBlackBold('SET LABOR COST')),
         ],
       ),
     );

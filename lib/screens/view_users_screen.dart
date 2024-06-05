@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../providers/users_provider.dart';
@@ -9,11 +10,10 @@ import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_bar_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
-import '../widgets/left_navigator_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class ViewUsersScreen extends ConsumerStatefulWidget {
@@ -52,39 +52,40 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
     ref.watch(loadingProvider);
     ref.watch(usersProvider);
     return Scaffold(
-      appBar: appBarWidget(),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          leftNavigator(context, path: GoRoutes.users),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: switchedLoadingContainer(
-                ref.read(loadingProvider).isLoading,
-                SingleChildScrollView(
-                  child: horizontal5Percent(context,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          vertical20Pix(
-                              child: montserratBlackBold(
-                                  'REGISTERED USER ACCOUNTS',
-                                  fontSize: 40)),
-                          viewContentContainer(context,
-                              child: Column(
-                                children: [
-                                  _usersLabelRow(),
-                                  ref.read(usersProvider).userDocs.isNotEmpty
-                                      ? _userEntries()
-                                      : viewContentUnavailable(context,
-                                          text: 'NO AVAILABLE RENTERS'),
-                                ],
-                              )),
-                        ],
-                      )),
-                )),
-          )
-        ],
+      drawer: appDrawer(context, currentPath: GoRoutes.users),
+      body: stackedLoadingContainer(
+        context,
+        ref.read(loadingProvider).isLoading,
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: SingleChildScrollView(
+              child: Column(
+            children: [
+              topNavigator(context, path: GoRoutes.users),
+              horizontal5Percent(
+                context,
+                child: Column(
+                  children: [
+                    Row(children: [
+                      vertical20Pix(
+                          child: quicksandBlackBold('USERS', fontSize: 40))
+                    ]),
+                    viewContentContainer(context,
+                        child: Column(
+                          children: [
+                            _usersLabelRow(),
+                            ref.read(usersProvider).userDocs.isNotEmpty
+                                ? _userEntries()
+                                : viewContentUnavailable(context,
+                                    text: 'NO AVAILABLE RENTERS'),
+                          ],
+                        )),
+                  ],
+                ),
+              ),
+            ],
+          )),
+        ),
       ),
     );
   }

@@ -6,5 +6,5 @@ PreferredSizeWidget appBarWidget({bool hasLeading = false, String label = ''}) {
       toolbarHeight: 60,
       automaticallyImplyLeading: hasLeading,
       iconTheme: const IconThemeData(color: Colors.white),
-      title: montserratBlackBold(label, fontSize: 36));
+      title: quicksandBlackBold(label, fontSize: 36));
 }

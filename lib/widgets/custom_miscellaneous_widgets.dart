@@ -39,7 +39,7 @@ Widget roundedSlateBlueContainer(BuildContext context,
 
 Container viewContentContainer(BuildContext context, {required Widget child}) {
   return Container(
-      width: MediaQuery.of(context).size.width * 0.7,
+      width: MediaQuery.of(context).size.width * 0.9,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.black),
@@ -50,14 +50,14 @@ Container viewContentContainer(BuildContext context, {required Widget child}) {
 Widget viewContentLabelRow(BuildContext context,
     {required List<Widget> children}) {
   return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.7,
+      width: MediaQuery.of(context).size.width * 0.9,
       child: Row(children: children));
 }
 
 Widget viewContentEntryRow(BuildContext context,
     {required List<Widget> children}) {
   return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.7,
+      width: MediaQuery.of(context).size.width * 0.9,
       height: 50,
       child: Row(children: children));
 }
@@ -91,9 +91,7 @@ Widget viewFlexTextCell(String text,
 
 Widget viewFlexLabelTextCell(String text, int flex) {
   return viewFlexTextCell(text,
-      flex: flex,
-      backgroundColor: CustomColors.lavenderMist,
-      textColor: Colors.black);
+      flex: flex, backgroundColor: CustomColors.azure, textColor: Colors.black);
 }
 
 Widget viewFlexActionsCell(List<Widget> children,
@@ -122,7 +120,7 @@ Widget viewFlexActionsCell(List<Widget> children,
 Widget viewContentUnavailable(BuildContext context, {required String text}) {
   return SizedBox(
     height: MediaQuery.of(context).size.height * 0.65,
-    child: Center(child: montserratBlackBold(text, fontSize: 44)),
+    child: Center(child: quicksandBlackBold(text, fontSize: 44)),
   );
 }
 
@@ -145,7 +143,7 @@ Widget analyticReportWidget(BuildContext context,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                montserratBlackBold(count, fontSize: 40),
+                quicksandBlackBold(count, fontSize: 40),
                 SizedBox(
                   //width: MediaQuery.of(context).size.width * 0.07,
                   height: 45,
@@ -156,7 +154,7 @@ Widget analyticReportWidget(BuildContext context,
                       borderRadius: BorderRadius.circular(10),
                     )),
                     child: Center(
-                      child: montserratBlackBold(demographic, fontSize: 12),
+                      child: quicksandBlackBold(demographic, fontSize: 12),
                     ),
                   ),
                 )
@@ -275,7 +273,7 @@ Widget windowParameterWidget(BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    montserratBlackBold('Field Name'),
+                    quicksandBlackBold('Field Name'),
                     CustomTextField(
                         text: 'Field Name',
                         controller: nameController,
@@ -289,7 +287,7 @@ Widget windowParameterWidget(BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    montserratBlackBold('Is Mandatory Field'),
+                    quicksandBlackBold('Is Mandatory Field'),
                     Checkbox(value: isMandatory, onChanged: onCheckboxPress),
                   ],
                 ),
@@ -301,7 +299,7 @@ Widget windowParameterWidget(BuildContext context,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                montserratBlackBold('Price Basis'),
+                quicksandBlackBold('Price Basis'),
                 dropdownWidget(priceBasis, onPriceBasisChange,
                     ['WIDTH', 'HEIGHT'], priceBasis, false),
               ],
@@ -315,7 +313,7 @@ Widget windowParameterWidget(BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    montserratBlackBold('Brown Price'),
+                    quicksandBlackBold('Brown Price'),
                     CustomTextField(
                         text: 'Brown Price',
                         controller: brownPriceController,
@@ -328,7 +326,7 @@ Widget windowParameterWidget(BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    montserratBlackBold('White Price'),
+                    quicksandBlackBold('White Price'),
                     CustomTextField(
                         text: 'White Price',
                         controller: whitePriceController,
@@ -347,7 +345,7 @@ Widget windowParameterWidget(BuildContext context,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      montserratBlackBold('Matt Black Price'),
+                      quicksandBlackBold('Matt Black Price'),
                       CustomTextField(
                           text: 'Matt Black Price',
                           controller: mattBlackController,
@@ -360,7 +358,7 @@ Widget windowParameterWidget(BuildContext context,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      montserratBlackBold('Matt Gray Price'),
+                      quicksandBlackBold('Matt Gray Price'),
                       CustomTextField(
                           text: 'Matt Gray Price',
                           controller: mattGrayController,
@@ -380,7 +378,7 @@ Widget windowParameterWidget(BuildContext context,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      montserratBlackBold('Wood Finish Price'),
+                      quicksandBlackBold('Wood Finish Price'),
                       CustomTextField(
                           text: 'Wood Finish Price',
                           controller: woodFinishController,
@@ -394,7 +392,7 @@ Widget windowParameterWidget(BuildContext context,
           vertical20Pix(
             child: ElevatedButton(
                 onPressed: () => onRemoveField(),
-                child: montserratBlackBold('REMOVE SUBFIELD', fontSize: 12)),
+                child: quicksandBlackBold('REMOVE SUBFIELD', fontSize: 12)),
           )
         ],
       ),
@@ -421,7 +419,7 @@ Widget windowAccessoryWidget(BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    montserratBlackBold('Accessory Name'),
+                    quicksandBlackBold('Accessory Name'),
                     CustomTextField(
                         text: 'Accessory Name',
                         controller: nameController,
@@ -434,7 +432,7 @@ Widget windowAccessoryWidget(BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    montserratBlackBold('Accessory Price'),
+                    quicksandBlackBold('Accessory Price'),
                     CustomTextField(
                         text: 'Accessory Price',
                         controller: priceController,
@@ -447,7 +445,7 @@ Widget windowAccessoryWidget(BuildContext context,
           vertical20Pix(
             child: ElevatedButton(
                 onPressed: () => onRemoveField(),
-                child: montserratBlackBold('REMOVE ACCESSORY', fontSize: 12)),
+                child: quicksandBlackBold('REMOVE ACCESSORY', fontSize: 12)),
           )
         ],
       ),
