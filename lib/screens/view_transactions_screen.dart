@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/transactions_provider.dart';
+import 'package:imeasure/utils/url_util.dart';
 import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
@@ -13,7 +14,6 @@ import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
 import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
-import '../widgets/custom_padding_widgets.dart';
 import '../widgets/text_widgets.dart';
 
 class ViewTransactionsScreen extends ConsumerStatefulWidget {
@@ -57,23 +57,14 @@ class _ViewTransactionsScreenState
     ref.watch(transactionsProvider);
     return Scaffold(
       drawer: appDrawer(context, currentPath: GoRoutes.transactions),
-      body: stackedLoadingContainer(
-          context,
+      backgroundColor: Colors.white,
+      body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           SingleChildScrollView(
             child: Column(
               children: [
                 topNavigator(context, path: GoRoutes.transactions),
-                horizontal5Percent(context,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        vertical20Pix(
-                            child: quicksandBlackBold('TRANSACTIONS',
-                                fontSize: 40)),
-                        _ordersContainer(),
-                      ],
-                    )),
+                _ordersContainer()
               ],
             ),
           )),
@@ -96,12 +87,17 @@ class _ViewTransactionsScreenState
   }
 
   Widget _transactionsLabelRow() {
-    return viewContentLabelRow(context, children: [
-      viewFlexLabelTextCell('Buyer', 3),
-      viewFlexLabelTextCell('Amount Paid', 2),
-      viewFlexLabelTextCell('Payment', 2),
-      viewFlexLabelTextCell('Actions', 2)
-    ]);
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+      child: viewContentLabelRow(context, children: [
+        viewFlexLabelTextCell('Buyer', 3),
+        viewFlexLabelTextCell('Amount Paid', 2),
+        viewFlexLabelTextCell('Payment', 2),
+        viewFlexLabelTextCell('Actions', 2)
+      ]),
+    );
   }
 
   Widget _transactionEntries() {
@@ -117,7 +113,7 @@ class _ViewTransactionsScreenState
                 .data() as Map<dynamic, dynamic>;
             String clientID = paymentData[TransactionFields.clientID];
             num totalAmount = paymentData[TransactionFields.paidAmount];
-            String paymentMethod = paymentData[TransactionFields.paymentMethod];
+            //String paymentMethod = paymentData[TransactionFields.paymentMethod];
             String proofOfPayment =
                 paymentData[TransactionFields.proofOfPayment];
 
@@ -151,11 +147,13 @@ class _ViewTransactionsScreenState
                           customBorder:
                               Border.symmetric(horizontal: BorderSide())),
                       viewFlexActionsCell([
-                        ElevatedButton(
-                            onPressed: () => showProofOfPaymentDialog(
-                                paymentMethod: paymentMethod,
-                                proofOfPayment: proofOfPayment),
-                            child: quicksandBlackBold('VIEW'))
+                        Container(
+                          decoration: BoxDecoration(border: Border.all()),
+                          child: TextButton(
+                              onPressed: () =>
+                                  launchThisURL(context, proofOfPayment),
+                              child: quicksandBlackBold('DOWNLOAD')),
+                        )
                       ],
                           flex: 2,
                           backgroundColor: backgroundColor,
@@ -165,7 +163,7 @@ class _ViewTransactionsScreenState
                         if (paymentData[TransactionFields.paymentVerified])
                           quicksandBlackBold('VERIFIED'),
                         if (!paymentData[TransactionFields.paymentVerified])
-                          ElevatedButton(
+                          TextButton(
                               onPressed: () => approveThisPayment(context, ref,
                                   paymentID: ref
                                       .read(transactionsProvider)
@@ -174,7 +172,7 @@ class _ViewTransactionsScreenState
                               child: Icon(Icons.check,
                                   color: CustomColors.deepNavyBlue)),
                         if (!paymentData[TransactionFields.paymentVerified])
-                          ElevatedButton(
+                          TextButton(
                               onPressed: () => displayDeleteEntryDialog(context,
                                   message:
                                       'Are you sure you want to deny this payment?',
@@ -204,34 +202,30 @@ class _ViewTransactionsScreenState
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30)),
-              content: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.45,
-                height: MediaQuery.of(context).size.height * 0.7,
-                child: Column(
-                  children: [
-                    quicksandBlackBold('Payment Method: $paymentMethod',
-                        fontSize: 30),
-                    const Gap(10),
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.25,
-                      height: MediaQuery.of(context).size.height * 0.5,
-                      decoration: BoxDecoration(
-                          color: Colors.black,
-                          image: DecorationImage(
-                              image: NetworkImage(proofOfPayment))),
-                    ),
-                    const Gap(30),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.1,
-                      height: 30,
-                      child: ElevatedButton(
-                          onPressed: () => GoRouter.of(context).pop(),
-                          child: quicksandBlackBold('CLOSE')),
-                    )
-                  ],
-                ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  quicksandBlackBold('Payment Method: $paymentMethod',
+                      fontSize: 30),
+                  const Gap(10),
+                  Container(
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    decoration: BoxDecoration(
+                        color: Colors.black,
+                        image: DecorationImage(
+                            image: NetworkImage(proofOfPayment))),
+                  ),
+                  const Gap(30),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.1,
+                    height: 30,
+                    child: TextButton(
+                        onPressed: () => GoRouter.of(context).pop(),
+                        child: quicksandBlackBold('CLOSE')),
+                  )
+                ],
               ),
             ));
   }

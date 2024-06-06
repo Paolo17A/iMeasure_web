@@ -48,6 +48,7 @@ dependencies:
   pie_chart: ^5.4.0
   dropdown_search: ^5.0.6
   pdf: ^3.10.8
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

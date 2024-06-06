@@ -53,8 +53,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
     ref.watch(windowsProvider);
     return Scaffold(
       drawer: appDrawer(context, currentPath: GoRoutes.windows),
-      body: stackedLoadingContainer(
-          context,
+      body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           SizedBox(
             width: MediaQuery.of(context).size.width,
@@ -78,16 +77,20 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        quicksandBlackBold(
-            'AVAILABLE WINDOWS: ${ref.read(windowsProvider).windowDocs.length}',
-            fontSize: 40),
+        Row(
+          children: [
+            quicksandBlackBold('AVAILABLE WINDOWS: '),
+            quicksandRedBold(
+                ref.read(windowsProvider).windowDocs.length.toString())
+          ],
+        ),
         SizedBox(
           height: 50,
           child: ElevatedButton(
               onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addWindow),
               style: ElevatedButton.styleFrom(
                   backgroundColor: CustomColors.emeraldGreen),
-              child: quicksandBlackBold('ADD NEW WINDOW')),
+              child: quicksandBlackBold('+')),
         )
       ]),
     );

@@ -18,12 +18,19 @@ Widget submitButton(BuildContext context,
 }
 
 Widget backButton(BuildContext context, {required Function onPress}) {
-  return ElevatedButton(
-      onPressed: () => onPress(),
-      style: ElevatedButton.styleFrom(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-      child: quicksandBlackBold('BACK'));
+  return Container(
+    decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+    child: all4Pix(
+      child: TextButton(
+          onPressed: () => onPress(),
+          style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10))),
+          child: quicksandBlackBold('BACK')),
+    ),
+  );
 }
 
 Widget viewEntryButton(BuildContext context, {required Function onPress}) {
@@ -62,13 +69,19 @@ Widget deleteEntryButton(BuildContext context,
 }
 
 Widget uploadImageButton(String label, Function selectImage) {
-  return ElevatedButton(
-      onPressed: () => selectImage(),
-      style: ElevatedButton.styleFrom(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
-      child: Padding(
-          padding: const EdgeInsets.all(7), child: quicksandBlackBold(label)));
+  return Container(
+    decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+    child: TextButton(
+        onPressed: () => selectImage(),
+        style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30))),
+        child: Padding(
+            padding: const EdgeInsets.all(7),
+            child: quicksandBlackBold(label))),
+  );
 }
 
 Widget navigatorButtons(BuildContext context,

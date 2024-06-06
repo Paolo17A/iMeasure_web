@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/color_util.dart';
@@ -9,6 +10,7 @@ PreferredSizeWidget topNavigator(BuildContext context, {required String path}) {
   return AppBar(
     backgroundColor: CustomColors.lavenderMist,
     toolbarHeight: 100,
+    automaticallyImplyLeading: false,
     title: Container(
         width: MediaQuery.of(context).size.width,
         child: Row(
@@ -28,6 +30,21 @@ PreferredSizeWidget topNavigator(BuildContext context, {required String path}) {
                 currentPath: path),
             topNavigatorButton(context,
                 label: 'ORDERS', thisPath: GoRoutes.orders, currentPath: path),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                quicksandBlackBold('ADMIN', fontSize: 12),
+                TextButton(
+                    onPressed: () {
+                      FirebaseAuth.instance.signOut().then((value) {
+                        GoRouter.of(context).goNamed(GoRoutes.home);
+                        GoRouter.of(context)
+                            .pushReplacementNamed(GoRoutes.home);
+                      });
+                    },
+                    child: quicksandRedBold('LOG-OUT', fontSize: 12))
+              ],
+            )
           ],
         )),
   );

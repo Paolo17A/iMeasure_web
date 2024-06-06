@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/dropdown_widget.dart';
@@ -39,7 +40,7 @@ Widget roundedSlateBlueContainer(BuildContext context,
 
 Container viewContentContainer(BuildContext context, {required Widget child}) {
   return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
+      width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.black),
@@ -50,14 +51,13 @@ Container viewContentContainer(BuildContext context, {required Widget child}) {
 Widget viewContentLabelRow(BuildContext context,
     {required List<Widget> children}) {
   return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.9,
-      child: Row(children: children));
+      width: MediaQuery.of(context).size.width, child: Row(children: children));
 }
 
 Widget viewContentEntryRow(BuildContext context,
     {required List<Widget> children}) {
   return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.9,
+      width: MediaQuery.of(context).size.width,
       height: 50,
       child: Row(children: children));
 }
@@ -79,19 +79,20 @@ Widget viewFlexTextCell(String text,
         child: ClipRRect(
           child: Center(
               child: SelectableText(text,
-                  style: TextStyle(
+                  style: GoogleFonts.quicksand(
+                      textStyle: TextStyle(
                     color: textColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                     overflow: TextOverflow.ellipsis,
-                  ))),
+                  )))),
         )),
   );
 }
 
 Widget viewFlexLabelTextCell(String text, int flex) {
   return viewFlexTextCell(text,
-      flex: flex, backgroundColor: CustomColors.azure, textColor: Colors.black);
+      flex: flex, backgroundColor: Colors.transparent, textColor: Colors.black);
 }
 
 Widget viewFlexActionsCell(List<Widget> children,
@@ -200,9 +201,9 @@ Widget selectedMemoryImageDisplay(
             const SizedBox(height: 5),
             SizedBox(
               width: 90,
-              child: ElevatedButton(
+              child: TextButton(
                   onPressed: () => deleteImage(),
-                  child: const Icon(Icons.delete,
+                  child: const Icon(Icons.delete_outline,
                       color: CustomColors.deepNavyBlue)),
             )
           ],
@@ -241,7 +242,7 @@ Widget snapshotHandler(AsyncSnapshot snapshot) {
   } else if (!snapshot.hasData) {
     return Text('No data found');
   } else if (snapshot.hasError) {
-    return Text('Error gettin data: ${snapshot.error.toString()}');
+    return Text('Error getting data: ${snapshot.error.toString()}');
   }
   return Container();
 }
@@ -276,6 +277,7 @@ Widget windowParameterWidget(BuildContext context,
                     quicksandBlackBold('Field Name'),
                     CustomTextField(
                         text: 'Field Name',
+                        height: 40,
                         controller: nameController,
                         textInputType: TextInputType.text),
                   ],
@@ -300,8 +302,11 @@ Widget windowParameterWidget(BuildContext context,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 quicksandBlackBold('Price Basis'),
-                dropdownWidget(priceBasis, onPriceBasisChange,
-                    ['WIDTH', 'HEIGHT'], priceBasis, false),
+                SizedBox(
+                  height: 40,
+                  child: dropdownWidget(priceBasis, onPriceBasisChange,
+                      ['WIDTH', 'HEIGHT'], priceBasis, false),
+                ),
               ],
             ),
           ),
@@ -316,6 +321,7 @@ Widget windowParameterWidget(BuildContext context,
                     quicksandBlackBold('Brown Price'),
                     CustomTextField(
                         text: 'Brown Price',
+                        height: 40,
                         controller: brownPriceController,
                         textInputType: TextInputType.number),
                   ],
@@ -329,6 +335,7 @@ Widget windowParameterWidget(BuildContext context,
                     quicksandBlackBold('White Price'),
                     CustomTextField(
                         text: 'White Price',
+                        height: 40,
                         controller: whitePriceController,
                         textInputType: TextInputType.number),
                   ],
@@ -348,6 +355,7 @@ Widget windowParameterWidget(BuildContext context,
                       quicksandBlackBold('Matt Black Price'),
                       CustomTextField(
                           text: 'Matt Black Price',
+                          height: 40,
                           controller: mattBlackController,
                           textInputType: TextInputType.number),
                     ],
@@ -361,6 +369,7 @@ Widget windowParameterWidget(BuildContext context,
                       quicksandBlackBold('Matt Gray Price'),
                       CustomTextField(
                           text: 'Matt Gray Price',
+                          height: 40,
                           controller: mattGrayController,
                           textInputType: TextInputType.number),
                     ],
@@ -381,6 +390,7 @@ Widget windowParameterWidget(BuildContext context,
                       quicksandBlackBold('Wood Finish Price'),
                       CustomTextField(
                           text: 'Wood Finish Price',
+                          height: 40,
                           controller: woodFinishController,
                           textInputType: TextInputType.number),
                     ],
@@ -390,9 +400,14 @@ Widget windowParameterWidget(BuildContext context,
             ),
           ),
           vertical20Pix(
-            child: ElevatedButton(
-                onPressed: () => onRemoveField(),
-                child: quicksandBlackBold('REMOVE SUBFIELD', fontSize: 12)),
+            child: Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+              child: TextButton(
+                  onPressed: () => onRemoveField(),
+                  child: quicksandBlackBold('REMOVE SUBFIELD', fontSize: 12)),
+            ),
           )
         ],
       ),
@@ -422,6 +437,7 @@ Widget windowAccessoryWidget(BuildContext context,
                     quicksandBlackBold('Accessory Name'),
                     CustomTextField(
                         text: 'Accessory Name',
+                        height: 40,
                         controller: nameController,
                         textInputType: TextInputType.name),
                   ],
@@ -435,6 +451,7 @@ Widget windowAccessoryWidget(BuildContext context,
                     quicksandBlackBold('Accessory Price'),
                     CustomTextField(
                         text: 'Accessory Price',
+                        height: 40,
                         controller: priceController,
                         textInputType: TextInputType.number),
                   ],
@@ -443,9 +460,14 @@ Widget windowAccessoryWidget(BuildContext context,
             ],
           ),
           vertical20Pix(
-            child: ElevatedButton(
-                onPressed: () => onRemoveField(),
-                child: quicksandBlackBold('REMOVE ACCESSORY', fontSize: 12)),
+            child: Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+              child: TextButton(
+                  onPressed: () => onRemoveField(),
+                  child: quicksandBlackBold('REMOVE ACCESSORY', fontSize: 12)),
+            ),
           )
         ],
       ),

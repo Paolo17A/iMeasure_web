@@ -92,6 +92,23 @@ Text itcBaumansWhiteBold(String label,
   );
 }
 
+Text itcBaumansBlackBold(String label,
+    {double fontSize = 20,
+    TextAlign textAlign = TextAlign.center,
+    TextDecoration? textDecoration,
+    TextOverflow? textOverflow}) {
+  return Text(
+    label,
+    textAlign: textAlign,
+    style: GoogleFonts.baumans(
+        fontSize: fontSize,
+        color: Colors.black,
+        fontWeight: FontWeight.bold,
+        decoration: textDecoration,
+        textStyle: TextStyle(overflow: textOverflow)),
+  );
+}
+
 Text azureQuicksandBold(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,

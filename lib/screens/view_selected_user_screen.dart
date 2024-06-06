@@ -95,14 +95,11 @@ class _ViewSelectedUserScreenState
   Widget _userDetails() {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-          border: Border.all(color: CustomColors.deepNavyBlue, width: 4),
-          color: CustomColors.lavenderMist,
-          borderRadius: BorderRadius.circular(20)),
       padding: const EdgeInsets.all(20),
       child: Column(children: [
         buildProfileImage(profileImageURL: profileImageURL),
         quicksandBlackBold(formattedName, fontSize: 40),
+        Divider(color: CustomColors.deepNavyBlue)
       ]),
     );
   }
@@ -110,15 +107,13 @@ class _ViewSelectedUserScreenState
   Widget orderHistory() {
     return vertical20Pix(
       child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-            color: CustomColors.deepNavyBlue,
-            borderRadius: BorderRadius.circular(10)),
+        //width: double.infinity,
+        //decoration: BoxDecoration(color: CustomColors.deepNavyBlue),
         padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            quicksandWhiteBold('ORDER HISTORY', fontSize: 36),
+            quicksandBlackBold('ORDER HISTORY', fontSize: 36),
             orderEntries()
           ],
         ),
@@ -128,13 +123,17 @@ class _ViewSelectedUserScreenState
 
   Widget orderEntries() {
     return orderDocs.isNotEmpty
-        ? ListView.builder(
+        ? Wrap(
+            children:
+                orderDocs.map((order) => _orderHistoryEntry(order)).toList(),
+          )
+        /*ListView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
             itemCount: orderDocs.length,
             itemBuilder: (context, index) {
               return _orderHistoryEntry(orderDocs[index]);
-            })
+            })*/
         : all20Pix(
             child: quicksandWhiteBold('THIS USER HAS NO ORDER HISTORY YET',
                 fontSize: 20));
@@ -160,23 +159,25 @@ class _ViewSelectedUserScreenState
         String name = productData[WindowFields.name];
         return all10Pix(
             child: Container(
+          width: 360,
+          height: 180,
           decoration: BoxDecoration(
-              color: CustomColors.deepNavyBlue,
-              border: Border.all(color: CustomColors.lavenderMist)),
+              //color: CustomColors.deepNavyBlue,
+              border: Border.all(color: CustomColors.deepNavyBlue)),
           padding: EdgeInsets.all(10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.network(imageURL, width: 120),
+              Image.network(imageURL, width: 120, height: 120),
               Gap(10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  quicksandWhiteBold(name, fontSize: 26),
-                  quicksandWhiteRegular('Glass Type: $glassType', fontSize: 18),
-                  quicksandWhiteRegular('Color: $color', fontSize: 18),
-                  quicksandWhiteRegular('Status: $status', fontSize: 18),
-                  quicksandWhiteBold('PHP ${formatPrice(price)}'),
+                  quicksandBlackBold(name, fontSize: 26),
+                  quicksandBlackRegular('Glass Type: $glassType', fontSize: 18),
+                  quicksandBlackRegular('Color: $color', fontSize: 18),
+                  quicksandBlackRegular('Status: $status', fontSize: 18),
+                  quicksandBlackBold('PHP ${formatPrice(price)}'),
                 ],
               ),
             ],

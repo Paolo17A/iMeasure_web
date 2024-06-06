@@ -131,9 +131,8 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   Widget _backButton() {
     return vertical20Pix(
       child: Row(children: [
-        ElevatedButton(
-            onPressed: () => GoRouter.of(context).goNamed(GoRoutes.windows),
-            child: quicksandBlackBold('BACK'))
+        backButton(context,
+            onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows))
       ]),
     );
   }
@@ -151,6 +150,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
       vertical10Pix(child: quicksandBlackBold('Window Name', fontSize: 24)),
       CustomTextField(
           text: 'Window Name',
+          height: 40,
           controller: nameController,
           textInputType: TextInputType.text,
           displayPrefixIcon: null),
@@ -181,6 +181,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   quicksandBlackBold('Minimum Height (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Minimum Height',
+              height: 40,
               controller: minHeightController,
               textInputType: TextInputType.number,
               displayPrefixIcon: null),
@@ -200,6 +201,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   quicksandBlackBold('Maximum Height (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Maximum Height',
+              height: 40,
               controller: maxHeightController,
               textInputType: TextInputType.number,
               displayPrefixIcon: null),
@@ -219,6 +221,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   quicksandBlackBold('Minimum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Minimum Width',
+              height: 40,
               controller: minWidthController,
               textInputType: TextInputType.number,
               displayPrefixIcon: null),
@@ -238,6 +241,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   quicksandBlackBold('Maximum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Maximum Width',
+              height: 40,
               controller: maxWidthController,
               textInputType: TextInputType.number,
               displayPrefixIcon: null),
@@ -317,13 +321,18 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                       });
                     });
               }),
-          ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  windowFieldModels.add(WindowFieldModel());
-                });
-              },
-              child: quicksandBlackBold('ADD WINDOW FIELD', fontSize: 15))
+          Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+            child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    windowFieldModels.add(WindowFieldModel());
+                  });
+                },
+                child: quicksandBlackBold('ADD WINDOW FIELD', fontSize: 15)),
+          )
         ],
       ),
     );
@@ -355,13 +364,18 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                     });
                   });
                 }),
-          ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  windowAccessoryModels.add(WindowAccessoryModel());
-                });
-              },
-              child: quicksandBlackBold('ADD ACCESSORY FIELD', fontSize: 15))
+          Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+            child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    windowAccessoryModels.add(WindowAccessoryModel());
+                  });
+                },
+                child: quicksandBlackBold('ADD ACCESSORY FIELD', fontSize: 15)),
+          )
         ],
       ),
     );
@@ -370,19 +384,24 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   Widget _submitButtonWidget() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 50),
-      child: ElevatedButton(
-        onPressed: () => addWindowEntry(context, ref,
-            nameController: nameController,
-            descriptionController: descriptionController,
-            minHeightController: minHeightController,
-            maxHeightController: maxHeightController,
-            minWidthController: minWidthController,
-            maxWidthController: maxWidthController,
-            windowFieldModels: windowFieldModels,
-            windowAccesoryModels: windowAccessoryModels),
-        child: Padding(
-          padding: const EdgeInsets.all(9),
-          child: quicksandBlackBold('SUBMIT'),
+      child: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+        child: TextButton(
+          onPressed: () => addWindowEntry(context, ref,
+              nameController: nameController,
+              descriptionController: descriptionController,
+              minHeightController: minHeightController,
+              maxHeightController: maxHeightController,
+              minWidthController: minWidthController,
+              maxWidthController: maxWidthController,
+              windowFieldModels: windowFieldModels,
+              windowAccesoryModels: windowAccessoryModels),
+          child: Padding(
+            padding: const EdgeInsets.all(9),
+            child: quicksandBlackBold('SUBMIT'),
+          ),
         ),
       ),
     );

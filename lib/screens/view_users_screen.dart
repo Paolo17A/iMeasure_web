@@ -13,8 +13,6 @@ import '../utils/string_util.dart';
 import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
-import '../widgets/custom_padding_widgets.dart';
-import '../widgets/text_widgets.dart';
 
 class ViewUsersScreen extends ConsumerStatefulWidget {
   const ViewUsersScreen({super.key});
@@ -62,26 +60,19 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
               child: Column(
             children: [
               topNavigator(context, path: GoRoutes.users),
-              horizontal5Percent(
-                context,
-                child: Column(
-                  children: [
-                    Row(children: [
-                      vertical20Pix(
-                          child: quicksandBlackBold('USERS', fontSize: 40))
-                    ]),
-                    viewContentContainer(context,
-                        child: Column(
-                          children: [
-                            _usersLabelRow(),
-                            ref.read(usersProvider).userDocs.isNotEmpty
-                                ? _userEntries()
-                                : viewContentUnavailable(context,
-                                    text: 'NO AVAILABLE RENTERS'),
-                          ],
-                        )),
-                  ],
-                ),
+              Column(
+                children: [
+                  viewContentContainer(context,
+                      child: Column(
+                        children: [
+                          _usersLabelRow(),
+                          ref.read(usersProvider).userDocs.isNotEmpty
+                              ? _userEntries()
+                              : viewContentUnavailable(context,
+                                  text: 'NO AVAILABLE USERS'),
+                        ],
+                      )),
+                ],
               ),
             ],
           )),
@@ -91,10 +82,15 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
   }
 
   Widget _usersLabelRow() {
-    return viewContentLabelRow(context, children: [
-      viewFlexLabelTextCell('Name', 3),
-      viewFlexLabelTextCell('Actions', 2)
-    ]);
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+      child: viewContentLabelRow(context, children: [
+        viewFlexLabelTextCell('Name', 3),
+        viewFlexLabelTextCell('Actions', 2)
+      ]),
+    );
   }
 
   Widget _userEntries() {

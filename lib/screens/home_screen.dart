@@ -26,7 +26,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   //  ADMIN
   List<DocumentSnapshot> windowDocs = [];
-  /* int usersCount = 0;
+  int usersCount = 0;
   int windowsCount = 0;
   int ordersCount = 0;
   double totalSales = 0;
@@ -43,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     OrderStatuses.denied: 0,
     OrderStatuses.forPickUp: 0,
     OrderStatuses.pickedUp: 0
-  };*/
+  };
 
   //  LOG-IN
   final emailController = TextEditingController();
@@ -96,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             orderBreakdown[OrderStatuses.pickedUp] =
                 orderBreakdown[OrderStatuses.pickedUp]! + 1;
           }
-        }
+        }*/
 
         final transactionDocs = await getAllTransactionDocs();
         for (var transaction in transactionDocs) {
@@ -113,7 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             paymentBreakdown[TransactionStatuses.denied] =
                 paymentBreakdown[TransactionStatuses.denied]! + 1;
           }
-        }*/
+        }
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -151,6 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         children: [
           topNavigator(context, path: GoRoutes.home),
+          _platformSummary(),
           windowsSummary(),
           /*horizontal5Percent(context,
               child: Column(
@@ -165,29 +166,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /*Widget _platformSummary() {
+  Widget _platformSummary() {
     //String topRatedName = '';
     //String bestSellerName = '';
 
     return vertical10Pix(
       child: Container(
-          width: MediaQuery.of(context).size.width * 0.8,
+          width: MediaQuery.of(context).size.width,
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: CustomColors.lavenderMist,
-          ),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            quicksandBlackBold(
-                'OVERALL TOTAL WINDOW SALES: PHP ${formatPrice(totalSales)}',
-                fontSize: 30),
+            itcBaumansBlackBold(
+                'OVERALL TOTAL WINDOW SALES: PHP ${formatPrice(totalSales)}'),
             /*quicksandWhiteBold(
                 'Best Selling Product: ${bestSellerName.isNotEmpty ? bestSellerName : 'N/A'}',
                 fontSize: 18)*/
           ])),
     );
-  }*/
+  }
 
   Widget windowsSummary() {
     return Container(

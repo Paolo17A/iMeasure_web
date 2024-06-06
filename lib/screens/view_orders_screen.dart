@@ -11,7 +11,6 @@ import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
 import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
-import '../widgets/custom_padding_widgets.dart';
 import '../widgets/text_widgets.dart';
 
 class ViewOrdersScreen extends ConsumerStatefulWidget {
@@ -51,22 +50,13 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
     ref.watch(ordersProvider);
     return Scaffold(
       drawer: appDrawer(context, currentPath: GoRoutes.orders),
-      body: stackedLoadingContainer(
-          context,
+      body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           SingleChildScrollView(
             child: Column(
               children: [
                 topNavigator(context, path: GoRoutes.orders),
-                horizontal5Percent(context,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        vertical20Pix(
-                            child: quicksandBlackBold('ORDERS', fontSize: 40)),
-                        _ordersContainer(),
-                      ],
-                    )),
+                _ordersContainer()
               ],
             ),
           )),
@@ -88,11 +78,16 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   }
 
   Widget _ordersLabelRow() {
-    return viewContentLabelRow(context, children: [
-      viewFlexLabelTextCell('Buyer', 2),
-      viewFlexLabelTextCell('Item', 2),
-      viewFlexLabelTextCell('Status', 2)
-    ]);
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              colors: [CustomColors.emeraldGreen, CustomColors.azure])),
+      child: viewContentLabelRow(context, children: [
+        viewFlexLabelTextCell('Buyer', 2),
+        viewFlexLabelTextCell('Item', 2),
+        viewFlexLabelTextCell('Status', 2)
+      ]),
+    );
   }
 
   Widget _orderEntries() {
@@ -153,45 +148,56 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                               Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    ElevatedButton(
-                                        onPressed: () => GoRouter.of(context)
-                                                .goNamed(
-                                                    GoRoutes.generatedOrder,
-                                                    pathParameters: {
-                                                  PathParameters.orderID: ref
-                                                      .read(ordersProvider)
-                                                      .orderDocs[index]
-                                                      .id
-                                                }),
-                                        child: quicksandBlackBold(
-                                            'SET LABOR COST',
-                                            fontSize: 12))
+                                    Container(
+                                      decoration:
+                                          BoxDecoration(border: Border.all()),
+                                      child: TextButton(
+                                          onPressed: () => GoRouter.of(context)
+                                                  .goNamed(
+                                                      GoRoutes.generatedOrder,
+                                                      pathParameters: {
+                                                    PathParameters.orderID: ref
+                                                        .read(ordersProvider)
+                                                        .orderDocs[index]
+                                                        .id
+                                                  }),
+                                          child: quicksandBlackBold(
+                                              'SET LABOR COST',
+                                              fontSize: 12)),
+                                    )
                                   ]),
                             if (status == OrderStatuses.pending)
                               quicksandBlackBold('PENDING PAYMENT')
                             else if (status == OrderStatuses.denied)
                               quicksandBlackBold('PAYMENT DENIED')
                             else if (status == OrderStatuses.processing)
-                              ElevatedButton(
-                                  onPressed: () => markOrderAsReadyForPickUp(
-                                      context, ref,
-                                      orderID: ref
-                                          .read(ordersProvider)
-                                          .orderDocs[index]
-                                          .id),
-                                  child: quicksandBlackBold(
-                                      'MARK AS READY FOR PICK UP',
-                                      fontSize: 12))
+                              Container(
+                                decoration: BoxDecoration(border: Border.all()),
+                                child: TextButton(
+                                    onPressed: () => markOrderAsReadyForPickUp(
+                                        context, ref,
+                                        orderID: ref
+                                            .read(ordersProvider)
+                                            .orderDocs[index]
+                                            .id),
+                                    child: quicksandBlackBold(
+                                        'MARK AS READY FOR PICK UP',
+                                        fontSize: 12)),
+                              )
                             else if (status == OrderStatuses.forPickUp)
-                              ElevatedButton(
-                                  onPressed: () => markOrderAsPickedUp(
-                                      context, ref,
-                                      orderID: ref
-                                          .read(ordersProvider)
-                                          .orderDocs[index]
-                                          .id),
-                                  child: quicksandBlackBold('MARK AS PICKED UP',
-                                      fontSize: 12))
+                              Container(
+                                decoration: BoxDecoration(border: Border.all()),
+                                child: TextButton(
+                                    onPressed: () => markOrderAsPickedUp(
+                                        context, ref,
+                                        orderID: ref
+                                            .read(ordersProvider)
+                                            .orderDocs[index]
+                                            .id),
+                                    child: quicksandBlackBold(
+                                        'MARK AS PICKED UP',
+                                        fontSize: 12)),
+                              )
                             else if (status == OrderStatuses.pickedUp)
                               quicksandBlackBold('COMPLETED')
                           ],

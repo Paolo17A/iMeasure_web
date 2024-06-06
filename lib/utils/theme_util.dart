@@ -4,14 +4,14 @@ import 'color_util.dart';
 
 ThemeData themeData = ThemeData(
   colorSchemeSeed: CustomColors.deepNavyBlue,
-  scaffoldBackgroundColor: CustomColors.lavenderMist,
+  scaffoldBackgroundColor: Colors.white,
   appBarTheme: const AppBarTheme(
       backgroundColor: CustomColors.emeraldGreen, toolbarHeight: 40),
   drawerTheme: DrawerThemeData(backgroundColor: CustomColors.aquaMarine),
   snackBarTheme: const SnackBarThemeData(
-      backgroundColor: CustomColors.deepNavyBlue,
+      backgroundColor: CustomColors.aquaMarine,
       contentTextStyle:
-          TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
   elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
           shape:
