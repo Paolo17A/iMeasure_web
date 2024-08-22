@@ -87,17 +87,12 @@ class _ViewTransactionsScreenState
   }
 
   Widget _transactionsLabelRow() {
-    return Container(
-      decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [CustomColors.emeraldGreen, CustomColors.azure])),
-      child: viewContentLabelRow(context, children: [
-        viewFlexLabelTextCell('Buyer', 3),
-        viewFlexLabelTextCell('Amount Paid', 2),
-        viewFlexLabelTextCell('Payment', 2),
-        viewFlexLabelTextCell('Actions', 2)
-      ]),
-    );
+    return viewContentLabelRow(context, children: [
+      viewFlexLabelTextCell('Buyer', 3),
+      viewFlexLabelTextCell('Amount Paid', 2),
+      viewFlexLabelTextCell('Payment', 2),
+      viewFlexLabelTextCell('Actions', 2)
+    ]);
   }
 
   Widget _transactionEntries() {
@@ -170,7 +165,7 @@ class _ViewTransactionsScreenState
                                       .transactionDocs[index]
                                       .id),
                               child: Icon(Icons.check,
-                                  color: CustomColors.deepNavyBlue)),
+                                  color: CustomColors.lavenderMist)),
                         if (!paymentData[TransactionFields.paymentVerified])
                           TextButton(
                               onPressed: () => displayDeleteEntryDialog(context,
@@ -184,7 +179,7 @@ class _ViewTransactionsScreenState
                                           .transactionDocs[index]
                                           .id)),
                               child: Icon(Icons.block,
-                                  color: CustomColors.deepNavyBlue))
+                                  color: CustomColors.coralRed))
                       ],
                           flex: 2,
                           backgroundColor: backgroundColor,

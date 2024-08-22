@@ -147,7 +147,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
                     _windowNameWidget(),
                     _windowDescriptionWidget(),
                     Gap(20),
-                    Divider(color: CustomColors.deepNavyBlue),
+                    Divider(color: CustomColors.lavenderMist),
                     SizedBox(
                       width: double.infinity,
                       child: Wrap(
@@ -160,7 +160,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
                           ]),
                     ),
                     Gap(20),
-                    Divider(color: CustomColors.deepNavyBlue),
+                    Divider(color: CustomColors.lavenderMist),
                     _windowFields(),
                     _accessoryFields(),
                     _productImagesWidget(),
@@ -341,18 +341,13 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
                         });
                       });
                 }),
-          Container(
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [CustomColors.emeraldGreen, CustomColors.azure])),
-            child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    windowFieldModels.add(WindowFieldModel());
-                  });
-                },
-                child: quicksandBlackBold('ADD WINDOW FIELD', fontSize: 15)),
-          )
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  windowFieldModels.add(WindowFieldModel());
+                });
+              },
+              child: quicksandBlackBold('ADD WINDOW FIELD', fontSize: 15))
         ],
       ),
     );
@@ -385,18 +380,13 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
                     });
                   })
               : quicksandBlackRegular('NO ACCESSORIES'),
-          Container(
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [CustomColors.emeraldGreen, CustomColors.azure])),
-            child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    windowAccessoryModels.add(WindowAccessoryModel());
-                  });
-                },
-                child: quicksandBlackBold('ADD ACCESSORY FIELD', fontSize: 15)),
-          )
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  windowAccessoryModels.add(WindowAccessoryModel());
+                });
+              },
+              child: quicksandBlackBold('ADD ACCESSORY FIELD', fontSize: 15))
         ],
       ),
     );
@@ -431,25 +421,20 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
   Widget _submitButtonWidget() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 50),
-      child: Container(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: [CustomColors.emeraldGreen, CustomColors.azure])),
-        child: TextButton(
-          onPressed: () => editWindowEntry(context, ref,
-              windowID: widget.windowID,
-              nameController: nameController,
-              descriptionController: descriptionController,
-              minHeightController: minHeightController,
-              maxHeightController: maxHeightController,
-              minWidthController: minWidthController,
-              maxWidthController: maxWidthController,
-              windowFieldModels: windowFieldModels,
-              windowAccesoryModels: windowAccessoryModels),
-          child: Padding(
-            padding: const EdgeInsets.all(9),
-            child: quicksandBlackBold('SUBMIT'),
-          ),
+      child: TextButton(
+        onPressed: () => editWindowEntry(context, ref,
+            windowID: widget.windowID,
+            nameController: nameController,
+            descriptionController: descriptionController,
+            minHeightController: minHeightController,
+            maxHeightController: maxHeightController,
+            minWidthController: minWidthController,
+            maxWidthController: maxWidthController,
+            windowFieldModels: windowFieldModels,
+            windowAccesoryModels: windowAccessoryModels),
+        child: Padding(
+          padding: const EdgeInsets.all(9),
+          child: quicksandBlackBold('SUBMIT'),
         ),
       ),
     );

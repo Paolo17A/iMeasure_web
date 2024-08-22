@@ -78,16 +78,11 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   }
 
   Widget _ordersLabelRow() {
-    return Container(
-      decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [CustomColors.emeraldGreen, CustomColors.azure])),
-      child: viewContentLabelRow(context, children: [
-        viewFlexLabelTextCell('Buyer', 2),
-        viewFlexLabelTextCell('Item', 2),
-        viewFlexLabelTextCell('Status', 2)
-      ]),
-    );
+    return viewContentLabelRow(context, children: [
+      viewFlexLabelTextCell('Buyer', 2),
+      viewFlexLabelTextCell('Item', 2),
+      viewFlexLabelTextCell('Status', 2)
+    ]);
   }
 
   Widget _orderEntries() {

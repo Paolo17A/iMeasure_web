@@ -27,17 +27,6 @@ Widget switchedLoadingContainer(bool isLoading, Widget child) {
   return isLoading ? const Center(child: CircularProgressIndicator()) : child;
 }
 
-Widget roundedSlateBlueContainer(BuildContext context,
-    {required Widget child}) {
-  return Container(
-      width: MediaQuery.of(context).size.width * 0.5,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: CustomColors.deepNavyBlue.withOpacity(0.8)),
-      padding: const EdgeInsets.all(20),
-      child: child);
-}
-
 Container viewContentContainer(BuildContext context, {required Widget child}) {
   return Container(
       width: MediaQuery.of(context).size.width,
@@ -173,15 +162,15 @@ Widget buildProfileImage({required String profileImageURL}) {
   return profileImageURL.isNotEmpty
       ? CircleAvatar(
           radius: 70,
-          backgroundColor: CustomColors.deepNavyBlue,
+          backgroundColor: CustomColors.lavenderMist,
           backgroundImage: NetworkImage(profileImageURL),
         )
       : const CircleAvatar(
           radius: 70,
-          backgroundColor: CustomColors.deepNavyBlue,
+          backgroundColor: CustomColors.lavenderMist,
           child: Icon(
             Icons.person,
-            color: Colors.white,
+            color: CustomColors.forestGreen,
             size: 80,
           ));
 }
@@ -204,7 +193,7 @@ Widget selectedMemoryImageDisplay(
               child: TextButton(
                   onPressed: () => deleteImage(),
                   child: const Icon(Icons.delete_outline,
-                      color: CustomColors.deepNavyBlue)),
+                      color: CustomColors.lavenderMist)),
             )
           ],
         ),
@@ -401,9 +390,6 @@ Widget windowParameterWidget(BuildContext context,
           ),
           vertical20Pix(
             child: Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [CustomColors.emeraldGreen, CustomColors.azure])),
               child: TextButton(
                   onPressed: () => onRemoveField(),
                   child: quicksandBlackBold('REMOVE SUBFIELD', fontSize: 12)),
@@ -461,9 +447,6 @@ Widget windowAccessoryWidget(BuildContext context,
           ),
           vertical20Pix(
             child: Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [CustomColors.emeraldGreen, CustomColors.azure])),
               child: TextButton(
                   onPressed: () => onRemoveField(),
                   child: quicksandBlackBold('REMOVE ACCESSORY', fontSize: 12)),

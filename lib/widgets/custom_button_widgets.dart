@@ -13,23 +13,20 @@ Widget submitButton(BuildContext context,
       padding: const EdgeInsets.all(20),
       child: ElevatedButton(
         onPressed: () => onPress(),
-        child: quicksandBlackBold(label),
+        style: ElevatedButton.styleFrom(
+            backgroundColor: CustomColors.lavenderMist),
+        child: deepCharcoalQuicksandBold(label),
       ));
 }
 
 Widget backButton(BuildContext context, {required Function onPress}) {
-  return Container(
-    decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [CustomColors.emeraldGreen, CustomColors.azure])),
-    child: all4Pix(
-      child: TextButton(
-          onPressed: () => onPress(),
-          style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10))),
-          child: quicksandBlackBold('BACK')),
-    ),
+  return all4Pix(
+    child: TextButton(
+        onPressed: () => onPress(),
+        style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10))),
+        child: quicksandBlackBold('BACK')),
   );
 }
 
@@ -39,11 +36,11 @@ Widget viewEntryButton(BuildContext context, {required Function onPress}) {
         onPress();
       },
       child: const Icon(Icons.visibility_outlined,
-          color: CustomColors.deepNavyBlue));
+          color: CustomColors.lavenderMist));
 }
 
 Widget editEntryButton(BuildContext context,
-    {required Function onPress, Color iconColor = CustomColors.deepNavyBlue}) {
+    {required Function onPress, Color iconColor = CustomColors.lavenderMist}) {
   return TextButton(
       onPressed: () {
         onPress();
@@ -56,11 +53,11 @@ Widget restoreEntryButton(BuildContext context, {required Function onPress}) {
       onPressed: () {
         onPress();
       },
-      child: const Icon(Icons.restore, color: CustomColors.deepNavyBlue));
+      child: const Icon(Icons.restore, color: CustomColors.lavenderMist));
 }
 
 Widget deleteEntryButton(BuildContext context,
-    {required Function onPress, Color iconColor = CustomColors.deepNavyBlue}) {
+    {required Function onPress, Color iconColor = CustomColors.lavenderMist}) {
   return TextButton(
       onPressed: () {
         onPress();
@@ -69,19 +66,13 @@ Widget deleteEntryButton(BuildContext context,
 }
 
 Widget uploadImageButton(String label, Function selectImage) {
-  return Container(
-    decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [CustomColors.emeraldGreen, CustomColors.azure])),
-    child: TextButton(
-        onPressed: () => selectImage(),
-        style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30))),
-        child: Padding(
-            padding: const EdgeInsets.all(7),
-            child: quicksandBlackBold(label))),
-  );
+  return TextButton(
+      onPressed: () => selectImage(),
+      style: ElevatedButton.styleFrom(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
+      child: Padding(
+          padding: const EdgeInsets.all(7), child: quicksandBlackBold(label)));
 }
 
 Widget navigatorButtons(BuildContext context,
@@ -112,17 +103,13 @@ Widget pageButton(BuildContext context,
     {required Function? onPress,
     required String label,
     Color fontColor = Colors.black}) {
-  return Container(
-    decoration:
-        BoxDecoration(border: Border.all(color: CustomColors.deepNavyBlue)),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: TextButton(
-          onPressed: onPress != null ? () => onPress() : null,
-          style: TextButton.styleFrom(
-              foregroundColor: fontColor, disabledForegroundColor: Colors.grey),
-          child: Text(label)),
-    ),
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    child: TextButton(
+        onPressed: onPress != null ? () => onPress() : null,
+        style: TextButton.styleFrom(
+            foregroundColor: fontColor, disabledForegroundColor: Colors.grey),
+        child: Text(label)),
   );
 }
 

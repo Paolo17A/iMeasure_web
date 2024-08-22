@@ -99,7 +99,7 @@ class _ViewSelectedUserScreenState
       child: Column(children: [
         buildProfileImage(profileImageURL: profileImageURL),
         quicksandBlackBold(formattedName, fontSize: 40),
-        Divider(color: CustomColors.deepNavyBlue)
+        Divider(color: CustomColors.lavenderMist)
       ]),
     );
   }
@@ -161,9 +161,6 @@ class _ViewSelectedUserScreenState
             child: Container(
           width: 360,
           height: 180,
-          decoration: BoxDecoration(
-              //color: CustomColors.deepNavyBlue,
-              border: Border.all(color: CustomColors.deepNavyBlue)),
           padding: EdgeInsets.all(10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

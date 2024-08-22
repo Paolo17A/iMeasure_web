@@ -109,7 +109,7 @@ Text itcBaumansBlackBold(String label,
   );
 }
 
-Text azureQuicksandBold(String label,
+Text deepSkyBlueQuicksandBold(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
     TextDecoration? textDecoration,
@@ -119,36 +119,43 @@ Text azureQuicksandBold(String label,
     textAlign: textAlign,
     style: GoogleFonts.quicksand(
         fontSize: fontSize,
-        color: CustomColors.azure,
+        color: CustomColors.deepSkyBlue,
         fontWeight: FontWeight.bold,
         decoration: textDecoration,
         textStyle: TextStyle(overflow: textOverflow)),
   );
 }
 
-/*Text montserratMidnightBlueBold(String label,
+Text deepCharcoalQuicksandBold(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
+    TextDecoration? textDecoration,
     TextOverflow? textOverflow}) {
   return Text(
     label,
     textAlign: textAlign,
-    style: GoogleFonts.montserrat(
+    style: GoogleFonts.quicksand(
         fontSize: fontSize,
-        color: CustomColors.midnightBlue,
+        color: CustomColors.deepCharcoal,
         fontWeight: FontWeight.bold,
+        decoration: textDecoration,
         textStyle: TextStyle(overflow: textOverflow)),
   );
 }
 
-Text montserratMidnightBlueRegular(String label,
+Text forestGreenQuicksandBold(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
+    TextDecoration? textDecoration,
     TextOverflow? textOverflow}) {
-  return Text(label,
-      textAlign: textAlign,
-      style: GoogleFonts.montserrat(
-          fontSize: fontSize,
-          color: CustomColors.midnightBlue,
-          textStyle: TextStyle(overflow: textOverflow)));
-}*/
+  return Text(
+    label,
+    textAlign: textAlign,
+    style: GoogleFonts.quicksand(
+        fontSize: fontSize,
+        color: CustomColors.forestGreen,
+        fontWeight: FontWeight.bold,
+        decoration: textDecoration,
+        textStyle: TextStyle(overflow: textOverflow)),
+  );
+}

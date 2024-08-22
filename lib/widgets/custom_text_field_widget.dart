@@ -11,6 +11,7 @@ class CustomTextField extends StatefulWidget {
   final bool hasSearchButton;
   final Function? onSearchPress;
   final Color? fillColor;
+  final Color? textColor;
   final double? height;
   const CustomTextField(
       {super.key,
@@ -22,7 +23,8 @@ class CustomTextField extends StatefulWidget {
       this.hasSearchButton = false,
       this.onSearchPress,
       this.height,
-      this.fillColor});
+      this.fillColor,
+      this.textColor});
 
   @override
   State<CustomTextField> createState() => _LiliwECommerceTextFieldState();
@@ -45,19 +47,21 @@ class _LiliwECommerceTextFieldState extends State<CustomTextField> {
           enabled: widget.enabled,
           controller: widget.controller,
           obscureText: isObscured,
-          cursorColor: CustomColors.deepNavyBlue,
+          cursorColor: CustomColors.deepCharcoal,
           onSubmitted: (value) {
             if (widget.onSearchPress != null &&
                 widget.controller.text.isNotEmpty) {
               widget.onSearchPress!();
             }
           },
-          style: const TextStyle(color: Colors.black),
+          style: TextStyle(color: widget.textColor ?? Colors.black),
           decoration: InputDecoration(
               alignLabelWithHint: true,
               labelText: widget.text,
               labelStyle: TextStyle(
-                  color: Colors.black.withOpacity(0.5),
+                  color: widget.textColor != null
+                      ? widget.textColor!.withOpacity(0.5)
+                      : Colors.black.withOpacity(0.5),
                   fontStyle: FontStyle.italic),
               filled: true,
               floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -78,7 +82,8 @@ class _LiliwECommerceTextFieldState extends State<CustomTextField> {
                       },
                       icon: Icon(
                         isObscured ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.black.withOpacity(0.6),
+                        color:
+                            widget.textColor ?? Colors.black.withOpacity(0.6),
                       ))
                   : widget.hasSearchButton && widget.onSearchPress != null
                       ? Transform.scale(

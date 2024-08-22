@@ -59,11 +59,6 @@ topNavigatorButton(BuildContext context,
       child: Container(
         width: MediaQuery.of(context).size.width * 0.15,
         height: 50,
-        decoration: BoxDecoration(
-            gradient: thisPath == currentPath
-                ? LinearGradient(
-                    colors: [CustomColors.emeraldGreen, CustomColors.azure])
-                : null),
         child: TextButton(
             onPressed: () {
               GoRouter.of(context).goNamed(thisPath);

@@ -139,8 +139,7 @@ class _SelectedWindowScreenState
                 fontSize: 16)
           ],
         ),
-        Divider(color: CustomColors.deepNavyBlue),
-        //quicksandBlackBold(description)
+        Divider(color: CustomColors.lavenderMist)
       ]),
     );
   }

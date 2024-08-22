@@ -2,10 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/string_util.dart';
 import 'package:imeasure/widgets/app_drawer_widget.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
@@ -27,9 +28,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   //  ADMIN
   List<DocumentSnapshot> windowDocs = [];
   int usersCount = 0;
-  int windowsCount = 0;
   int ordersCount = 0;
   double totalSales = 0;
+  double monthlySales = 0;
   Map<String, double> paymentBreakdown = {
     TransactionStatuses.approved: 0,
     TransactionStatuses.pending: 0,
@@ -65,16 +66,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (!hasLoggedInUser()) {
           return;
         }
-        ref.read(loadingProvider.notifier).toggleLoading(true);
-        windowDocs = await getAllWindowDocs();
 
-        /*final users = await getAllClientDocs();
-        usersCount = users.length;
-        final windows = await getAllWindowDocs();
-        windowsCount = windows.length;
-        final orders = await getAllOrderDocs();
-        ordersCount = orders.length;
-        for (var order in orders) {
+        ref.read(loadingProvider.notifier).toggleLoading(true);
+        final userDoc = await getCurrentUserDoc();
+        final userData = userDoc.data() as Map<dynamic, dynamic>;
+        String userType = userData[UserFields.userType];
+        ref.read(userDataProvider).setUserType(userType);
+        if (ref.read(userDataProvider).userType == UserTypes.admin) {
+          windowDocs = await getAllWindowDocs();
+
+          final users = await getAllClientDocs();
+          usersCount = users.length;
+          // final windows = await getAllWindowDocs();
+          // windowsCount = windows.length;
+          final orders = await getAllOrderDocs();
+          ordersCount = orders.length;
+          /*for (var order in orders) {
           final orderData = order.data() as Map<dynamic, dynamic>;
           final status = orderData[OrderFields.purchaseStatus];
           if (status == OrderStatuses.generated) {
@@ -98,22 +105,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           }
         }*/
 
-        final transactionDocs = await getAllTransactionDocs();
-        for (var transaction in transactionDocs) {
-          final transactionData = transaction.data() as Map<dynamic, dynamic>;
-          final status = transactionData[TransactionFields.paymentStatus];
-          if (status == TransactionStatuses.pending) {
-            paymentBreakdown[TransactionStatuses.pending] =
-                paymentBreakdown[TransactionStatuses.pending]! + 1;
-          } else if (status == TransactionStatuses.approved) {
-            paymentBreakdown[TransactionStatuses.approved] =
-                paymentBreakdown[TransactionStatuses.approved]! + 1;
-            totalSales += transactionData[TransactionFields.paidAmount];
-          } else if (status == TransactionStatuses.denied) {
-            paymentBreakdown[TransactionStatuses.denied] =
-                paymentBreakdown[TransactionStatuses.denied]! + 1;
-          }
-        }
+          /*final transactionDocs = await getAllTransactionDocs();
+          for (var transaction in transactionDocs) {
+            final transactionData = transaction.data() as Map<dynamic, dynamic>;
+            final status = transactionData[TransactionFields.paymentStatus];
+            if (status == TransactionStatuses.pending) {
+              paymentBreakdown[TransactionStatuses.pending] =
+                  paymentBreakdown[TransactionStatuses.pending]! + 1;
+            } else if (status == TransactionStatuses.approved) {
+              paymentBreakdown[TransactionStatuses.approved] =
+                  paymentBreakdown[TransactionStatuses.approved]! + 1;
+              totalSales += transactionData[TransactionFields.paidAmount];
+            } else if (status == TransactionStatuses.denied) {
+              paymentBreakdown[TransactionStatuses.denied] =
+                  paymentBreakdown[TransactionStatuses.denied]! + 1;
+            }
+          }*/
+        } else {}
+
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -126,6 +135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
+    ref.watch(userDataProvider);
     return Scaffold(
       //appBar: appBarWidget(),
       drawer: hasLoggedInUser()
@@ -135,10 +145,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           context,
           ref.read(loadingProvider).isLoading,
           SingleChildScrollView(
-              child: Center(
-                  child: hasLoggedInUser()
+              child: hasLoggedInUser()
+                  ? ref.read(userDataProvider).userType == UserTypes.admin
                       ? adminDashboard()
-                      : _logInContainer()))),
+                      : Container()
+                  : _logInContainer())),
     );
   }
 
@@ -147,49 +158,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   //============================================================================
 
   Widget adminDashboard() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          topNavigator(context, path: GoRoutes.home),
-          _platformSummary(),
-          windowsSummary(),
-          /*horizontal5Percent(context,
-              child: Column(
-                children: [
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [_paymentStatuses(), _orderStatuses()])
-                ],
-              )),*/
-        ],
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        leftNavigator(context, path: GoRoutes.home),
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8,
+          child: Column(
+            children: [
+              _platformSummary(),
+              windowsSummary(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   Widget _platformSummary() {
-    //String topRatedName = '';
-    //String bestSellerName = '';
-
     return vertical10Pix(
       child: Container(
           width: MediaQuery.of(context).size.width,
           padding: const EdgeInsets.all(10),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            itcBaumansBlackBold(
-                'OVERALL TOTAL WINDOW SALES: PHP ${formatPrice(totalSales)}'),
-            /*quicksandWhiteBold(
-                'Best Selling Product: ${bestSellerName.isNotEmpty ? bestSellerName : 'N/A'}',
-                fontSize: 18)*/
-          ])),
+          child: Wrap(
+              spacing: 20,
+              runSpacing: 20,
+              alignment: WrapAlignment.center,
+              children: [
+                _platformDataEntry(
+                    label: 'Monthly Sales',
+                    count: 'PHP ${formatPrice(monthlySales)}',
+                    color: CustomColors.forestGreen),
+                _platformDataEntry(
+                    label: 'Total Income',
+                    count: 'PHP ${formatPrice(totalSales)}',
+                    color: CustomColors.forestGreen),
+                _platformDataEntry(
+                    label: 'Orders',
+                    count: ordersCount.toString(),
+                    color: CustomColors.coralRed),
+                _platformDataEntry(
+                    label: 'Total users',
+                    count: usersCount.toString(),
+                    color: CustomColors.deepSkyBlue)
+              ])),
     );
+  }
+
+  Widget _platformDataEntry(
+      {required String label, required String count, required Color color}) {
+    return Container(
+        width: 320,
+        height: 200,
+        decoration: BoxDecoration(
+            color: color, borderRadius: BorderRadiusDirectional.circular(20)),
+        padding: EdgeInsets.all(12),
+        child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          Padding(
+              padding: const EdgeInsets.all(40),
+              child: quicksandWhiteBold(count, fontSize: 28)),
+          Row(children: [quicksandWhiteRegular(label, fontSize: 16)])
+        ]));
   }
 
   Widget windowsSummary() {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-          color: CustomColors.aquaMarine,
           border: Border.symmetric(horizontal: BorderSide(width: 3))),
       child: windowDocs.isNotEmpty
           ? all20Pix(
@@ -250,79 +285,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /*Widget _analyticsBreakdown() {
-    return vertical20Pix(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.8,
-        decoration: BoxDecoration(
-          color: CustomColors.lavenderMist,
-        ),
-        child: Wrap(
-          spacing: MediaQuery.of(context).size.width * 0.01,
-          runSpacing: MediaQuery.of(context).size.height * 0.01,
-          alignment: WrapAlignment.spaceEvenly,
-          runAlignment: WrapAlignment.spaceEvenly,
-          children: [
-            analyticReportWidget(context,
-                count: usersCount.toString(),
-                demographic: 'Registered Users',
-                displayIcon: const Icon(Icons.person),
-                onPress: () => GoRouter.of(context).goNamed(GoRoutes.users)),
-            analyticReportWidget(context,
-                count: windowsCount.toString(),
-                demographic: 'Available Windows',
-                displayIcon: const Icon(Icons.window_outlined),
-                onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows)),
-            analyticReportWidget(context,
-                count: ordersCount.toString(),
-                demographic: 'Orders',
-                displayIcon: const Icon(Icons.delivery_dining),
-                onPress: () => GoRouter.of(context).goNamed(GoRoutes.orders)),
-          ],
-        ),
-      ),
-    );
-  }*/
-
-  /*Widget _paymentStatuses() {
-    return breakdownContainer(context,
-        child: Column(
-          children: [
-            quicksandBlackBold('TRANSACTION STATUSES'),
-            paymentBreakdown.isNotEmpty
-                ? PieChart(
-                    dataMap: paymentBreakdown,
-                    colorList: [
-                      CustomColors.deepNavyBlue,
-                      CustomColors.emeraldGreen,
-                      CustomColors.azure
-                    ],
-                    chartValuesOptions: ChartValuesOptions(decimalPlaces: 0))
-                : quicksandBlackBold('NO TRANSCATIONS YET')
-          ],
-        ));
-  }
-
-  Widget _orderStatuses() {
-    return breakdownContainer(context,
-        child: Column(
-          children: [
-            quicksandBlackBold('ORDER STATUSES'),
-            PieChart(
-                dataMap: orderBreakdown,
-                colorList: [
-                  CustomColors.deepNavyBlue,
-                  CustomColors.emeraldGreen,
-                  CustomColors.azure,
-                  CustomColors.deepNavyBlue.withOpacity(0.5),
-                  CustomColors.emeraldGreen.withOpacity(0.5),
-                  CustomColors.azure.withOpacity(0.5),
-                ],
-                chartValuesOptions: ChartValuesOptions(decimalPlaces: 0)),
-          ],
-        ));
-  }*/
-
   Widget _logInContainer() {
     return Container(
       width: double.infinity,
@@ -331,65 +293,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           image: DecorationImage(
               image: AssetImage(ImagePaths.heritageBackground),
               fit: BoxFit.cover)),
-      child: Container(
-        color: Colors.black.withOpacity(0.75),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width * 0.6,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width * 0.6,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(ImagePaths.heritageIcon),
+                itcBaumansWhiteBold('HERITAGE ALUMINUM SALES CORPORATION',
+                    fontSize: 40),
+                itcBaumansWhiteBold('• LOS BAÑOS •')
+              ],
+            ),
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width * 0.3,
+            decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.1),
+                border: Border.all(color: CustomColors.lavenderMist),
+                borderRadius: BorderRadius.circular(10)),
+            padding: EdgeInsets.all(20),
+            child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(ImagePaths.heritageIcon),
-                  itcBaumansWhiteBold('HERITAGE ALUMINUM SALES CORPORATION',
-                      fontSize: 40),
-                  itcBaumansWhiteBold(
-                    '• LOS BAÑOS •',
-                  )
+                  vertical20Pix(
+                      child: quicksandWhiteBold('iMeasure', fontSize: 40)),
+                  CustomTextField(
+                      text: 'Email Address',
+                      controller: emailController,
+                      textInputType: TextInputType.emailAddress,
+                      fillColor: CustomColors.deepCharcoal,
+                      textColor: Colors.white,
+                      displayPrefixIcon: const Icon(Icons.email,
+                          color: CustomColors.lavenderMist)),
+                  const Gap(16),
+                  CustomTextField(
+                    text: 'Password',
+                    controller: passwordController,
+                    textInputType: TextInputType.visiblePassword,
+                    fillColor: CustomColors.deepCharcoal,
+                    textColor: Colors.white,
+                    displayPrefixIcon: const Icon(Icons.lock,
+                        color: CustomColors.lavenderMist),
+                    onSearchPress: () => logInUser(context, ref,
+                        emailController: emailController,
+                        passwordController: passwordController),
+                  ),
+                  submitButton(context,
+                      label: 'LOG-IN',
+                      onPress: () => logInUser(context, ref,
+                          emailController: emailController,
+                          passwordController: passwordController)),
                 ],
               ),
             ),
-            Container(
-              width: MediaQuery.of(context).size.width * 0.3,
-              decoration: BoxDecoration(
-                  border: Border.all(color: CustomColors.lavenderMist),
-                  borderRadius: BorderRadius.circular(10)),
-              padding: EdgeInsets.all(20),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    vertical20Pix(
-                        child: azureQuicksandBold('LOG-IN', fontSize: 40)),
-                    CustomTextField(
-                        text: 'Email Address',
-                        controller: emailController,
-                        textInputType: TextInputType.emailAddress,
-                        fillColor: Colors.white,
-                        displayPrefixIcon: const Icon(Icons.email)),
-                    const Gap(16),
-                    CustomTextField(
-                      text: 'Password',
-                      controller: passwordController,
-                      textInputType: TextInputType.visiblePassword,
-                      fillColor: Colors.white,
-                      displayPrefixIcon: const Icon(Icons.lock),
-                      onSearchPress: () => logInUser(context, ref,
-                          emailController: emailController,
-                          passwordController: passwordController),
-                    ),
-                    submitButton(context,
-                        label: 'LOG-IN',
-                        onPress: () => logInUser(context, ref,
-                            emailController: emailController,
-                            passwordController: passwordController)),
-                  ],
-                ),
-              ),
-            )
-          ],
-        ),
+          )
+        ],
       ),
     );
   }

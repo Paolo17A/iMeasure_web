@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
+import 'package:imeasure/providers/user_data_provider.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../providers/users_provider.dart';
@@ -31,10 +32,19 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
       try {
         ref.read(loadingProvider.notifier).toggleLoading(true);
         if (!hasLoggedInUser()) {
+          ref.read(loadingProvider.notifier).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }
-
+        final userDoc = await getCurrentUserDoc();
+        final userData = userDoc.data() as Map<dynamic, dynamic>;
+        String userType = userData[UserFields.userType];
+        ref.read(userDataProvider).setUserType(userType);
+        if (ref.read(userDataProvider).userType == UserTypes.client) {
+          ref.read(loadingProvider.notifier).toggleLoading(false);
+          goRouter.goNamed(GoRoutes.home);
+          return;
+        }
         ref.read(usersProvider).setUserDocs(await getAllClientDocs());
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
@@ -49,18 +59,20 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(usersProvider);
+    ref.watch(userDataProvider);
     return Scaffold(
       drawer: appDrawer(context, currentPath: GoRoutes.users),
       body: stackedLoadingContainer(
         context,
         ref.read(loadingProvider).isLoading,
-        SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: SingleChildScrollView(
+        SingleChildScrollView(
+            child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            leftNavigator(context, path: GoRoutes.users),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
               child: Column(
-            children: [
-              topNavigator(context, path: GoRoutes.users),
-              Column(
                 children: [
                   viewContentContainer(context,
                       child: Column(
@@ -74,23 +86,18 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
                       )),
                 ],
               ),
-            ],
-          )),
-        ),
+            ),
+          ],
+        )),
       ),
     );
   }
 
   Widget _usersLabelRow() {
-    return Container(
-      decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [CustomColors.emeraldGreen, CustomColors.azure])),
-      child: viewContentLabelRow(context, children: [
-        viewFlexLabelTextCell('Name', 3),
-        viewFlexLabelTextCell('Actions', 2)
-      ]),
-    );
+    return viewContentLabelRow(context, children: [
+      viewFlexLabelTextCell('Name', 3),
+      viewFlexLabelTextCell('Actions', 2)
+    ]);
   }
 
   Widget _userEntries() {
