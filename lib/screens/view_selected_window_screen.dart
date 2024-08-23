@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/color_util.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
@@ -81,30 +81,36 @@ class _SelectedWindowScreenState
       drawer: appDrawer(context, currentPath: GoRoutes.windows),
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                topNavigator(context, path: GoRoutes.windows),
-                horizontal5Percent(context,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _backButton(),
-                        _windowDetails(),
-                        orderHistory()
-                      ],
-                    )),
-              ],
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              leftNavigator(context, path: GoRoutes.windows),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _backButton(),
+                      horizontal5Percent(context,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [_windowDetails(), orderHistory()],
+                          )),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           )),
     );
   }
 
   Widget _backButton() {
-    return vertical20Pix(
-      child: backButton(context,
-          onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows)),
-    );
+    return all10Pix(
+        child: Row(children: [
+      backButton(context,
+          onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows))
+    ]));
   }
 
   Widget _windowDetails() {
@@ -118,24 +124,22 @@ class _SelectedWindowScreenState
           height: 150,
           fit: BoxFit.cover,
         ),
-        //buildProfileImage(profileImageURL: imageURL),
-        //quicksandBlackBold(name, fontSize: 40),
-        quicksandBlackBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
+        quicksandWhiteBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
         Gap(20),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          quicksandBlackBold('Minimum Width: ${minWidth.toString()}ft',
+          quicksandWhiteBold('Minimum Width: ${minWidth.toString()}ft',
               fontSize: 16),
           Gap(40),
-          quicksandBlackBold('Minimum Length: ${minLength.toString()}ft',
+          quicksandWhiteBold('Minimum Length: ${minLength.toString()}ft',
               fontSize: 16),
         ]),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            quicksandBlackBold('Maximum Width: ${maxWidth.toString()}ft',
+            quicksandWhiteBold('Maximum Width: ${maxWidth.toString()}ft',
                 fontSize: 16),
             Gap(40),
-            quicksandBlackBold('Maximum Length: ${maxLength.toString()}ft',
+            quicksandWhiteBold('Maximum Length: ${maxLength.toString()}ft',
                 fontSize: 16)
           ],
         ),
@@ -148,24 +152,17 @@ class _SelectedWindowScreenState
     return vertical20Pix(
       child: Container(
         width: MediaQuery.of(context).size.width,
-        //decoration: BoxDecoration(color: CustomColors.deepNavyBlue),
         padding: const EdgeInsets.all(10),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            quicksandBlackBold(name, fontSize: 36),
+            Row(children: [
+              quicksandWhiteBold(name, fontSize: 36, textAlign: TextAlign.left)
+            ]),
             orderDocs.isNotEmpty
                 ? Wrap(
                     children: orderDocs
                         .map((order) => _orderHistoryEntry(order))
                         .toList())
-                /*ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: orderDocs.length,
-                    itemBuilder: (context, index) {
-                      return _orderHistoryEntry(orderDocs[index]);
-                    })*/
                 : all20Pix(
                     child: quicksandWhiteBold(
                         'THIS WINDOW HAS NOT BEEN ORDERED YET.',
@@ -202,13 +199,13 @@ class _SelectedWindowScreenState
             child: Container(
           width: 350,
           height: 350,
-          decoration: BoxDecoration(border: Border.all()),
+          decoration: BoxDecoration(border: Border.all(color: Colors.white)),
           padding: EdgeInsets.all(10),
           child: Column(
             children: [
               buildProfileImage(profileImageURL: profileImageURL),
               Gap(10),
-              quicksandBlackBold('$firstName $lastName', fontSize: 26),
+              quicksandWhiteBold('$firstName $lastName', fontSize: 20),
               Row(
                 children: [
                   SizedBox(
@@ -216,12 +213,12 @@ class _SelectedWindowScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        quicksandBlackRegular('Glass Type: $glassType',
+                        quicksandWhiteRegular('Glass Type: $glassType',
                             fontSize: 18, textAlign: TextAlign.left),
-                        quicksandBlackRegular('Color: $color', fontSize: 18),
-                        quicksandBlackRegular('Status: $status', fontSize: 18),
+                        quicksandWhiteRegular('Color: $color', fontSize: 12),
+                        quicksandWhiteRegular('Status: $status', fontSize: 12),
                         Gap(10),
-                        quicksandBlackBold('PHP ${formatPrice(price)}'),
+                        quicksandWhiteBold('PHP ${formatPrice(price)}'),
                       ],
                     ),
                   ),

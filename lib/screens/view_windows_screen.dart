@@ -89,9 +89,21 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Row(
           children: [
-            quicksandBlackBold('AVAILABLE WINDOWS: '),
-            quicksandRedBold(
-                ref.read(windowsProvider).windowDocs.length.toString())
+            all4Pix(
+                child: ElevatedButton(
+                    onPressed: () {}, child: quicksandWhiteBold('WINDOWS'))),
+            all4Pix(
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColors.lavenderMist),
+                    onPressed: () {},
+                    child: quicksandBlackBold('DOORS'))),
+            all4Pix(
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColors.lavenderMist),
+                    onPressed: () {},
+                    child: quicksandBlackBold('RAW MATERIALS'))),
           ],
         ),
         SizedBox(
@@ -100,7 +112,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
               onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addWindow),
               style: ElevatedButton.styleFrom(
                   backgroundColor: CustomColors.emeraldGreen),
-              child: quicksandBlackBold('+')),
+              child: quicksandWhiteBold('ADD NEW ITEM')),
         )
       ]),
     );
@@ -118,15 +130,17 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
   }
 
   Widget _windowEntries() {
-    return Wrap(
-        alignment: WrapAlignment.start,
-        spacing: 60,
-        runSpacing: 60,
-        children: ref
-            .read(windowsProvider)
-            .windowDocs
-            .map((window) => _windowEntry(window))
-            .toList());
+    return Center(
+      child: Wrap(
+          alignment: WrapAlignment.start,
+          spacing: 60,
+          runSpacing: 60,
+          children: ref
+              .read(windowsProvider)
+              .windowDocs
+              .map((window) => _windowEntry(window))
+              .toList()),
+    );
   }
 
   Widget _windowEntry(DocumentSnapshot windowDoc) {
@@ -146,7 +160,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
                 image: DecorationImage(
                     image: NetworkImage(imageURL), fit: BoxFit.cover)),
           ),
-          quicksandBlackBold(name),
+          quicksandWhiteRegular(name),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             if (isAvailable)
               Container(
@@ -183,48 +197,13 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
                       GoRoutes.editWindow,
                       pathParameters: {PathParameters.windowID: windowDoc.id})),
             ),
-            Container(
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle, border: Border.all(width: 2)),
-              child: viewEntryButton(context,
-                  onPress: () => GoRouter.of(context).goNamed(
-                      GoRoutes.selectedWindow,
-                      pathParameters: {PathParameters.windowID: windowDoc.id})),
-            )
+            viewEntryButton(context,
+                onPress: () => GoRouter.of(context).goNamed(
+                    GoRoutes.selectedWindow,
+                    pathParameters: {PathParameters.windowID: windowDoc.id}))
           ])
         ],
       ),
     );
-    /*Color entryColor = Colors.black;
-    Color backgroundColor = CustomColors.lavenderMist;
-    return viewContentEntryRow(context, children: [
-      viewFlexTextCell(name,
-          flex: 4,
-          backgroundColor: backgroundColor,
-          textColor: entryColor,
-          customBorder: Border.symmetric(horizontal: BorderSide())),
-      viewFlexActionsCell([
-        if (isAvailable)
-          deleteEntryButton(context,
-              onPress: () => displayDeleteEntryDialog(context,
-                  message: 'Are you sure you wish to archive this window? ',
-                  deleteWord: 'Archive',
-                  deleteEntry: () => toggleWindowAvailability(context, ref,
-                      windowID: windowDoc.id, isAvailable: isAvailable)))
-        else
-          restoreEntryButton(context,
-              onPress: () => toggleWindowAvailability(context, ref,
-                  windowID: windowDoc.id, isAvailable: isAvailable)),
-        editEntryButton(context,
-            onPress: () => GoRouter.of(context).goNamed(GoRoutes.editWindow,
-                pathParameters: {PathParameters.windowID: windowDoc.id})),
-        viewEntryButton(context,
-            onPress: () => GoRouter.of(context).goNamed(GoRoutes.selectedWindow,
-                pathParameters: {PathParameters.windowID: windowDoc.id}))
-      ],
-          flex: 2,
-          backgroundColor: backgroundColor,
-          customBorder: Border.symmetric(horizontal: BorderSide()))
-    ]);*/
   }
 }

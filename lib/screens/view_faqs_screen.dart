@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/firebase_util.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/delete_entry_dialog_util.dart';
@@ -63,16 +63,24 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
       body: stackedLoadingContainer(
         context,
         ref.read(loadingProvider).isLoading,
-        SingleChildScrollView(
-          child: Column(
-            children: [
-              topNavigator(context, path: GoRoutes.viewFAQs),
-              horizontal5Percent(context,
-                  child: Column(
-                    children: [_addFAQButton(), _faqContainer()],
-                  )),
-            ],
-          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            leftNavigator(context, path: GoRoutes.viewFAQs),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    horizontal5Percent(context,
+                        child: Column(
+                          children: [_addFAQButton(), _faqContainer()],
+                        )),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -21,9 +21,10 @@ Widget submitButton(BuildContext context,
 
 Widget backButton(BuildContext context, {required Function onPress}) {
   return all4Pix(
-    child: TextButton(
+    child: ElevatedButton(
         onPressed: () => onPress(),
         style: ElevatedButton.styleFrom(
+            backgroundColor: CustomColors.lavenderMist,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10))),
         child: quicksandBlackBold('BACK')),
@@ -72,7 +73,7 @@ Widget uploadImageButton(String label, Function selectImage) {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
       child: Padding(
-          padding: const EdgeInsets.all(7), child: quicksandBlackBold(label)));
+          padding: const EdgeInsets.all(7), child: quicksandWhiteBold(label)));
 }
 
 Widget navigatorButtons(BuildContext context,

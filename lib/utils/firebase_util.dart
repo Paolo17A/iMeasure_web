@@ -66,6 +66,12 @@ Future logInUser(BuildContext context, WidgetRef ref,
   }
 }
 
+Future<String> getCurrentUserType() async {
+  final userDoc = await getCurrentUserDoc();
+  final userData = userDoc.data() as Map<dynamic, dynamic>;
+  return userData[UserFields.userType];
+}
+
 Future<DocumentSnapshot> getCurrentUserDoc() async {
   return await getThisUserDoc(FirebaseAuth.instance.currentUser!.uid);
 }

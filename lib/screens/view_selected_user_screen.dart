@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
+import '../providers/user_data_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
@@ -41,12 +42,21 @@ class _ViewSelectedUserScreenState
       try {
         ref.read(loadingProvider.notifier).toggleLoading(true);
         if (!hasLoggedInUser()) {
+          ref.read(loadingProvider.notifier).toggleLoading(false);
+          goRouter.goNamed(GoRoutes.home);
+          return;
+        }
+
+        ref.read(userDataProvider).setUserType(await getCurrentUserType());
+        if (ref.read(userDataProvider).userType == UserTypes.client) {
+          ref.read(loadingProvider.notifier).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }
 
         final selectedUser = await getThisUserDoc(widget.userID);
         final selectedUserData = selectedUser.data() as Map<dynamic, dynamic>;
+
         formattedName =
             '${selectedUserData[UserFields.firstName]} ${selectedUserData[UserFields.lastName]}';
         profileImageURL = selectedUserData[UserFields.profileImageURL];
@@ -63,32 +73,46 @@ class _ViewSelectedUserScreenState
   @override
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
+    ref.watch(userDataProvider);
     return Scaffold(
       drawer: appDrawer(context, currentPath: GoRoutes.users),
       body: stackedLoadingContainer(
           context,
           ref.read(loadingProvider).isLoading,
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                topNavigator(context, path: GoRoutes.users),
-                horizontal5Percent(
-                  context,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              leftNavigator(context, path: GoRoutes.users),
+              SingleChildScrollView(
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [_backButton(), _userDetails(), orderHistory()],
+                    children: [
+                      _backButton(),
+                      horizontal5Percent(
+                        context,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [_userDetails(), orderHistory()],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           )),
     );
   }
 
   Widget _backButton() {
-    return vertical20Pix(
-      child: backButton(context,
-          onPress: () => GoRouter.of(context).goNamed(GoRoutes.users)),
+    return all20Pix(
+      child: Row(
+        children: [
+          backButton(context,
+              onPress: () => GoRouter.of(context).goNamed(GoRoutes.users)),
+        ],
+      ),
     );
   }
 
@@ -98,7 +122,7 @@ class _ViewSelectedUserScreenState
       padding: const EdgeInsets.all(20),
       child: Column(children: [
         buildProfileImage(profileImageURL: profileImageURL),
-        quicksandBlackBold(formattedName, fontSize: 40),
+        quicksandWhiteBold(formattedName, fontSize: 40),
         Divider(color: CustomColors.lavenderMist)
       ]),
     );
@@ -106,34 +130,25 @@ class _ViewSelectedUserScreenState
 
   Widget orderHistory() {
     return vertical20Pix(
-      child: Container(
-        //width: double.infinity,
-        //decoration: BoxDecoration(color: CustomColors.deepNavyBlue),
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            quicksandBlackBold('ORDER HISTORY', fontSize: 36),
-            orderEntries()
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          quicksandWhiteBold('ORDER HISTORY', fontSize: 36),
+          orderEntries()
+        ],
       ),
     );
   }
 
   Widget orderEntries() {
     return orderDocs.isNotEmpty
-        ? Wrap(
-            children:
-                orderDocs.map((order) => _orderHistoryEntry(order)).toList(),
+        ? Center(
+            child: Wrap(
+                alignment: WrapAlignment.start,
+                children: orderDocs
+                    .map((order) => _orderHistoryEntry(order))
+                    .toList()),
           )
-        /*ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: orderDocs.length,
-            itemBuilder: (context, index) {
-              return _orderHistoryEntry(orderDocs[index]);
-            })*/
         : all20Pix(
             child: quicksandWhiteBold('THIS USER HAS NO ORDER HISTORY YET',
                 fontSize: 20));
@@ -159,23 +174,34 @@ class _ViewSelectedUserScreenState
         String name = productData[WindowFields.name];
         return all10Pix(
             child: Container(
-          width: 360,
-          height: 180,
-          padding: EdgeInsets.all(10),
+          width: 400,
+          height: 200,
+          decoration: BoxDecoration(border: Border.all(color: Colors.white)),
+          padding: EdgeInsets.all(16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.network(imageURL, width: 120, height: 120),
+              Image.network(
+                imageURL,
+                width: 150,
+                height: 150,
+                fit: BoxFit.cover,
+              ),
               Gap(10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  quicksandBlackBold(name, fontSize: 26),
-                  quicksandBlackRegular('Glass Type: $glassType', fontSize: 18),
-                  quicksandBlackRegular('Color: $color', fontSize: 18),
-                  quicksandBlackRegular('Status: $status', fontSize: 18),
-                  quicksandBlackBold('PHP ${formatPrice(price)}'),
-                ],
+              SizedBox(
+                width: 200,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    quicksandWhiteBold(name, fontSize: 24),
+                    quicksandWhiteRegular('Glass Type: $glassType',
+                        textAlign: TextAlign.left, fontSize: 12),
+                    quicksandWhiteRegular('Color: $color', fontSize: 12),
+                    quicksandWhiteRegular('Status: $status', fontSize: 12),
+                    quicksandWhiteBold('PHP ${formatPrice(price)}',
+                        fontSize: 24),
+                  ],
+                ),
               ),
             ],
           ),

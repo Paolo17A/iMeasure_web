@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 
 import '../models/window_models.dart';
 import '../providers/loading_provider.dart';
@@ -91,45 +91,50 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
       body: stackedLoadingContainer(
         context,
         ref.read(loadingProvider).isLoading,
-        SingleChildScrollView(
-          child: Column(
-            children: [
-              topNavigator(context, path: GoRoutes.windows),
-              horizontal5Percent(context,
-                  child: Column(children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            leftNavigator(context, path: GoRoutes.windows),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
                     _backButton(),
-                    _newWindowHeaderWidget(),
-                    _windowNameWidget(),
-                    _windowDescriptionWidget(),
-                    Gap(20),
-                    Divider(color: CustomColors.lavenderMist),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Wrap(
-                          alignment: WrapAlignment.spaceBetween,
-                          children: [
-                            _minHeightWidget(),
-                            _maxHeightWidget(),
-                            _minWidthWidget(),
-                            _maxWidthWidget(),
-                          ]),
-                    ),
-                    Gap(20),
-                    Divider(color: CustomColors.lavenderMist),
-                    _windowFields(),
-                    _accessoryFields(),
-                    _productImagesWidget(),
-                    _submitButtonWidget()
-                  ])),
-            ],
-          ),
+                    horizontal5Percent(context,
+                        child: Column(children: [
+                          _newWindowHeaderWidget(),
+                          _windowNameWidget(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Wrap(
+                                alignment: WrapAlignment.spaceBetween,
+                                children: [
+                                  _minHeightWidget(),
+                                  _maxHeightWidget(),
+                                  _minWidthWidget(),
+                                  _maxWidthWidget(),
+                                ]),
+                          ),
+                          _windowDescriptionWidget(),
+                          Divider(color: CustomColors.lavenderMist),
+                          _windowFields(),
+                          _accessoryFields(),
+                          _productImagesWidget(),
+                          _submitButtonWidget()
+                        ])),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _backButton() {
-    return vertical20Pix(
+    return all20Pix(
       child: Row(children: [
         backButton(context,
             onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows))
@@ -138,7 +143,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   }
 
   Widget _newWindowHeaderWidget() {
-    return quicksandBlackBold(
+    return quicksandWhiteBold(
       'NEW WINDOW',
       textAlign: TextAlign.center,
       fontSize: 38,
@@ -147,7 +152,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _windowNameWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      vertical10Pix(child: quicksandBlackBold('Window Name', fontSize: 24)),
+      vertical10Pix(child: quicksandWhiteBold('Window Name', fontSize: 24)),
       CustomTextField(
           text: 'Window Name',
           height: 40,
@@ -161,7 +166,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   Widget _windowDescriptionWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       vertical10Pix(
-          child: quicksandBlackBold('Window Description', fontSize: 24)),
+          child: quicksandWhiteBold('Window Description', fontSize: 24)),
       CustomTextField(
           text: 'Window Description',
           controller: descriptionController,
@@ -172,13 +177,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _minHeightWidget() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.4,
+      width: MediaQuery.of(context).size.width * 0.3,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
               child:
-                  quicksandBlackBold('Minimum Height (in feet)', fontSize: 24)),
+                  quicksandWhiteBold('Minimum Height (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Minimum Height',
               height: 40,
@@ -192,13 +197,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _maxHeightWidget() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.4,
+      width: MediaQuery.of(context).size.width * 0.3,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
               child:
-                  quicksandBlackBold('Maximum Height (in feet)', fontSize: 24)),
+                  quicksandWhiteBold('Maximum Height (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Maximum Height',
               height: 40,
@@ -212,13 +217,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _minWidthWidget() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.4,
+      width: MediaQuery.of(context).size.width * 0.3,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
               child:
-                  quicksandBlackBold('Minimum Width (in feet)', fontSize: 24)),
+                  quicksandWhiteBold('Minimum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Minimum Width',
               height: 40,
@@ -232,13 +237,13 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _maxWidthWidget() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.4,
+      width: MediaQuery.of(context).size.width * 0.3,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           vertical10Pix(
               child:
-                  quicksandBlackBold('Maximum Width (in feet)', fontSize: 24)),
+                  quicksandWhiteBold('Maximum Width (in feet)', fontSize: 24)),
           CustomTextField(
               text: 'Maximum Width',
               height: 40,
@@ -281,7 +286,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              quicksandBlackBold('WINDOW FIELDS', fontSize: 24),
+              quicksandWhiteBold('WINDOW FIELDS', fontSize: 24),
             ],
           ),
           ListView.builder(
@@ -321,7 +326,9 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                       });
                     });
               }),
-          TextButton(
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: CustomColors.lavenderMist),
               onPressed: () {
                 setState(() {
                   windowFieldModels.add(WindowFieldModel());
@@ -340,7 +347,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              quicksandBlackBold('ACCESSORY FIELDS', fontSize: 24),
+              quicksandWhiteBold('ACCESSORY FIELDS', fontSize: 24),
             ],
           ),
           if (windowAccessoryModels.isNotEmpty)
@@ -359,7 +366,9 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                     });
                   });
                 }),
-          TextButton(
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: CustomColors.lavenderMist),
               onPressed: () {
                 setState(() {
                   windowAccessoryModels.add(WindowAccessoryModel());
@@ -374,7 +383,9 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   Widget _submitButtonWidget() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 50),
-      child: TextButton(
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            backgroundColor: CustomColors.lavenderMist),
         onPressed: () => addWindowEntry(context, ref,
             nameController: nameController,
             descriptionController: descriptionController,

@@ -144,12 +144,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: stackedLoadingContainer(
           context,
           ref.read(loadingProvider).isLoading,
-          SingleChildScrollView(
-              child: hasLoggedInUser()
-                  ? ref.read(userDataProvider).userType == UserTypes.admin
-                      ? adminDashboard()
-                      : Container()
-                  : _logInContainer())),
+          hasLoggedInUser()
+              ? ref.read(userDataProvider).userType == UserTypes.admin
+                  ? adminDashboard()
+                  : Container()
+              : _logInContainer()),
     );
   }
 
@@ -162,13 +161,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         leftNavigator(context, path: GoRoutes.home),
-        SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          child: Column(
-            children: [
-              _platformSummary(),
-              windowsSummary(),
-            ],
+        SingleChildScrollView(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: Column(
+              children: [
+                _platformSummary(),
+                //windowsSummary(),
+              ],
+            ),
           ),
         ),
       ],
@@ -208,8 +209,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _platformDataEntry(
       {required String label, required String count, required Color color}) {
     return Container(
-        width: 320,
-        height: 200,
+        width: 260,
+        height: 180,
         decoration: BoxDecoration(
             color: color, borderRadius: BorderRadiusDirectional.circular(20)),
         padding: EdgeInsets.all(12),

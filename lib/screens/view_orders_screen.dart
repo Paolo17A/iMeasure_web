@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/orders_provider.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
+import 'package:imeasure/widgets/custom_padding_widgets.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
-import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
@@ -52,28 +53,48 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
       drawer: appDrawer(context, currentPath: GoRoutes.orders),
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                topNavigator(context, path: GoRoutes.orders),
-                _ordersContainer()
-              ],
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              leftNavigator(context, path: GoRoutes.orders),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: SingleChildScrollView(
+                  child: horizontal5Percent(
+                    context,
+                    child: Column(
+                      children: [_ordersHeader(), _ordersContainer()],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           )),
     );
   }
 
-  Widget _ordersContainer() {
-    return viewContentContainer(
-      context,
-      child: Column(
+  Widget _ordersHeader() {
+    return vertical20Pix(
+      child: Row(
         children: [
-          _ordersLabelRow(),
-          ref.read(ordersProvider).orderDocs.isNotEmpty
-              ? _orderEntries()
-              : viewContentUnavailable(context, text: 'NO AVAILABLE ORDERS'),
+          quicksandWhiteBold('Orders: ', fontSize: 28),
+          Gap(4),
+          quicksandCoralRedBold(
+              ref.read(ordersProvider).orderDocs.length.toString(),
+              fontSize: 28)
         ],
       ),
+    );
+  }
+
+  Widget _ordersContainer() {
+    return Column(
+      children: [
+        _ordersLabelRow(),
+        ref.read(ordersProvider).orderDocs.isNotEmpty
+            ? _orderEntries()
+            : viewContentUnavailable(context, text: 'NO AVAILABLE ORDERS'),
+      ],
     );
   }
 
@@ -86,126 +107,109 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   }
 
   Widget _orderEntries() {
-    return SizedBox(
-      height: 500,
-      child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: ref.read(ordersProvider).orderDocs.length,
-          itemBuilder: (context, index) {
-            final orderData = ref.read(ordersProvider).orderDocs[index].data()
-                as Map<dynamic, dynamic>;
-            String clientID = orderData[OrderFields.clientID];
-            String windowID = orderData[OrderFields.windowID];
-            String status = orderData[OrderFields.purchaseStatus];
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: ref.read(ordersProvider).orderDocs.length,
+        itemBuilder: (context, index) {
+          final orderData = ref.read(ordersProvider).orderDocs[index].data()
+              as Map<dynamic, dynamic>;
+          String clientID = orderData[OrderFields.clientID];
+          String windowID = orderData[OrderFields.windowID];
+          String status = orderData[OrderFields.purchaseStatus];
 
-            return FutureBuilder(
-                future: getThisUserDoc(clientID),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting ||
-                      !snapshot.hasData ||
-                      snapshot.hasError) return Container();
+          return FutureBuilder(
+              future: getThisUserDoc(clientID),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting ||
+                    !snapshot.hasData ||
+                    snapshot.hasError) return Container();
 
-                  final clientData =
-                      snapshot.data!.data() as Map<dynamic, dynamic>;
-                  String formattedName =
-                      '${clientData[UserFields.firstName]} ${clientData[UserFields.lastName]}';
+                final clientData =
+                    snapshot.data!.data() as Map<dynamic, dynamic>;
+                String formattedName =
+                    '${clientData[UserFields.firstName]} ${clientData[UserFields.lastName]}';
 
-                  return FutureBuilder(
-                      future: getThisWindowDoc(windowID),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                                ConnectionState.waiting ||
-                            !snapshot.hasData ||
-                            snapshot.hasError) return Container();
+                return FutureBuilder(
+                    future: getThisWindowDoc(windowID),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting ||
+                          !snapshot.hasData ||
+                          snapshot.hasError) return Container();
 
-                        final itemData =
-                            snapshot.data!.data() as Map<dynamic, dynamic>;
-                        String name = itemData[WindowFields.name];
+                      final itemData =
+                          snapshot.data!.data() as Map<dynamic, dynamic>;
+                      String name = itemData[WindowFields.name];
 
-                        Color entryColor = Colors.black;
-                        Color backgroundColor = CustomColors.lavenderMist;
+                      Color entryColor = Colors.white;
+                      Color backgroundColor = Colors.transparent;
 
-                        return viewContentEntryRow(context, children: [
-                          viewFlexTextCell(formattedName,
-                              flex: 2,
-                              backgroundColor: backgroundColor,
-                              textColor: entryColor,
-                              customBorder:
-                                  Border.symmetric(horizontal: BorderSide())),
-                          viewFlexTextCell(name,
-                              flex: 2,
-                              backgroundColor: backgroundColor,
-                              textColor: entryColor,
-                              customBorder:
-                                  Border.symmetric(horizontal: BorderSide())),
-                          viewFlexActionsCell([
-                            if (status == OrderStatuses.generated)
-                              Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      decoration:
-                                          BoxDecoration(border: Border.all()),
-                                      child: TextButton(
-                                          onPressed: () => GoRouter.of(context)
-                                                  .goNamed(
-                                                      GoRoutes.generatedOrder,
-                                                      pathParameters: {
-                                                    PathParameters.orderID: ref
-                                                        .read(ordersProvider)
-                                                        .orderDocs[index]
-                                                        .id
-                                                  }),
-                                          child: quicksandBlackBold(
-                                              'SET LABOR COST',
-                                              fontSize: 12)),
-                                    )
-                                  ]),
-                            if (status == OrderStatuses.pending)
-                              quicksandBlackBold('PENDING PAYMENT')
-                            else if (status == OrderStatuses.denied)
-                              quicksandBlackBold('PAYMENT DENIED')
-                            else if (status == OrderStatuses.processing)
-                              Container(
-                                decoration: BoxDecoration(border: Border.all()),
-                                child: TextButton(
-                                    onPressed: () => markOrderAsReadyForPickUp(
-                                        context, ref,
-                                        orderID: ref
-                                            .read(ordersProvider)
-                                            .orderDocs[index]
-                                            .id),
-                                    child: quicksandBlackBold(
-                                        'MARK AS READY FOR PICK UP',
-                                        fontSize: 12)),
-                              )
-                            else if (status == OrderStatuses.forPickUp)
-                              Container(
-                                decoration: BoxDecoration(border: Border.all()),
-                                child: TextButton(
-                                    onPressed: () => markOrderAsPickedUp(
-                                        context, ref,
-                                        orderID: ref
-                                            .read(ordersProvider)
-                                            .orderDocs[index]
-                                            .id),
-                                    child: quicksandBlackBold(
-                                        'MARK AS PICKED UP',
-                                        fontSize: 12)),
-                              )
-                            else if (status == OrderStatuses.pickedUp)
-                              quicksandBlackBold('COMPLETED')
-                          ],
-                              flex: 2,
-                              backgroundColor: backgroundColor,
-                              customBorder:
-                                  Border.symmetric(horizontal: BorderSide())),
-                        ]);
-                      });
-                  //  Item Variables
-                });
-            //  Client Variables
-          }),
-    );
+                      return viewContentEntryRow(context, children: [
+                        viewFlexTextCell(formattedName,
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
+                        viewFlexTextCell(name,
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
+                        viewFlexActionsCell([
+                          if (status == OrderStatuses.generated)
+                            Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.white)),
+                              child: TextButton(
+                                  onPressed: () => GoRouter.of(context).goNamed(
+                                          GoRoutes.generatedOrder,
+                                          pathParameters: {
+                                            PathParameters.orderID: ref
+                                                .read(ordersProvider)
+                                                .orderDocs[index]
+                                                .id
+                                          }),
+                                  child: quicksandWhiteBold('SET LABOR COST',
+                                      fontSize: 12)),
+                            ),
+                          if (status == OrderStatuses.pending)
+                            quicksandWhiteBold('PENDING PAYMENT')
+                          else if (status == OrderStatuses.denied)
+                            quicksandWhiteBold('PAYMENT DENIED')
+                          else if (status == OrderStatuses.processing)
+                            Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.white)),
+                              child: TextButton(
+                                  onPressed: () => markOrderAsReadyForPickUp(
+                                      context, ref,
+                                      orderID: ref
+                                          .read(ordersProvider)
+                                          .orderDocs[index]
+                                          .id),
+                                  child: quicksandWhiteBold(
+                                      'MARK AS READY FOR PICK UP',
+                                      fontSize: 12)),
+                            )
+                          else if (status == OrderStatuses.forPickUp)
+                            Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.white)),
+                              child: TextButton(
+                                  onPressed: () => markOrderAsPickedUp(
+                                      context, ref,
+                                      orderID: ref
+                                          .read(ordersProvider)
+                                          .orderDocs[index]
+                                          .id),
+                                  child: quicksandWhiteBold('MARK AS PICKED UP',
+                                      fontSize: 12)),
+                            )
+                          else if (status == OrderStatuses.pickedUp)
+                            quicksandWhiteBold('COMPLETED')
+                        ], flex: 2, backgroundColor: backgroundColor),
+                      ]);
+                    });
+                //  Item Variables
+              });
+          //  Client Variables
+        });
   }
 }

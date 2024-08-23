@@ -4,7 +4,8 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/transactions_provider.dart';
 import 'package:imeasure/utils/url_util.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
+import 'package:imeasure/widgets/custom_padding_widgets.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
@@ -57,31 +58,39 @@ class _ViewTransactionsScreenState
     ref.watch(transactionsProvider);
     return Scaffold(
       drawer: appDrawer(context, currentPath: GoRoutes.transactions),
-      backgroundColor: Colors.white,
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                topNavigator(context, path: GoRoutes.transactions),
-                _ordersContainer()
-              ],
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              leftNavigator(context, path: GoRoutes.transactions),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [_ordersContainer()],
+                  ),
+                ),
+              ),
+            ],
           )),
     );
   }
 
   Widget _ordersContainer() {
-    return viewContentContainer(
+    return horizontal5Percent(
       context,
-      child: Column(
-        children: [
-          _transactionsLabelRow(),
-          ref.read(transactionsProvider).transactionDocs.isNotEmpty
-              ? _transactionEntries()
-              : viewContentUnavailable(context,
-                  text: 'NO AVAILABLE TRANSACTIONS'),
-        ],
+      child: viewContentContainer(
+        context,
+        child: Column(
+          children: [
+            _transactionsLabelRow(),
+            ref.read(transactionsProvider).transactionDocs.isNotEmpty
+                ? _transactionEntries()
+                : viewContentUnavailable(context,
+                    text: 'NO AVAILABLE TRANSACTIONS'),
+          ],
+        ),
       ),
     );
   }
@@ -123,8 +132,8 @@ class _ViewTransactionsScreenState
                       snapshot.data!.data() as Map<dynamic, dynamic>;
                   String formattedName =
                       '${clientData[UserFields.firstName]} ${clientData[UserFields.lastName]}';
-                  Color entryColor = Colors.black;
-                  Color backgroundColor = CustomColors.lavenderMist;
+                  Color entryColor = Colors.white;
+                  Color backgroundColor = Colors.transparent;
 
                   return viewContentEntryRow(
                     context,
@@ -132,31 +141,25 @@ class _ViewTransactionsScreenState
                       viewFlexTextCell(formattedName,
                           flex: 3,
                           backgroundColor: backgroundColor,
-                          textColor: entryColor,
-                          customBorder:
-                              Border.symmetric(horizontal: BorderSide())),
-                      viewFlexTextCell('PHP ${totalAmount.toStringAsFixed(2)}',
+                          textColor: entryColor),
+                      viewFlexTextCell(
+                          'PHP ${formatPrice(totalAmount.toDouble())}',
                           flex: 2,
                           backgroundColor: backgroundColor,
-                          textColor: entryColor,
-                          customBorder:
-                              Border.symmetric(horizontal: BorderSide())),
+                          textColor: entryColor),
                       viewFlexActionsCell([
                         Container(
-                          decoration: BoxDecoration(border: Border.all()),
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white)),
                           child: TextButton(
                               onPressed: () =>
                                   launchThisURL(context, proofOfPayment),
-                              child: quicksandBlackBold('DOWNLOAD')),
+                              child: quicksandWhiteBold('DOWNLOAD')),
                         )
-                      ],
-                          flex: 2,
-                          backgroundColor: backgroundColor,
-                          customBorder:
-                              Border.symmetric(horizontal: BorderSide())),
+                      ], flex: 2, backgroundColor: backgroundColor),
                       viewFlexActionsCell([
                         if (paymentData[TransactionFields.paymentVerified])
-                          quicksandBlackBold('VERIFIED'),
+                          quicksandWhiteBold('VERIFIED'),
                         if (!paymentData[TransactionFields.paymentVerified])
                           TextButton(
                               onPressed: () => approveThisPayment(context, ref,
@@ -180,11 +183,7 @@ class _ViewTransactionsScreenState
                                           .id)),
                               child: Icon(Icons.block,
                                   color: CustomColors.coralRed))
-                      ],
-                          flex: 2,
-                          backgroundColor: backgroundColor,
-                          customBorder:
-                              Border.symmetric(horizontal: BorderSide()))
+                      ], flex: 2, backgroundColor: backgroundColor)
                     ],
                   );
                 });

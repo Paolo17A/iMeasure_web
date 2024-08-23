@@ -15,6 +15,19 @@ Text quicksandWhiteBold(String label,
           textStyle: TextStyle(overflow: textOverflow)));
 }
 
+Text quicksandCoralRedBold(String label,
+    {double fontSize = 20,
+    TextAlign textAlign = TextAlign.center,
+    TextOverflow? textOverflow}) {
+  return Text(label,
+      textAlign: textAlign,
+      style: GoogleFonts.quicksand(
+          fontSize: fontSize,
+          color: CustomColors.coralRed,
+          fontWeight: FontWeight.bold,
+          textStyle: TextStyle(overflow: textOverflow)));
+}
+
 Text quicksandBlackRegular(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,

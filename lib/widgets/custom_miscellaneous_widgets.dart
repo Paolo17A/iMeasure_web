@@ -31,8 +31,7 @@ Container viewContentContainer(BuildContext context, {required Widget child}) {
   return Container(
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.white),
       ),
       child: child);
 }
@@ -63,7 +62,8 @@ Widget viewFlexTextCell(String text,
         height: 50,
         decoration: BoxDecoration(
             color: backgroundColor,
-            border: customBorder,
+            border: customBorder ??
+                Border.symmetric(horizontal: BorderSide(color: Colors.white)),
             borderRadius: customBorderRadius),
         child: ClipRRect(
           child: Center(
@@ -81,7 +81,7 @@ Widget viewFlexTextCell(String text,
 
 Widget viewFlexLabelTextCell(String text, int flex) {
   return viewFlexTextCell(text,
-      flex: flex, backgroundColor: Colors.transparent, textColor: Colors.black);
+      flex: flex, backgroundColor: Colors.transparent, textColor: Colors.white);
 }
 
 Widget viewFlexActionsCell(List<Widget> children,
@@ -94,7 +94,8 @@ Widget viewFlexActionsCell(List<Widget> children,
       child: Container(
         height: 50,
         decoration: BoxDecoration(
-            border: customBorder,
+            border: customBorder ??
+                Border.symmetric(horizontal: BorderSide(color: Colors.white)),
             borderRadius: customBorderRadius,
             color: backgroundColor),
         child: Center(
@@ -110,7 +111,7 @@ Widget viewFlexActionsCell(List<Widget> children,
 Widget viewContentUnavailable(BuildContext context, {required String text}) {
   return SizedBox(
     height: MediaQuery.of(context).size.height * 0.65,
-    child: Center(child: quicksandBlackBold(text, fontSize: 44)),
+    child: Center(child: quicksandWhiteBold(text, fontSize: 44)),
   );
 }
 
@@ -206,7 +207,7 @@ Widget selectedNetworkImageDisplay(String imageSource) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 40),
     child: Container(
-      decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+      decoration: BoxDecoration(border: Border.all(color: Colors.white)),
       padding: const EdgeInsets.all(10),
       child:
           SizedBox(width: 150, height: 150, child: Image.network(imageSource)),
@@ -259,11 +260,11 @@ Widget windowParameterWidget(BuildContext context,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.3,
+                width: MediaQuery.of(context).size.width * 0.2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    quicksandBlackBold('Field Name'),
+                    quicksandWhiteBold('Field Name'),
                     CustomTextField(
                         text: 'Field Name',
                         height: 40,
@@ -274,15 +275,23 @@ Widget windowParameterWidget(BuildContext context,
               ),
               Gap(30),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.3,
+                width: MediaQuery.of(context).size.width * 0.2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    quicksandBlackBold('Is Mandatory Field'),
+                    quicksandWhiteBold('Is Mandatory Field'),
                     Checkbox(value: isMandatory, onChanged: onCheckboxPress),
                   ],
                 ),
-              )
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.1,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColors.coralRed),
+                    onPressed: () => onRemoveField(),
+                    child: quicksandWhiteBold('REMOVE SUBFIELD', fontSize: 12)),
+              ),
             ],
           ),
           Gap(10),
@@ -290,9 +299,12 @@ Widget windowParameterWidget(BuildContext context,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                quicksandBlackBold('Price Basis'),
-                SizedBox(
+                quicksandWhiteBold('Price Basis'),
+                Container(
                   height: 40,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(5)),
                   child: dropdownWidget(priceBasis, onPriceBasisChange,
                       ['WIDTH', 'HEIGHT'], priceBasis, false),
                 ),
@@ -307,7 +319,7 @@ Widget windowParameterWidget(BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    quicksandBlackBold('Brown Price'),
+                    quicksandWhiteBold('Brown Price'),
                     CustomTextField(
                         text: 'Brown Price',
                         height: 40,
@@ -321,7 +333,7 @@ Widget windowParameterWidget(BuildContext context,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    quicksandBlackBold('White Price'),
+                    quicksandWhiteBold('White Price'),
                     CustomTextField(
                         text: 'White Price',
                         height: 40,
@@ -341,7 +353,7 @@ Widget windowParameterWidget(BuildContext context,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      quicksandBlackBold('Matt Black Price'),
+                      quicksandWhiteBold('Matt Black Price'),
                       CustomTextField(
                           text: 'Matt Black Price',
                           height: 40,
@@ -355,7 +367,7 @@ Widget windowParameterWidget(BuildContext context,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      quicksandBlackBold('Matt Gray Price'),
+                      quicksandWhiteBold('Matt Gray Price'),
                       CustomTextField(
                           text: 'Matt Gray Price',
                           height: 40,
@@ -376,7 +388,7 @@ Widget windowParameterWidget(BuildContext context,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      quicksandBlackBold('Wood Finish Price'),
+                      quicksandWhiteBold('Wood Finish Price'),
                       CustomTextField(
                           text: 'Wood Finish Price',
                           height: 40,
@@ -388,13 +400,6 @@ Widget windowParameterWidget(BuildContext context,
               ],
             ),
           ),
-          vertical20Pix(
-            child: Container(
-              child: TextButton(
-                  onPressed: () => onRemoveField(),
-                  child: quicksandBlackBold('REMOVE SUBFIELD', fontSize: 12)),
-            ),
-          )
         ],
       ),
     ),
@@ -416,11 +421,11 @@ Widget windowAccessoryWidget(BuildContext context,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.3,
+                width: MediaQuery.of(context).size.width * 0.2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    quicksandBlackBold('Accessory Name'),
+                    quicksandWhiteBold('Accessory Name'),
                     CustomTextField(
                         text: 'Accessory Name',
                         height: 40,
@@ -430,11 +435,11 @@ Widget windowAccessoryWidget(BuildContext context,
                 ),
               ),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.3,
+                width: MediaQuery.of(context).size.width * 0.2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    quicksandBlackBold('Accessory Price'),
+                    quicksandWhiteBold('Accessory Price'),
                     CustomTextField(
                         text: 'Accessory Price',
                         height: 40,
@@ -443,15 +448,13 @@ Widget windowAccessoryWidget(BuildContext context,
                   ],
                 ),
               ),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: CustomColors.coralRed),
+                  onPressed: () => onRemoveField(),
+                  child: quicksandWhiteBold('REMOVE ACCESSORY', fontSize: 12)),
             ],
           ),
-          vertical20Pix(
-            child: Container(
-              child: TextButton(
-                  onPressed: () => onRemoveField(),
-                  child: quicksandBlackBold('REMOVE ACCESSORY', fontSize: 12)),
-            ),
-          )
         ],
       ),
     ),

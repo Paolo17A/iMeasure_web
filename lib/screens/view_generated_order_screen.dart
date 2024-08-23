@@ -10,8 +10,8 @@ import 'package:imeasure/utils/go_router_util.dart';
 import 'package:imeasure/utils/string_util.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/custom_text_field_widget.dart';
+import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
-import 'package:imeasure/widgets/top_navigator_widget.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../widgets/app_drawer_widget.dart';
@@ -93,45 +93,54 @@ class _ViewGeneratedOrderScreenState
       body: stackedLoadingContainer(
           context,
           ref.read(loadingProvider).isLoading,
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                topNavigator(context, path: GoRoutes.orders),
-                horizontal5Percent(context,
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _backButton(),
-                          _selectedDetails(),
-                          _mandatoryBreakdownWidget(),
-                          _orderLaborCost(),
-                          setLaborPriceButton()
-                        ])),
-              ],
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              leftNavigator(context, path: GoRoutes.orders),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _backButton(),
+                      horizontal5Percent(context,
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _selectedDetails(),
+                                _mandatoryBreakdownWidget(),
+                                _orderLaborCost(),
+                                setLaborPriceButton()
+                              ])),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           )),
     );
   }
 
   Widget _backButton() {
-    return vertical20Pix(
-      child: backButton(context,
-          onPress: () => GoRouter.of(context).goNamed(GoRoutes.orders)),
-    );
+    return all20Pix(
+        child: Row(children: [
+      backButton(context,
+          onPress: () => GoRouter.of(context).goNamed(GoRoutes.orders))
+    ]));
   }
 
   Widget _selectedDetails() {
     return all10Pix(
       child: Row(children: [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          quicksandBlackBold('Inputted Window Details'),
-          quicksandBlackRegular('Window: $windowName'),
-          quicksandBlackRegular('Width: ${width.toStringAsFixed(1)} ft',
-              fontSize: 14),
-          quicksandBlackRegular('Height: ${height.toStringAsFixed(1)} ft',
-              fontSize: 14),
-          quicksandBlackRegular('Glass Type: $glassType', fontSize: 14),
-          quicksandBlackRegular('Color: $color', fontSize: 14),
+          quicksandWhiteBold('Inputted Window Details'),
+          quicksandWhiteRegular('Window: $windowName'),
+          quicksandWhiteRegular('Width: ${width.toStringAsFixed(1)} ft',
+              fontSize: 12),
+          quicksandWhiteRegular('Height: ${height.toStringAsFixed(1)} ft',
+              fontSize: 12),
+          quicksandWhiteRegular('Glass Type: $glassType', fontSize: 12),
+          quicksandWhiteRegular('Color: $color', fontSize: 12),
           Gap(10),
         ]),
       ]),
@@ -141,10 +150,10 @@ class _ViewGeneratedOrderScreenState
   Widget _mandatoryBreakdownWidget() {
     return all10Pix(
       child: Container(
-        decoration: BoxDecoration(border: Border.all()),
+        decoration: BoxDecoration(border: Border.all(color: Colors.white)),
         padding: EdgeInsets.all(5),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          quicksandBlackBold('Window Cost Breakdown'),
+          quicksandWhiteBold('Window Cost Breakdown'),
           Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: mandatoryMap
@@ -159,7 +168,7 @@ class _ViewGeneratedOrderScreenState
                   .map((mapEntry) => orderBreakdownWidget(mapEntry))
                   .toList()),
           Divider(),
-          quicksandBlackBold(
+          quicksandWhiteBold(
               'Window Overall Price: PHP ${formatPrice(windowOverallPrice.toDouble())}',
               fontSize: 16)
         ]),
@@ -171,9 +180,9 @@ class _ViewGeneratedOrderScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        quicksandBlackRegular('${orderBreakdownMap[OrderBreakdownMap.field]}: ',
+        quicksandWhiteRegular('${orderBreakdownMap[OrderBreakdownMap.field]}: ',
             fontSize: 14),
-        quicksandBlackRegular(
+        quicksandWhiteRegular(
             ' PHP ${formatPrice(orderBreakdownMap[OrderBreakdownMap.breakdownPrice].toDouble())}',
             fontSize: 14),
       ],
@@ -198,10 +207,11 @@ class _ViewGeneratedOrderScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          quicksandBlackBold('Labor Cost'),
+          quicksandWhiteBold('Labor Cost'),
           CustomTextField(
               text: 'Labor Cost',
               controller: laborPriceController,
+              fillColor: Colors.white,
               textInputType: TextInputType.number)
         ],
       ),
@@ -215,7 +225,7 @@ class _ViewGeneratedOrderScreenState
         children: [
           ElevatedButton(
               onPressed: () async => createPDF(),
-              child: quicksandBlackBold('SET LABOR COST')),
+              child: all10Pix(child: quicksandWhiteBold('SET LABOR COST'))),
         ],
       ),
     );
