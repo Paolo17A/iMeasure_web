@@ -11,6 +11,7 @@ class StorageFields {
   static const String profilePics = 'profilePics';
   static const String windows = 'windows';
   static const String orders = 'orders';
+  static const String galleries = 'galleries';
 }
 
 class UserTypes {
@@ -24,6 +25,7 @@ class Collections {
   static const String windows = 'windows';
   static const String transactions = 'transactions';
   static const String orders = 'orders';
+  static const String galleries = 'galleries';
 }
 
 class UserFields {
@@ -134,11 +136,25 @@ class TransactionStatuses {
   static const String denied = 'DENIED';
 }
 
+class GalleryFields {
+  static const String galleryType = 'galleryType';
+  static const String title = 'title';
+  static const String content = 'content';
+  static const String imageURL = 'imageURL';
+}
+
+class GalleryTypes {
+  static const String service = 'service';
+  static const String portfolio = 'portfolio';
+  static const String testimonial = 'testimonial';
+}
+
 class PathParameters {
   static const String userID = 'userID';
   static const String windowID = 'windowID';
   static const String faqID = 'faqID';
   static const String orderID = 'orderID';
+  static const String galleryID = 'galleryID';
 }
 
 String generateRandomHexString(int length) {

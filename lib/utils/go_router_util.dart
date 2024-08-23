@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/screens/add_portfolio_screen.dart';
+import 'package:imeasure/screens/add_service_screen.dart';
+import 'package:imeasure/screens/add_testimonial_screen.dart';
 import 'package:imeasure/screens/add_window_screen.dart';
+import 'package:imeasure/screens/edit_portfolio_screen.dart';
+import 'package:imeasure/screens/edit_testimonial_screen.dart';
 import 'package:imeasure/screens/edit_window_screen.dart';
+import 'package:imeasure/screens/view_gallery_screen.dart';
 import 'package:imeasure/screens/view_generated_order_screen.dart';
 import 'package:imeasure/screens/view_orders_screen.dart';
+import 'package:imeasure/screens/view_portfolio_screen.dart';
 import 'package:imeasure/screens/view_selected_user_screen.dart';
+import 'package:imeasure/screens/view_services_screen.dart';
+import 'package:imeasure/screens/view_testimonials_screen.dart';
 import 'package:imeasure/screens/view_transactions_screen.dart';
 import 'package:imeasure/screens/view_users_screen.dart';
 import 'package:imeasure/screens/view_windows_screen.dart';
 
 import '../screens/add_faq_screen.dart';
 import '../screens/edit_faq_screen.dart';
+import '../screens/edit_service_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/view_faqs_screen.dart';
 import '../screens/view_selected_window_screen.dart';
@@ -30,6 +40,16 @@ class GoRoutes {
   static const viewFAQs = 'viewFAQs';
   static const addFAQ = 'addFAQ';
   static const editFAQ = 'editFAQ';
+  static const gallery = 'gallery';
+  static const services = 'services';
+  static const addService = 'addService';
+  static const editService = 'editService';
+  static const testimonials = 'testimonials';
+  static const addTestimonial = 'addTestimonial';
+  static const editTestimonial = 'editTestimonial';
+  static const portfolio = 'portfolio';
+  static const addPortfolio = 'addPortfolio';
+  static const editPortfolio = 'editPortfolio';
 }
 
 final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
@@ -115,6 +135,69 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 state,
                 EditFAQScreen(
                     faqID: state.pathParameters[PathParameters.faqID]!))),
+        //  GALLERY
+        GoRoute(
+            name: GoRoutes.gallery,
+            path: GoRoutes.gallery,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ViewGalleryScreen())),
+        GoRoute(
+            name: GoRoutes.services,
+            path: GoRoutes.services,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ViewServicesScreen())),
+        GoRoute(
+            name: GoRoutes.addService,
+            path: GoRoutes.addService,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const AddServiceScreen())),
+        GoRoute(
+            name: GoRoutes.editService,
+            path: '${GoRoutes.editService}/:${PathParameters.galleryID}',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                EditServiceScreen(
+                    galleryID:
+                        state.pathParameters[PathParameters.galleryID]!))),
+        GoRoute(
+            name: GoRoutes.testimonials,
+            path: GoRoutes.testimonials,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const ViewTestimonialsScreen())),
+        GoRoute(
+            name: GoRoutes.addTestimonial,
+            path: GoRoutes.addTestimonial,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const AddTestimonialScreen())),
+        GoRoute(
+            name: GoRoutes.editTestimonial,
+            path: '${GoRoutes.editTestimonial}/:${PathParameters.galleryID}',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                EditTestimonialScreen(
+                    galleryID:
+                        state.pathParameters[PathParameters.galleryID]!))),
+        GoRoute(
+            name: GoRoutes.portfolio,
+            path: GoRoutes.portfolio,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ViewPortfolioScreen())),
+        GoRoute(
+            name: GoRoutes.addPortfolio,
+            path: GoRoutes.addPortfolio,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const AddPortfolioScreen())),
+        GoRoute(
+            name: GoRoutes.editPortfolio,
+            path: '${GoRoutes.editPortfolio}/:${PathParameters.galleryID}',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                EditPortfolioScreen(
+                    galleryID:
+                        state.pathParameters[PathParameters.galleryID]!))),
       ])
 ]);
 

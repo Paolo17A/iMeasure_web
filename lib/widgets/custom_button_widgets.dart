@@ -67,7 +67,7 @@ Widget deleteEntryButton(BuildContext context,
 }
 
 Widget uploadImageButton(String label, Function selectImage) {
-  return TextButton(
+  return ElevatedButton(
       onPressed: () => selectImage(),
       style: ElevatedButton.styleFrom(
           shape:

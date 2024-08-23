@@ -9,8 +9,7 @@ ThemeData themeData = ThemeData(
       backgroundColor: CustomColors.emeraldGreen, toolbarHeight: 40),
   snackBarTheme: const SnackBarThemeData(
       backgroundColor: CustomColors.forestGreen,
-      contentTextStyle:
-          TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+      contentTextStyle: TextStyle(color: Colors.white)),
   elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
           shape:

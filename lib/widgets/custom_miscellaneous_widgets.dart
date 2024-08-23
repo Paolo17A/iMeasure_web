@@ -181,7 +181,7 @@ Widget selectedMemoryImageDisplay(
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 40),
     child: Container(
-      decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+      decoration: BoxDecoration(border: Border.all(color: Colors.white)),
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(

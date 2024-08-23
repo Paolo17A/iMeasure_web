@@ -47,7 +47,7 @@ class _LiliwECommerceTextFieldState extends State<CustomTextField> {
           enabled: widget.enabled,
           controller: widget.controller,
           obscureText: isObscured,
-          cursorColor: CustomColors.deepCharcoal,
+          cursorColor: widget.textColor ?? CustomColors.deepCharcoal,
           onSubmitted: (value) {
             if (widget.onSearchPress != null &&
                 widget.controller.text.isNotEmpty) {

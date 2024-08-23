@@ -11,6 +11,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/providers/gallery_provider.dart';
 import 'package:imeasure/providers/orders_provider.dart';
 import 'package:imeasure/providers/transactions_provider.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
@@ -694,5 +695,156 @@ Future deleteFAQEntry(BuildContext context, WidgetRef ref,
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Error deleting this FAQ: $error')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+//==============================================================================
+//==GALLERY=====================================================================
+//==============================================================================
+
+Future<List<DocumentSnapshot>> getAllServiceGalleryDocs() async {
+  final gallery = await FirebaseFirestore.instance
+      .collection(Collections.galleries)
+      .where(GalleryFields.galleryType, isEqualTo: GalleryTypes.service)
+      .get();
+
+  return gallery.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> getAllTestimonialGalleryDocs() async {
+  final gallery = await FirebaseFirestore.instance
+      .collection(Collections.galleries)
+      .where(GalleryFields.galleryType, isEqualTo: GalleryTypes.testimonial)
+      .get();
+
+  return gallery.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> getAllPortfolioGalleryDocs() async {
+  final gallery = await FirebaseFirestore.instance
+      .collection(Collections.galleries)
+      .where(GalleryFields.galleryType, isEqualTo: GalleryTypes.portfolio)
+      .get();
+
+  return gallery.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<DocumentSnapshot> getThisGalleryDoc(String galleryID) async {
+  return await FirebaseFirestore.instance
+      .collection(Collections.galleries)
+      .doc(galleryID)
+      .get();
+}
+
+Future addGalleryDoc(BuildContext context, WidgetRef ref,
+    {required String galleryType,
+    required TextEditingController titleController,
+    required TextEditingController contentController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    if (titleController.text.isEmpty || contentController.text.isEmpty) {
+      scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Please fill up all requiref fields.')));
+      return;
+    }
+    if (ref.read(uploadedImageProvider).uploadedImage == null) {
+      scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Please select an image to upload.')));
+      return;
+    }
+    ref.read(loadingProvider).toggleLoading(true);
+    final galleryReference =
+        await FirebaseFirestore.instance.collection(Collections.galleries).add({
+      GalleryFields.galleryType: galleryType,
+      GalleryFields.title: titleController.text.trim(),
+      GalleryFields.content: contentController.text.trim()
+    });
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child(StorageFields.galleries)
+        .child('${galleryReference.id}.png');
+    final uploadTask =
+        storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+    final taskSnapshot = await uploadTask;
+    final downloadURL = await taskSnapshot.ref.getDownloadURL();
+    FirebaseFirestore.instance
+        .collection(Collections.galleries)
+        .doc(galleryReference.id)
+        .update({GalleryFields.imageURL: downloadURL});
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully added new gallery entry.')));
+    goRouter.goNamed(GoRoutes.gallery);
+    ref.read(uploadedImageProvider).removeImage();
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error adding gallery doc: $error')));
+  }
+}
+
+Future editGalleryDoc(BuildContext context, WidgetRef ref,
+    {required String galleryID,
+    required TextEditingController titleController,
+    required TextEditingController contentController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.galleries)
+        .doc(galleryID)
+        .update({
+      GalleryFields.title: titleController.text.trim(),
+      GalleryFields.content: contentController.text.trim(),
+    });
+    if (ref.read(uploadedImageProvider).uploadedImage != null) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child(StorageFields.galleries)
+          .child('$galleryID.png');
+      final uploadTask =
+          storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+      final taskSnapshot = await uploadTask;
+      final downloadURL = await taskSnapshot.ref.getDownloadURL();
+      FirebaseFirestore.instance
+          .collection(Collections.galleries)
+          .doc(galleryID)
+          .update({GalleryFields.imageURL: downloadURL});
+    }
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully edited this gallery entry.')));
+    goRouter.goNamed(GoRoutes.gallery);
+    ref.read(uploadedImageProvider).removeImage();
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error editing gallery doc: $error')));
+  }
+}
+
+Future deleteGalleryDoc(BuildContext context, WidgetRef ref,
+    {required String galleryID,
+    required Future<List<DocumentSnapshot>> refreshGalleryFuture}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.galleries)
+        .doc(galleryID)
+        .delete();
+    await FirebaseStorage.instance
+        .ref()
+        .child(StorageFields.galleries)
+        .child('$galleryID.png')
+        .delete();
+    ref.read(galleryProvider).setGalleryDocs(await refreshGalleryFuture);
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error deleting gallery entry: $error')));
   }
 }
