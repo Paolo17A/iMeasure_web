@@ -19,21 +19,20 @@ import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
 import '../widgets/text_widgets.dart';
 
-class AddWindowScreen extends ConsumerStatefulWidget {
-  const AddWindowScreen({super.key});
+class AddDoorScreen extends ConsumerStatefulWidget {
+  const AddDoorScreen({super.key});
 
   @override
-  ConsumerState<AddWindowScreen> createState() => _AddWindowScreenState();
+  ConsumerState<AddDoorScreen> createState() => _AddDoorScreenState();
 }
 
-class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
+class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
   final minHeightController = TextEditingController();
   final maxHeightController = TextEditingController();
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
-  final priceController = TextEditingController();
 
   List<WindowFieldModel> windowFieldModels = [WindowFieldModel()];
   List<WindowAccessoryModel> windowAccessoryModels = [];
@@ -79,7 +78,6 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     maxWidthController.dispose();
     minHeightController.dispose();
     maxHeightController.dispose();
-    priceController.dispose();
   }
 
   @override
@@ -144,7 +142,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _newWindowHeaderWidget() {
     return quicksandWhiteBold(
-      'NEW WINDOW',
+      'NEW DOOR',
       textAlign: TextAlign.center,
       fontSize: 38,
     );
@@ -152,9 +150,9 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
 
   Widget _windowNameWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      vertical10Pix(child: quicksandWhiteBold('Window Name', fontSize: 24)),
+      vertical10Pix(child: quicksandWhiteBold('Door Name', fontSize: 24)),
       CustomTextField(
-          text: 'Window Name',
+          text: 'Door Name',
           height: 40,
           controller: nameController,
           textInputType: TextInputType.text,
@@ -166,9 +164,9 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   Widget _windowDescriptionWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       vertical10Pix(
-          child: quicksandWhiteBold('Window Description', fontSize: 24)),
+          child: quicksandWhiteBold('Door Description', fontSize: 24)),
       CustomTextField(
-          text: 'Window Description',
+          text: 'Door Description',
           controller: descriptionController,
           textInputType: TextInputType.multiline,
           displayPrefixIcon: null),
@@ -286,7 +284,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              quicksandWhiteBold('WINDOW FIELDS', fontSize: 24),
+              quicksandWhiteBold('DOOR FIELDS', fontSize: 24),
             ],
           ),
           ListView.builder(
@@ -334,7 +332,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                   windowFieldModels.add(WindowFieldModel());
                 });
               },
-              child: quicksandBlackBold('ADD WINDOW FIELD', fontSize: 15))
+              child: quicksandBlackBold('ADD DOOR FIELD', fontSize: 15))
         ],
       ),
     );
@@ -387,7 +385,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
         style: ElevatedButton.styleFrom(
             backgroundColor: CustomColors.lavenderMist),
         onPressed: () => addFurnitureItemEntry(context, ref,
-            itemType: ItemTypes.window,
+            itemType: ItemTypes.door,
             nameController: nameController,
             descriptionController: descriptionController,
             minHeightController: minHeightController,

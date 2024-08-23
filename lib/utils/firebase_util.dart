@@ -93,13 +93,471 @@ Future<List<DocumentSnapshot>> getAllClientDocs() async {
 }
 
 //==============================================================================
-//WINDOWS=======================================================================
+//ITEMS=========================================================================
 //==============================================================================
 Future<List<DocumentSnapshot>> getAllWindowDocs() async {
+  final items = await FirebaseFirestore.instance
+      .collection(Collections.items)
+      .where(ItemFields.itemType, isEqualTo: ItemTypes.window)
+      .get();
+  return items.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> getAllDoorDocs() async {
+  final items = await FirebaseFirestore.instance
+      .collection(Collections.items)
+      .where(ItemFields.itemType, isEqualTo: ItemTypes.door)
+      .get();
+  return items.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> getAllRawMaterialDocs() async {
+  final items = await FirebaseFirestore.instance
+      .collection(Collections.items)
+      .where(ItemFields.itemType, isEqualTo: ItemTypes.rawMaterial)
+      .get();
+  return items.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<DocumentSnapshot> getThisItemDoc(String itemID) async {
+  return await FirebaseFirestore.instance
+      .collection(Collections.items)
+      .doc(itemID)
+      .get();
+}
+
+Future addFurnitureItemEntry(BuildContext context, WidgetRef ref,
+    {required String itemType,
+    required TextEditingController nameController,
+    required TextEditingController descriptionController,
+    required TextEditingController minHeightController,
+    required TextEditingController maxHeightController,
+    required TextEditingController minWidthController,
+    required TextEditingController maxWidthController,
+    required List<WindowFieldModel> windowFieldModels,
+    required List<WindowAccessoryModel> windowAccesoryModels}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  if (nameController.text.isEmpty ||
+      descriptionController.text.isEmpty ||
+      minHeightController.text.isEmpty ||
+      maxHeightController.text.isEmpty ||
+      minWidthController.text.isEmpty ||
+      maxWidthController.text.isEmpty) {
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Please fill up all fields.')));
+    return;
+  }
+  if (double.tryParse(minHeightController.text) == null ||
+      double.parse(minHeightController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text(
+            'Please input a valid whole number greater than zero for the minimum height.')));
+    return;
+  }
+  if (double.tryParse(maxHeightController.text) == null ||
+      double.parse(maxHeightController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text(
+            'Please input a valid number greater than zero for maximum height.')));
+    return;
+  }
+  if (double.tryParse(minWidthController.text) == null ||
+      double.parse(minWidthController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text(
+            'Please input a valid whole number greater than zero for the minimum width.')));
+    return;
+  }
+  if (double.tryParse(maxWidthController.text) == null ||
+      double.parse(maxWidthController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text(
+            'Please input a valid number greater than zero for maximum width.')));
+    return;
+  }
+  if (ref.read(uploadedImageProvider).uploadedImage == null) {
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Please upload a window image.')));
+    return;
+  }
+  if (WindowFieldModel.hasInvalidField(windowFieldModels)) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Please fill up all window field parameters with valid input.')));
+    return;
+  }
+
+  if (WindowAccessoryModel.hasInvalidField(windowAccesoryModels)) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Please fill up all window accessory parameters with valid input.')));
+    return;
+  }
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    List<Map<dynamic, dynamic>> windowFields = [];
+    for (var windowFieldModel in windowFieldModels) {
+      Map<dynamic, dynamic> windowField = {
+        WindowSubfields.name: windowFieldModel.nameController.text.trim(),
+        WindowSubfields.isMandatory: windowFieldModel.isMandatory,
+        WindowSubfields.priceBasis: windowFieldModel.priceBasis,
+        WindowSubfields.brownPrice:
+            double.parse(windowFieldModel.brownPriceController.text.trim()),
+        WindowSubfields.mattBlackPrice:
+            double.parse(windowFieldModel.mattBlackPriceController.text.trim()),
+        WindowSubfields.mattGrayPrice:
+            double.parse(windowFieldModel.mattGrayPriceController.text.trim()),
+        WindowSubfields.woodFinishPrice: double.parse(
+            windowFieldModel.woodFinishPriceController.text.trim()),
+        WindowSubfields.whitePrice:
+            double.parse(windowFieldModel.whitePriceController.text.trim())
+      };
+      windowFields.add(windowField);
+    }
+
+    List<Map<dynamic, dynamic>> accessoryFields = [];
+    for (var windowAccessoryModel in windowAccesoryModels) {
+      Map<dynamic, dynamic> accessoryField = {
+        WindowAccessorySubfields.name:
+            windowAccessoryModel.nameController.text.trim(),
+        WindowAccessorySubfields.price:
+            double.parse(windowAccessoryModel.priceController.text.trim())
+      };
+      accessoryFields.add(accessoryField);
+    }
+
+    final itemReference =
+        await FirebaseFirestore.instance.collection(Collections.items).add({
+      ItemFields.name: nameController.text.trim(),
+      ItemFields.itemType: itemType,
+      ItemFields.description: descriptionController.text.trim(),
+      ItemFields.minWidth: double.parse(minWidthController.text),
+      ItemFields.maxWidth: double.parse(maxWidthController.text),
+      ItemFields.minHeight: double.parse(minHeightController.text),
+      ItemFields.maxHeight: double.parse(maxHeightController.text),
+      ItemFields.isAvailable: true,
+      ItemFields.windowFields: windowFields,
+      ItemFields.accessoryFields: accessoryFields
+    });
+
+    //  Upload Item Images to Firebase Storage
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child(StorageFields.items)
+        .child('${itemReference.id}.png');
+    final uploadTask =
+        storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+    final taskSnapshot = await uploadTask;
+    final downloadURL = await taskSnapshot.ref.getDownloadURL();
+
+    await FirebaseFirestore.instance
+        .collection(Collections.items)
+        .doc(itemReference.id)
+        .update({ItemFields.imageURL: downloadURL});
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Successfully added new item.')));
+    if (itemType == ItemTypes.window) {
+      goRouter.goNamed(GoRoutes.windows);
+    } else if (itemType == ItemTypes.door) {
+      goRouter.goNamed(GoRoutes.doors);
+    }
+  } catch (error) {
+    scaffoldMessenger
+        .showSnackBar(SnackBar(content: Text('Error adding new item: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future editFurnitureItemEntry(BuildContext context, WidgetRef ref,
+    {required String itemID,
+    required String itemType,
+    required TextEditingController nameController,
+    required TextEditingController descriptionController,
+    required TextEditingController minHeightController,
+    required TextEditingController maxHeightController,
+    required TextEditingController minWidthController,
+    required TextEditingController maxWidthController,
+    required List<WindowFieldModel> windowFieldModels,
+    required List<WindowAccessoryModel> windowAccesoryModels}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  if (nameController.text.isEmpty ||
+      descriptionController.text.isEmpty ||
+      minHeightController.text.isEmpty ||
+      maxHeightController.text.isEmpty ||
+      minWidthController.text.isEmpty ||
+      maxWidthController.text.isEmpty) {
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Please fill up all fields.')));
+    return;
+  }
+  if (double.tryParse(minHeightController.text) == null ||
+      double.parse(maxHeightController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text(
+            'Please input a valid whole number greater than zero for the minimum height.')));
+    return;
+  }
+  if (double.tryParse(maxHeightController.text) == null ||
+      double.parse(maxHeightController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text(
+            'Please input a valid number greater than zero for maximum height.')));
+    return;
+  }
+  if (double.tryParse(minWidthController.text) == null ||
+      double.parse(minWidthController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text(
+            'Please input a valid whole number greater than zero for the minimum width.')));
+    return;
+  }
+  if (double.tryParse(maxWidthController.text) == null ||
+      double.parse(maxWidthController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text(
+            'Please input a valid number greater than zero for maximum width.')));
+    return;
+  }
+  if (WindowFieldModel.hasInvalidField(windowFieldModels)) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Please fill up all window field parameters with valid input.')));
+  }
+
+  if (WindowAccessoryModel.hasInvalidField(windowAccesoryModels)) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Please fill up all window accessory parameters with valid input.')));
+  }
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    List<Map<dynamic, dynamic>> windowFields = [];
+    for (var windowFieldModel in windowFieldModels) {
+      Map<dynamic, dynamic> windowField = {
+        WindowSubfields.name: windowFieldModel.nameController.text.trim(),
+        WindowSubfields.isMandatory: windowFieldModel.isMandatory,
+        WindowSubfields.priceBasis: windowFieldModel.priceBasis,
+        WindowSubfields.brownPrice:
+            double.parse(windowFieldModel.brownPriceController.text.trim()),
+        WindowSubfields.mattBlackPrice:
+            double.parse(windowFieldModel.mattBlackPriceController.text.trim()),
+        WindowSubfields.mattGrayPrice:
+            double.parse(windowFieldModel.mattGrayPriceController.text.trim()),
+        WindowSubfields.woodFinishPrice: double.parse(
+            windowFieldModel.woodFinishPriceController.text.trim()),
+        WindowSubfields.whitePrice:
+            double.parse(windowFieldModel.whitePriceController.text.trim())
+      };
+      windowFields.add(windowField);
+    }
+
+    List<Map<dynamic, dynamic>> accessoryFields = [];
+    for (var windowAccessoryModel in windowAccesoryModels) {
+      Map<dynamic, dynamic> accessoryField = {
+        WindowAccessorySubfields.name:
+            windowAccessoryModel.nameController.text.trim(),
+        WindowAccessorySubfields.price:
+            double.parse(windowAccessoryModel.priceController.text.trim())
+      };
+      accessoryFields.add(accessoryField);
+    }
+
+    await FirebaseFirestore.instance
+        .collection(Collections.items)
+        .doc(itemID)
+        .update({
+      ItemFields.name: nameController.text.trim(),
+      ItemFields.description: descriptionController.text.trim(),
+      ItemFields.minWidth: double.parse(minWidthController.text),
+      ItemFields.maxWidth: double.parse(maxWidthController.text),
+      ItemFields.minHeight: double.parse(minHeightController.text),
+      ItemFields.maxHeight: double.parse(maxHeightController.text),
+      ItemFields.windowFields: windowFields,
+      ItemFields.accessoryFields: accessoryFields
+    });
+
+    //  Upload Item Images to Firebase Storage
+    if (ref.read(uploadedImageProvider).uploadedImage != null) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child(StorageFields.items)
+          .child('${itemID}.png');
+      final uploadTask =
+          storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+      final taskSnapshot = await uploadTask;
+      final downloadURL = await taskSnapshot.ref.getDownloadURL();
+
+      await FirebaseFirestore.instance
+          .collection(Collections.items)
+          .doc(itemID)
+          .update({ItemFields.imageURL: downloadURL});
+    }
+
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Successfully edited this item.')));
+    if (itemType == ItemTypes.window) {
+      goRouter.goNamed(GoRoutes.windows);
+    } else if (itemType == ItemTypes.door) {
+      goRouter.goNamed(GoRoutes.doors);
+    }
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error editing this item: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future addRawMaterialEntry(BuildContext context, WidgetRef ref,
+    {required TextEditingController nameController,
+    required TextEditingController descriptionController,
+    required TextEditingController priceController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  if (nameController.text.isEmpty ||
+      descriptionController.text.isEmpty ||
+      priceController.text.isEmpty) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Please fill up all required fields.')));
+    return;
+  }
+  if (double.tryParse(priceController.text) == null ||
+      double.parse(priceController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Please enter a valid price higher than PHP 0.00')));
+    return;
+  }
+  if (ref.read(uploadedImageProvider).uploadedImage == null) {
+    scaffoldMessenger
+        .showSnackBar(SnackBar(content: Text('Please upload a valid image.')));
+    return;
+  }
+  try {
+    ref.read(loadingProvider).toggleLoading(true);
+    final itemReference =
+        await FirebaseFirestore.instance.collection(Collections.items).add({
+      ItemFields.itemType: ItemTypes.rawMaterial,
+      ItemFields.name: nameController.text.trim(),
+      ItemFields.description: descriptionController.text.trim(),
+      ItemFields.price: double.parse(priceController.text.trim()),
+    });
+
+    //  Upload Item Images to Firebase Storage
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child(StorageFields.items)
+        .child('${itemReference.id}.png');
+    final uploadTask =
+        storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+    final taskSnapshot = await uploadTask;
+    final downloadURL = await taskSnapshot.ref.getDownloadURL();
+    await FirebaseFirestore.instance
+        .collection(Collections.items)
+        .doc(itemReference.id)
+        .update({ItemFields.imageURL: downloadURL});
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully added new raw material.')));
+    ref.read(loadingProvider).toggleLoading(false);
+    goRouter.goNamed(GoRoutes.rawMaterial);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error adding raw material: $error')));
+  }
+}
+
+Future editRawMaterialEntry(BuildContext context, WidgetRef ref,
+    {required String itemID,
+    required TextEditingController nameController,
+    required TextEditingController descriptionController,
+    required TextEditingController priceController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  if (nameController.text.isEmpty ||
+      descriptionController.text.isEmpty ||
+      priceController.text.isEmpty) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Please fill up all required fields.')));
+    return;
+  }
+  if (double.tryParse(priceController.text) == null ||
+      double.parse(priceController.text) <= 0) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Please enter a valid price higher than PHP 0.00')));
+    return;
+  }
+  try {
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.items)
+        .doc(itemID)
+        .update({
+      ItemFields.name: nameController.text.trim(),
+      ItemFields.description: descriptionController.text.trim(),
+      ItemFields.price: double.parse(priceController.text.trim()),
+    });
+    if (ref.read(uploadedImageProvider).uploadedImage != null) {
+//  Upload Item Images to Firebase Storage
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child(StorageFields.items)
+          .child('${itemID}.png');
+      final uploadTask =
+          storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+      final taskSnapshot = await uploadTask;
+      final downloadURL = await taskSnapshot.ref.getDownloadURL();
+      await FirebaseFirestore.instance
+          .collection(Collections.items)
+          .doc(itemID)
+          .update({ItemFields.imageURL: downloadURL});
+    }
+
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully edited this raw material.')));
+    ref.read(loadingProvider).toggleLoading(false);
+    goRouter.goNamed(GoRoutes.rawMaterial);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error editing this raw material: $error')));
+  }
+}
+
+Future toggleItemAvailability(BuildContext context, WidgetRef ref,
+    {required String itemID, required bool isAvailable}) async {
+  try {
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.items)
+        .doc(itemID)
+        .update({ItemFields.isAvailable: !isAvailable});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            'Successfully ${isAvailable ? 'archived' : 'restored'} this item')));
+    ref.read(windowsProvider).setWindowDocs(await getAllWindowDocs());
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error togging item availability: $error')));
+    ref.read(loadingProvider).toggleLoading(false);
+  }
+}
+
+//==============================================================================
+//WINDOWS=======================================================================
+//==============================================================================
+/*Future<List<DocumentSnapshot>> getAllWindowDocs() async {
   final windows =
       await FirebaseFirestore.instance.collection(Collections.windows).get();
   return windows.docs.map((window) => window as DocumentSnapshot).toList();
-}
+}*/
 
 Future<DocumentSnapshot> getThisWindowDoc(String windowID) async {
   return await FirebaseFirestore.instance

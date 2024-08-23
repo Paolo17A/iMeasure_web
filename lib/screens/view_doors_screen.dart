@@ -18,14 +18,14 @@ import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/text_widgets.dart';
 
-class ViewWindowsScreen extends ConsumerStatefulWidget {
-  const ViewWindowsScreen({super.key});
+class ViewDoorsScreen extends ConsumerStatefulWidget {
+  const ViewDoorsScreen({super.key});
 
   @override
-  ConsumerState<ViewWindowsScreen> createState() => _ViewWindowsScreenState();
+  ConsumerState<ViewDoorsScreen> createState() => _ViewDoorsScreenState();
 }
 
-class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
+class _ViewDoorsScreenState extends ConsumerState<ViewDoorsScreen> {
   @override
   void initState() {
     super.initState();
@@ -42,11 +42,11 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
         final userData = userDoc.data() as Map<dynamic, dynamic>;
         String userType = userData[UserFields.userType];
         ref.read(userDataProvider).setUserType(userType);
-        ref.read(itemsProvider).setItemDocs(await getAllWindowDocs());
+        ref.read(itemsProvider).setItemDocs(await getAllDoorDocs());
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text('Error getting window docs: $error')));
+            SnackBar(content: Text('Error getting door docs: $error')));
         ref.read(loadingProvider.notifier).toggleLoading(false);
       }
     });
@@ -72,7 +72,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
                       horizontal5Percent(context,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [_topHeader(), _windowsContainer()],
+                            children: [_topHeader(), _itemsContainer()],
                           )),
                     ],
                   ),
@@ -91,16 +91,16 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
           children: [
             all4Pix(
                 child: ElevatedButton(
-                    onPressed: () =>
-                        GoRouter.of(context).goNamed(GoRoutes.windows),
-                    child: quicksandWhiteBold('WINDOWS'))),
-            all4Pix(
-                child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         backgroundColor: CustomColors.lavenderMist),
                     onPressed: () =>
+                        GoRouter.of(context).goNamed(GoRoutes.windows),
+                    child: quicksandBlackBold('WINDOWS'))),
+            all4Pix(
+                child: ElevatedButton(
+                    onPressed: () =>
                         GoRouter.of(context).goNamed(GoRoutes.doors),
-                    child: quicksandBlackBold('DOORS'))),
+                    child: quicksandWhiteBold('DOORS'))),
             all4Pix(
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -112,7 +112,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
         SizedBox(
           height: 50,
           child: ElevatedButton(
-              onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addWindow),
+              onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addDoor),
               style: ElevatedButton.styleFrom(
                   backgroundColor: CustomColors.emeraldGreen),
               child: quicksandWhiteBold('ADD NEW ITEM')),
@@ -121,18 +121,18 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
     );
   }
 
-  Widget _windowsContainer() {
+  Widget _itemsContainer() {
     return Column(
       children: [
         //_windowLabelRow(),
         ref.read(itemsProvider).itemDocs.isNotEmpty
-            ? _windowEntries()
-            : viewContentUnavailable(context, text: 'NO AVAILABLE WINDOWS'),
+            ? _itemEntries()
+            : viewContentUnavailable(context, text: 'NO AVAILABLE DOORS'),
       ],
     );
   }
 
-  Widget _windowEntries() {
+  Widget _itemEntries() {
     return Center(
       child: Wrap(
           alignment: WrapAlignment.start,
@@ -141,12 +141,12 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
           children: ref
               .read(itemsProvider)
               .itemDocs
-              .map((item) => _windowEntry(item))
+              .map((item) => _itemEntry(item))
               .toList()),
     );
   }
 
-  Widget _windowEntry(DocumentSnapshot itemDoc) {
+  Widget _itemEntry(DocumentSnapshot itemDoc) {
     final itemData = itemDoc.data() as Map<dynamic, dynamic>;
     String name = itemData[ItemFields.name];
     bool isAvailable = itemData[ItemFields.isAvailable];
@@ -194,15 +194,9 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
               ),
             all4Pix(
               child: editEntryButton(context,
-                  iconColor: CustomColors.lavenderMist,
-                  onPress: () => GoRouter.of(context).goNamed(
-                      GoRoutes.editWindow,
-                      pathParameters: {PathParameters.itemID: itemDoc.id})),
+                  iconColor: CustomColors.lavenderMist, onPress: () {}),
             ),
-            viewEntryButton(context,
-                onPress: () => GoRouter.of(context).goNamed(
-                    GoRoutes.selectedWindow,
-                    pathParameters: {PathParameters.itemID: itemDoc.id}))
+            viewEntryButton(context, onPress: () {})
           ])
         ],
       ),

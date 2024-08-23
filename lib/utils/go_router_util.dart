@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/screens/add_door_screen.dart';
 import 'package:imeasure/screens/add_portfolio_screen.dart';
+import 'package:imeasure/screens/add_raw_material_screen.dart';
 import 'package:imeasure/screens/add_service_screen.dart';
 import 'package:imeasure/screens/add_testimonial_screen.dart';
 import 'package:imeasure/screens/add_window_screen.dart';
+import 'package:imeasure/screens/edit_door_screen.dart';
 import 'package:imeasure/screens/edit_portfolio_screen.dart';
+import 'package:imeasure/screens/edit_raw_material_screen.dart';
 import 'package:imeasure/screens/edit_testimonial_screen.dart';
 import 'package:imeasure/screens/edit_window_screen.dart';
+import 'package:imeasure/screens/login_screen.dart';
+import 'package:imeasure/screens/view_doors_screen.dart';
 import 'package:imeasure/screens/view_gallery_screen.dart';
 import 'package:imeasure/screens/view_generated_order_screen.dart';
 import 'package:imeasure/screens/view_orders_screen.dart';
 import 'package:imeasure/screens/view_portfolio_screen.dart';
+import 'package:imeasure/screens/view_raw_materials_screen.dart';
+import 'package:imeasure/screens/view_selected_door_screen.dart';
 import 'package:imeasure/screens/view_selected_user_screen.dart';
 import 'package:imeasure/screens/view_services_screen.dart';
 import 'package:imeasure/screens/view_testimonials_screen.dart';
@@ -28,13 +36,22 @@ import 'string_util.dart';
 
 class GoRoutes {
   static const home = '/';
+  static const login = 'login';
   static const users = 'users';
   static const selectedUser = 'selectedUser';
   static const windows = 'windows';
   static const addWindow = 'addWindow';
   static const editWindow = 'editWindow';
   static const selectedWindow = 'selectedWindow';
+  static const doors = 'doors';
+  static const addDoor = 'addDoor';
+  static const editDoor = 'editDoor';
   static const transactions = 'transactions';
+  static const selectedDoor = 'selectedDoor';
+  static const rawMaterial = 'rawMaterial';
+  static const addRawMaterial = 'addRawMaterial';
+  static const editRawMaterial = 'editRawMaterial';
+  static const selectedRawMaterial = 'selectedRawMaterial';
   static const orders = 'orders';
   static const generatedOrder = 'generatedOrder';
   static const viewFAQs = 'viewFAQs';
@@ -60,6 +77,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
           customTransition(context, state, const HomeScreen()),
       routes: [
         GoRoute(
+            name: GoRoutes.login,
+            path: GoRoutes.login,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const LoginScreen())),
+        GoRoute(
             name: GoRoutes.users,
             path: GoRoutes.users,
             pageBuilder: (context, state) =>
@@ -84,20 +106,64 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 customTransition(context, state, const AddWindowScreen())),
         GoRoute(
             name: GoRoutes.editWindow,
-            path: '${GoRoutes.windows}/:${PathParameters.windowID}/edit',
+            path: '${GoRoutes.windows}/:${PathParameters.itemID}/edit',
             pageBuilder: (context, state) => customTransition(
                 context,
                 state,
                 EditWindowScreen(
-                    windowID: state.pathParameters[PathParameters.windowID]!))),
+                    itemID: state.pathParameters[PathParameters.itemID]!))),
         GoRoute(
             name: GoRoutes.selectedWindow,
-            path: '${GoRoutes.windows}/:${PathParameters.windowID}',
+            path: '${GoRoutes.windows}/:${PathParameters.itemID}',
             pageBuilder: (context, state) => customTransition(
                 context,
                 state,
                 ViewSelectedWindowScreen(
-                    windowID: state.pathParameters[PathParameters.windowID]!))),
+                    itemID: state.pathParameters[PathParameters.itemID]!))),
+        GoRoute(
+            name: GoRoutes.doors,
+            path: GoRoutes.doors,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ViewDoorsScreen())),
+        GoRoute(
+            name: GoRoutes.addDoor,
+            path: '${GoRoutes.doors}/add',
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const AddDoorScreen())),
+        GoRoute(
+            name: GoRoutes.editDoor,
+            path: '${GoRoutes.doors}/:${PathParameters.itemID}/edit',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                EditDoorScreen(
+                    itemID: state.pathParameters[PathParameters.itemID]!))),
+        GoRoute(
+            name: GoRoutes.selectedDoor,
+            path: '${GoRoutes.doors}/:${PathParameters.itemID}',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                ViewSelectedDoorScreen(
+                    itemID: state.pathParameters[PathParameters.itemID]!))),
+        GoRoute(
+            name: GoRoutes.rawMaterial,
+            path: GoRoutes.rawMaterial,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const ViewRawMaterialsScreen())),
+        GoRoute(
+            name: GoRoutes.addRawMaterial,
+            path: '${GoRoutes.rawMaterial}/add',
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const AddRawMaterialScreen())),
+        GoRoute(
+            name: GoRoutes.editRawMaterial,
+            path: '${GoRoutes.rawMaterial}/:${PathParameters.itemID}/edit',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                EditRawMaterialScreen(
+                    itemID: state.pathParameters[PathParameters.itemID]!))),
         GoRoute(
             name: GoRoutes.transactions,
             path: GoRoutes.transactions,

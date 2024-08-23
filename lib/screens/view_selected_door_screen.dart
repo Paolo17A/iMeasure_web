@@ -16,17 +16,16 @@ import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 
-class ViewSelectedWindowScreen extends ConsumerStatefulWidget {
+class ViewSelectedDoorScreen extends ConsumerStatefulWidget {
   final String itemID;
-  const ViewSelectedWindowScreen({super.key, required this.itemID});
+  const ViewSelectedDoorScreen({super.key, required this.itemID});
 
   @override
-  ConsumerState<ViewSelectedWindowScreen> createState() =>
-      _SelectedWindowScreenState();
+  ConsumerState<ViewSelectedDoorScreen> createState() =>
+      _SelectedDoorScreenState();
 }
 
-class _SelectedWindowScreenState
-    extends ConsumerState<ViewSelectedWindowScreen> {
+class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   //  PRODUCT VARIABLES
   String name = '';
   String description = '';
@@ -53,16 +52,16 @@ class _SelectedWindowScreenState
         }
 
         //  GET PRODUCT DATA
-        final window = await getThisItemDoc(widget.itemID);
-        final windowData = window.data() as Map<dynamic, dynamic>;
-        name = windowData[ItemFields.name];
-        description = windowData[ItemFields.description];
-        isAvailable = windowData[ItemFields.isAvailable];
-        imageURL = windowData[ItemFields.imageURL];
-        minLength = windowData[ItemFields.minHeight];
-        maxLength = windowData[ItemFields.maxHeight];
-        minWidth = windowData[ItemFields.minWidth];
-        maxWidth = windowData[ItemFields.maxWidth];
+        final item = await getThisItemDoc(widget.itemID);
+        final itemData = item.data() as Map<dynamic, dynamic>;
+        name = itemData[ItemFields.name];
+        description = itemData[ItemFields.description];
+        isAvailable = itemData[ItemFields.isAvailable];
+        imageURL = itemData[ItemFields.imageURL];
+        minLength = itemData[ItemFields.minHeight];
+        maxLength = itemData[ItemFields.maxHeight];
+        minWidth = itemData[ItemFields.minWidth];
+        maxWidth = itemData[ItemFields.maxWidth];
         //orderDocs = await getAllWindowOrderDocs(widget.windowID);
 
         ref.read(loadingProvider.notifier).toggleLoading(false);

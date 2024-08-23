@@ -18,14 +18,16 @@ import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/text_widgets.dart';
 
-class ViewWindowsScreen extends ConsumerStatefulWidget {
-  const ViewWindowsScreen({super.key});
+class ViewRawMaterialsScreen extends ConsumerStatefulWidget {
+  const ViewRawMaterialsScreen({super.key});
 
   @override
-  ConsumerState<ViewWindowsScreen> createState() => _ViewWindowsScreenState();
+  ConsumerState<ViewRawMaterialsScreen> createState() =>
+      _ViewRawMaterialsScreenState();
 }
 
-class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
+class _ViewRawMaterialsScreenState
+    extends ConsumerState<ViewRawMaterialsScreen> {
   @override
   void initState() {
     super.initState();
@@ -42,11 +44,11 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
         final userData = userDoc.data() as Map<dynamic, dynamic>;
         String userType = userData[UserFields.userType];
         ref.read(userDataProvider).setUserType(userType);
-        ref.read(itemsProvider).setItemDocs(await getAllWindowDocs());
+        ref.read(itemsProvider).setItemDocs(await getAllRawMaterialDocs());
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text('Error getting window docs: $error')));
+            SnackBar(content: Text('Error getting raw material docs: $error')));
         ref.read(loadingProvider.notifier).toggleLoading(false);
       }
     });
@@ -72,7 +74,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
                       horizontal5Percent(context,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [_topHeader(), _windowsContainer()],
+                            children: [_topHeader(), _rawMaterialsContainer()],
                           )),
                     ],
                   ),
@@ -91,9 +93,11 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
           children: [
             all4Pix(
                 child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColors.lavenderMist),
                     onPressed: () =>
                         GoRouter.of(context).goNamed(GoRoutes.windows),
-                    child: quicksandWhiteBold('WINDOWS'))),
+                    child: quicksandBlackBold('WINDOWS'))),
             all4Pix(
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -103,10 +107,8 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
                     child: quicksandBlackBold('DOORS'))),
             all4Pix(
                 child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: CustomColors.lavenderMist),
                     onPressed: () {},
-                    child: quicksandBlackBold('RAW MATERIALS'))),
+                    child: quicksandWhiteBold('RAW MATERIALS'))),
           ],
         ),
         SizedBox(
@@ -121,18 +123,19 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
     );
   }
 
-  Widget _windowsContainer() {
+  Widget _rawMaterialsContainer() {
     return Column(
       children: [
         //_windowLabelRow(),
         ref.read(itemsProvider).itemDocs.isNotEmpty
-            ? _windowEntries()
-            : viewContentUnavailable(context, text: 'NO AVAILABLE WINDOWS'),
+            ? _rawMaterialEntries()
+            : viewContentUnavailable(context,
+                text: 'NO AVAILABLE RAW MATERIALS'),
       ],
     );
   }
 
-  Widget _windowEntries() {
+  Widget _rawMaterialEntries() {
     return Center(
       child: Wrap(
           alignment: WrapAlignment.start,
@@ -141,12 +144,12 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
           children: ref
               .read(itemsProvider)
               .itemDocs
-              .map((item) => _windowEntry(item))
+              .map((item) => _rawMaterialEntry(item))
               .toList()),
     );
   }
 
-  Widget _windowEntry(DocumentSnapshot itemDoc) {
+  Widget _rawMaterialEntry(DocumentSnapshot itemDoc) {
     final itemData = itemDoc.data() as Map<dynamic, dynamic>;
     String name = itemData[ItemFields.name];
     bool isAvailable = itemData[ItemFields.isAvailable];
@@ -196,12 +199,12 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
               child: editEntryButton(context,
                   iconColor: CustomColors.lavenderMist,
                   onPress: () => GoRouter.of(context).goNamed(
-                      GoRoutes.editWindow,
+                      GoRoutes.editRawMaterial,
                       pathParameters: {PathParameters.itemID: itemDoc.id})),
             ),
             viewEntryButton(context,
                 onPress: () => GoRouter.of(context).goNamed(
-                    GoRoutes.selectedWindow,
+                    GoRoutes.selectedRawMaterial,
                     pathParameters: {PathParameters.itemID: itemDoc.id}))
           ])
         ],

@@ -12,6 +12,7 @@ class StorageFields {
   static const String windows = 'windows';
   static const String orders = 'orders';
   static const String galleries = 'galleries';
+  static const String items = 'items';
 }
 
 class UserTypes {
@@ -26,6 +27,7 @@ class Collections {
   static const String transactions = 'transactions';
   static const String orders = 'orders';
   static const String galleries = 'galleries';
+  static const String items = 'items';
 }
 
 class UserFields {
@@ -36,6 +38,29 @@ class UserFields {
   static const String userType = 'userType';
   static const String profileImageURL = 'profileImageURL';
   static const String address = 'address';
+}
+
+class ItemFields {
+  static const String name = 'name';
+  static const String price = 'price';
+  static const String description = 'description';
+  static const String imageURL = 'imageURL';
+  static const String itemType = 'itemType';
+
+  //  FURNITURE FIELDS
+  static const String minWidth = 'minWidth';
+  static const String maxWidth = 'maxWidth';
+  static const String minHeight = 'minHeight';
+  static const String maxHeight = 'maxHeight';
+  static const String isAvailable = 'isAvailable';
+  static const String windowFields = 'windowFields';
+  static const String accessoryFields = 'accessoryFields';
+}
+
+class ItemTypes {
+  static const String window = 'WINDOW';
+  static const String door = 'DOOR';
+  static const String rawMaterial = 'RAW MATERIAL';
 }
 
 class WindowFields {
@@ -151,7 +176,8 @@ class GalleryTypes {
 
 class PathParameters {
   static const String userID = 'userID';
-  static const String windowID = 'windowID';
+  //static const String windowID = 'windowID';
+  static const String itemID = 'itemID';
   static const String faqID = 'faqID';
   static const String orderID = 'orderID';
   static const String galleryID = 'galleryID';

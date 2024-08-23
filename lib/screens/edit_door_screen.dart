@@ -19,23 +19,24 @@ import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
 import '../widgets/text_widgets.dart';
 
-class AddWindowScreen extends ConsumerStatefulWidget {
-  const AddWindowScreen({super.key});
+class EditDoorScreen extends ConsumerStatefulWidget {
+  final String itemID;
+  const EditDoorScreen({super.key, required this.itemID});
 
   @override
-  ConsumerState<AddWindowScreen> createState() => _AddWindowScreenState();
+  ConsumerState<EditDoorScreen> createState() => _EditWindowScreenState();
 }
 
-class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
+class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
   final minHeightController = TextEditingController();
   final maxHeightController = TextEditingController();
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
-  final priceController = TextEditingController();
+  String imageURL = '';
 
-  List<WindowFieldModel> windowFieldModels = [WindowFieldModel()];
+  List<WindowFieldModel> windowFieldModels = [];
   List<WindowAccessoryModel> windowAccessoryModels = [];
 
   @override
@@ -47,18 +48,63 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
         ref.read(uploadedImageProvider).removeImage();
         ref.read(loadingProvider.notifier).toggleLoading(true);
         if (!hasLoggedInUser()) {
+          ref.read(loadingProvider.notifier).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }
         final userDoc = await getCurrentUserDoc();
         final userData = userDoc.data() as Map<dynamic, dynamic>;
         if (userData[UserFields.userType] == UserTypes.client) {
+          ref.read(loadingProvider.notifier).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }
-        ref.read(loadingProvider.notifier).toggleLoading(false);
+        final item = await getThisItemDoc(widget.itemID);
+        final itemData = item.data() as Map<dynamic, dynamic>;
+        nameController.text = itemData[ItemFields.name];
+        descriptionController.text = itemData[ItemFields.description];
+        minHeightController.text = itemData[ItemFields.minHeight].toString();
+        maxHeightController.text = itemData[ItemFields.maxHeight].toString();
+        minWidthController.text = itemData[ItemFields.minWidth].toString();
+        maxWidthController.text = itemData[ItemFields.maxWidth].toString();
+        imageURL = itemData[ItemFields.imageURL];
+
+        List<dynamic> windowFields = itemData[ItemFields.windowFields];
+        List<dynamic> accessoryFields = itemData[ItemFields.accessoryFields];
+
+        for (var windowField in windowFields) {
+          WindowFieldModel windowFieldModel = WindowFieldModel();
+          windowFieldModel.nameController.text =
+              windowField[WindowSubfields.name];
+          windowFieldModel.isMandatory =
+              windowField[WindowSubfields.isMandatory];
+          windowFieldModel.priceBasis = windowField[WindowSubfields.priceBasis];
+          windowFieldModel.brownPriceController.text =
+              windowField[WindowSubfields.brownPrice].toString();
+          windowFieldModel.mattBlackPriceController.text =
+              windowField[WindowSubfields.mattBlackPrice].toString();
+          windowFieldModel.mattGrayPriceController.text =
+              windowField[WindowSubfields.mattGrayPrice].toString();
+          windowFieldModel.woodFinishPriceController.text =
+              windowField[WindowSubfields.woodFinishPrice].toString();
+          windowFieldModel.whitePriceController.text =
+              windowField[WindowSubfields.whitePrice].toString();
+          windowFieldModels.add(windowFieldModel);
+        }
+
+        for (var accessoryField in accessoryFields) {
+          WindowAccessoryModel windowAccessoryModel = WindowAccessoryModel();
+          windowAccessoryModel.nameController.text =
+              accessoryField[WindowAccessorySubfields.name];
+          windowAccessoryModel.priceController.text =
+              accessoryField[WindowAccessorySubfields.price].toString();
+          windowAccessoryModels.add(windowAccessoryModel);
+        }
+        ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
-        ref.read(loadingProvider.notifier).toggleLoading(false);
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error getting window details: $error')));
+        ref.read(loadingProvider).toggleLoading(false);
       }
     });
   }
@@ -66,7 +112,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   Future<void> _pickLogoImage() async {
     final pickedFile = await ImagePickerWeb.getImageAsBytes();
     if (pickedFile != null) {
-      ref.read(uploadedImageProvider.notifier).addImage(pickedFile);
+      ref.read(uploadedImageProvider).addImage(pickedFile);
     }
   }
 
@@ -79,7 +125,6 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     maxWidthController.dispose();
     minHeightController.dispose();
     maxHeightController.dispose();
-    priceController.dispose();
   }
 
   @override
@@ -88,8 +133,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     ref.watch(uploadedImageProvider);
     return Scaffold(
       drawer: appDrawer(context, currentPath: GoRoutes.windows),
-      body: stackedLoadingContainer(
-        context,
+      body: switchedLoadingContainer(
         ref.read(loadingProvider).isLoading,
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +147,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                     _backButton(),
                     horizontal5Percent(context,
                         child: Column(children: [
-                          _newWindowHeaderWidget(),
+                          _editWindowHeaderWidget(),
                           _windowNameWidget(),
                           SizedBox(
                             width: double.infinity,
@@ -117,6 +161,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                                 ]),
                           ),
                           _windowDescriptionWidget(),
+                          Gap(20),
                           Divider(color: CustomColors.lavenderMist),
                           _windowFields(),
                           _accessoryFields(),
@@ -142,9 +187,9 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     );
   }
 
-  Widget _newWindowHeaderWidget() {
+  Widget _editWindowHeaderWidget() {
     return quicksandWhiteBold(
-      'NEW WINDOW',
+      'EDIT WINDOW',
       textAlign: TextAlign.center,
       fontSize: 38,
     );
@@ -169,6 +214,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
           child: quicksandWhiteBold('Window Description', fontSize: 24)),
       CustomTextField(
           text: 'Window Description',
+          height: 40,
           controller: descriptionController,
           textInputType: TextInputType.multiline,
           displayPrefixIcon: null),
@@ -205,7 +251,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
               child:
                   quicksandWhiteBold('Maximum Height (in feet)', fontSize: 24)),
           CustomTextField(
-              text: 'Maximum Height',
+              text: 'Maximum Length',
               height: 40,
               controller: maxHeightController,
               textInputType: TextInputType.number,
@@ -255,77 +301,51 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     );
   }
 
-  Widget _productImagesWidget() {
-    return vertical20Pix(
-      child: SizedBox(
-        width: double.infinity,
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
-                if (ref.read(uploadedImageProvider).uploadedImage != null)
-                  vertical10Pix(
-                      child: selectedMemoryImageDisplay(
-                          ref.read(uploadedImageProvider).uploadedImage, () {
-                    ref.read(uploadedImageProvider).removeImage();
-                  }))
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _windowFields() {
     return vertical20Pix(
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              quicksandWhiteBold('WINDOW FIELDS', fontSize: 24),
-            ],
-          ),
-          ListView.builder(
-              shrinkWrap: true,
-              itemCount: windowFieldModels.length,
-              itemBuilder: (context, index) {
-                return windowParameterWidget(context,
-                    nameController: windowFieldModels[index].nameController,
-                    isMandatory: windowFieldModels[index].isMandatory,
-                    onCheckboxPress: (newVal) {
-                      setState(() {
-                        windowFieldModels[index].isMandatory = newVal!;
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [quicksandWhiteBold('WINDOW FIELDS', fontSize: 24)]),
+          if (windowFieldModels.isNotEmpty)
+            ListView.builder(
+                shrinkWrap: true,
+                itemCount: windowFieldModels.length,
+                itemBuilder: (context, index) {
+                  return windowParameterWidget(context,
+                      nameController: windowFieldModels[index].nameController,
+                      isMandatory: windowFieldModels[index].isMandatory,
+                      onCheckboxPress: (newVal) {
+                        setState(() {
+                          windowFieldModels[index].isMandatory = newVal!;
+                        });
+                      },
+                      priceBasis: windowFieldModels[index].priceBasis,
+                      onPriceBasisChange: (newVal) {
+                        setState(() {
+                          windowFieldModels[index].priceBasis = newVal!;
+                        });
+                      },
+                      brownPriceController:
+                          windowFieldModels[index].brownPriceController,
+                      mattBlackController:
+                          windowFieldModels[index].mattBlackPriceController,
+                      mattGrayController:
+                          windowFieldModels[index].mattGrayPriceController,
+                      woodFinishController:
+                          windowFieldModels[index].woodFinishPriceController,
+                      whitePriceController:
+                          windowFieldModels[index].whitePriceController,
+                      onRemoveField: () {
+                        if (windowFieldModels.length == 1) {
+                          return;
+                        }
+                        setState(() {
+                          windowFieldModels.remove(windowFieldModels[index]);
+                        });
                       });
-                    },
-                    priceBasis: windowFieldModels[index].priceBasis,
-                    onPriceBasisChange: (newVal) {
-                      setState(() {
-                        windowFieldModels[index].priceBasis = newVal!;
-                      });
-                    },
-                    brownPriceController:
-                        windowFieldModels[index].brownPriceController,
-                    mattBlackController:
-                        windowFieldModels[index].mattBlackPriceController,
-                    mattGrayController:
-                        windowFieldModels[index].mattGrayPriceController,
-                    woodFinishController:
-                        windowFieldModels[index].woodFinishPriceController,
-                    whitePriceController:
-                        windowFieldModels[index].whitePriceController,
-                    onRemoveField: () {
-                      if (windowFieldModels.length == 1) {
-                        return;
-                      }
-                      setState(() {
-                        windowFieldModels.remove(windowFieldModels[index]);
-                      });
-                    });
-              }),
+                }),
           ElevatedButton(
               style: ElevatedButton.styleFrom(
                   backgroundColor: CustomColors.lavenderMist),
@@ -350,22 +370,23 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
               quicksandWhiteBold('ACCESSORY FIELDS', fontSize: 24),
             ],
           ),
-          if (windowAccessoryModels.isNotEmpty)
-            ListView.builder(
-                shrinkWrap: true,
-                itemCount: windowAccessoryModels.length,
-                itemBuilder: (context, index) {
-                  return windowAccessoryWidget(context,
-                      nameController:
-                          windowAccessoryModels[index].nameController,
-                      priceController: windowAccessoryModels[index]
-                          .priceController, onRemoveField: () {
-                    setState(() {
-                      windowAccessoryModels
-                          .remove(windowAccessoryModels[index]);
+          windowAccessoryModels.isNotEmpty
+              ? ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: windowAccessoryModels.length,
+                  itemBuilder: (context, index) {
+                    return windowAccessoryWidget(context,
+                        nameController:
+                            windowAccessoryModels[index].nameController,
+                        priceController: windowAccessoryModels[index]
+                            .priceController, onRemoveField: () {
+                      setState(() {
+                        windowAccessoryModels
+                            .remove(windowAccessoryModels[index]);
+                      });
                     });
-                  });
-                }),
+                  })
+              : quicksandWhiteRegular('NO ACCESSORIES'),
           ElevatedButton(
               style: ElevatedButton.styleFrom(
                   backgroundColor: CustomColors.lavenderMist),
@@ -380,14 +401,41 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     );
   }
 
+  Widget _productImagesWidget() {
+    return vertical20Pix(
+      child: SizedBox(
+        width: double.infinity,
+        child: Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
+                if (ref.read(uploadedImageProvider).uploadedImage != null)
+                  vertical10Pix(
+                      child: selectedMemoryImageDisplay(
+                          ref.read(uploadedImageProvider).uploadedImage,
+                          () => ref.read(uploadedImageProvider).removeImage()))
+                else if (!ref.read(loadingProvider).isLoading &&
+                    imageURL.isNotEmpty)
+                  vertical10Pix(child: selectedNetworkImageDisplay(imageURL))
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _submitButtonWidget() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 50),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
             backgroundColor: CustomColors.lavenderMist),
-        onPressed: () => addFurnitureItemEntry(context, ref,
-            itemType: ItemTypes.window,
+        onPressed: () => editFurnitureItemEntry(context, ref,
+            itemID: widget.itemID,
+            itemType: ItemTypes.door,
             nameController: nameController,
             descriptionController: descriptionController,
             minHeightController: minHeightController,

@@ -20,8 +20,8 @@ import '../widgets/custom_text_field_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class EditWindowScreen extends ConsumerStatefulWidget {
-  final String windowID;
-  const EditWindowScreen({super.key, required this.windowID});
+  final String itemID;
+  const EditWindowScreen({super.key, required this.itemID});
 
   @override
   ConsumerState<EditWindowScreen> createState() => _AddWindowScreenState();
@@ -48,30 +48,29 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
         ref.read(uploadedImageProvider).removeImage();
         ref.read(loadingProvider.notifier).toggleLoading(true);
         if (!hasLoggedInUser()) {
+          ref.read(loadingProvider.notifier).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }
         final userDoc = await getCurrentUserDoc();
         final userData = userDoc.data() as Map<dynamic, dynamic>;
         if (userData[UserFields.userType] == UserTypes.client) {
+          ref.read(loadingProvider.notifier).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }
-        final window = await getThisWindowDoc(widget.windowID);
-        final windowData = window.data() as Map<dynamic, dynamic>;
-        nameController.text = windowData[WindowFields.name];
-        descriptionController.text = windowData[WindowFields.description];
-        minHeightController.text =
-            windowData[WindowFields.minHeight].toString();
-        maxHeightController.text =
-            windowData[WindowFields.maxHeight].toString();
-        minWidthController.text = windowData[WindowFields.minWidth].toString();
-        maxWidthController.text = windowData[WindowFields.maxWidth].toString();
-        imageURL = windowData[WindowFields.imageURL];
+        final item = await getThisItemDoc(widget.itemID);
+        final itemData = item.data() as Map<dynamic, dynamic>;
+        nameController.text = itemData[ItemFields.name];
+        descriptionController.text = itemData[ItemFields.description];
+        minHeightController.text = itemData[ItemFields.minHeight].toString();
+        maxHeightController.text = itemData[ItemFields.maxHeight].toString();
+        minWidthController.text = itemData[ItemFields.minWidth].toString();
+        maxWidthController.text = itemData[ItemFields.maxWidth].toString();
+        imageURL = itemData[ItemFields.imageURL];
 
-        List<dynamic> windowFields = windowData[WindowFields.windowFields];
-        List<dynamic> accessoryFields =
-            windowData[WindowFields.accessoryFields];
+        List<dynamic> windowFields = itemData[ItemFields.windowFields];
+        List<dynamic> accessoryFields = itemData[ItemFields.accessoryFields];
 
         for (var windowField in windowFields) {
           WindowFieldModel windowFieldModel = WindowFieldModel();
@@ -101,11 +100,11 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
               accessoryField[WindowAccessorySubfields.price].toString();
           windowAccessoryModels.add(windowAccessoryModel);
         }
-        ref.read(loadingProvider.notifier).toggleLoading(false);
+        ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error getting window details: $error')));
-        ref.read(loadingProvider.notifier).toggleLoading(false);
+        ref.read(loadingProvider).toggleLoading(false);
       }
     });
   }
@@ -113,7 +112,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
   Future<void> _pickLogoImage() async {
     final pickedFile = await ImagePickerWeb.getImageAsBytes();
     if (pickedFile != null) {
-      ref.read(uploadedImageProvider.notifier).addImage(pickedFile);
+      ref.read(uploadedImageProvider).addImage(pickedFile);
     }
   }
 
@@ -434,8 +433,9 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
             backgroundColor: CustomColors.lavenderMist),
-        onPressed: () => editWindowEntry(context, ref,
-            windowID: widget.windowID,
+        onPressed: () => editFurnitureItemEntry(context, ref,
+            itemID: widget.itemID,
+            itemType: ItemTypes.window,
             nameController: nameController,
             descriptionController: descriptionController,
             minHeightController: minHeightController,
