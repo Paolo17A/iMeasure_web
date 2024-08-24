@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/screens/about_screen.dart';
 import 'package:imeasure/screens/add_door_screen.dart';
 import 'package:imeasure/screens/add_portfolio_screen.dart';
 import 'package:imeasure/screens/add_raw_material_screen.dart';
@@ -11,7 +12,11 @@ import 'package:imeasure/screens/edit_portfolio_screen.dart';
 import 'package:imeasure/screens/edit_raw_material_screen.dart';
 import 'package:imeasure/screens/edit_testimonial_screen.dart';
 import 'package:imeasure/screens/edit_window_screen.dart';
+import 'package:imeasure/screens/forgot_password_screen.dart';
+import 'package:imeasure/screens/items_screen.dart';
 import 'package:imeasure/screens/login_screen.dart';
+import 'package:imeasure/screens/register_screen.dart';
+import 'package:imeasure/screens/shop_screen.dart';
 import 'package:imeasure/screens/view_doors_screen.dart';
 import 'package:imeasure/screens/view_gallery_screen.dart';
 import 'package:imeasure/screens/view_generated_order_screen.dart';
@@ -37,6 +42,13 @@ import 'string_util.dart';
 class GoRoutes {
   static const home = '/';
   static const login = 'login';
+  static const register = 'register';
+  static const forgotPassword = 'forgotPassword';
+  //  GUEST
+  static const about = 'about';
+  static const items = 'items';
+  static const shop = 'shop';
+  //  ADMIN
   static const users = 'users';
   static const selectedUser = 'selectedUser';
   static const windows = 'windows';
@@ -81,6 +93,31 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.login,
             pageBuilder: (context, state) =>
                 customTransition(context, state, const LoginScreen())),
+        GoRoute(
+            name: GoRoutes.register,
+            path: GoRoutes.register,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const RegisterScreen())),
+        GoRoute(
+            name: GoRoutes.forgotPassword,
+            path: GoRoutes.forgotPassword,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ForgotPasswordScreen())),
+        GoRoute(
+            name: GoRoutes.about,
+            path: GoRoutes.about,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const AboutScreen())),
+        GoRoute(
+            name: GoRoutes.items,
+            path: GoRoutes.items,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ItemsScreen())),
+        GoRoute(
+            name: GoRoutes.shop,
+            path: GoRoutes.shop,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ShopScreen())),
         GoRoute(
             name: GoRoutes.users,
             path: GoRoutes.users,

@@ -114,7 +114,8 @@ class _ViewRawMaterialsScreenState
         SizedBox(
           height: 50,
           child: ElevatedButton(
-              onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addWindow),
+              onPressed: () =>
+                  GoRouter.of(context).goNamed(GoRoutes.addRawMaterial),
               style: ElevatedButton.styleFrom(
                   backgroundColor: CustomColors.emeraldGreen),
               child: quicksandWhiteBold('ADD NEW ITEM')),
@@ -182,7 +183,9 @@ class _ViewRawMaterialsScreenState
                           deleteWord: 'Archive',
                           deleteEntry: () => toggleItemAvailability(
                               context, ref,
-                              itemID: itemDoc.id, isAvailable: isAvailable))),
+                              itemID: itemDoc.id,
+                              itemType: ItemTypes.rawMaterial,
+                              isAvailable: isAvailable))),
                 ),
               )
             else
@@ -192,7 +195,9 @@ class _ViewRawMaterialsScreenState
                 child: all4Pix(
                   child: restoreEntryButton(context,
                       onPress: () => toggleItemAvailability(context, ref,
-                          itemID: itemDoc.id, isAvailable: isAvailable)),
+                          itemID: itemDoc.id,
+                          itemType: ItemTypes.rawMaterial,
+                          isAvailable: isAvailable)),
                 ),
               ),
             all4Pix(

@@ -105,7 +105,8 @@ class _ViewDoorsScreenState extends ConsumerState<ViewDoorsScreen> {
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         backgroundColor: CustomColors.lavenderMist),
-                    onPressed: () {},
+                    onPressed: () =>
+                        GoRouter.of(context).goNamed(GoRoutes.rawMaterial),
                     child: quicksandBlackBold('RAW MATERIALS'))),
           ],
         ),
@@ -179,7 +180,9 @@ class _ViewDoorsScreenState extends ConsumerState<ViewDoorsScreen> {
                           deleteWord: 'Archive',
                           deleteEntry: () => toggleItemAvailability(
                               context, ref,
-                              itemID: itemDoc.id, isAvailable: isAvailable))),
+                              itemID: itemDoc.id,
+                              itemType: ItemTypes.door,
+                              isAvailable: isAvailable))),
                 ),
               )
             else
@@ -189,7 +192,9 @@ class _ViewDoorsScreenState extends ConsumerState<ViewDoorsScreen> {
                 child: all4Pix(
                   child: restoreEntryButton(context,
                       onPress: () => toggleItemAvailability(context, ref,
-                          itemID: itemDoc.id, isAvailable: isAvailable)),
+                          itemID: itemDoc.id,
+                          itemType: ItemTypes.door,
+                          isAvailable: isAvailable)),
                 ),
               ),
             all4Pix(

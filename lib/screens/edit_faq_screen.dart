@@ -7,7 +7,6 @@ import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_bar_widget.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
@@ -59,7 +58,6 @@ class _EditFAQScreenState extends ConsumerState<EditFAQScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
-      appBar: appBarWidget(),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

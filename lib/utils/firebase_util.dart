@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/gallery_provider.dart';
+import 'package:imeasure/providers/items_provider.dart';
 import 'package:imeasure/providers/orders_provider.dart';
 import 'package:imeasure/providers/transactions_provider.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
@@ -24,6 +25,82 @@ import 'string_util.dart';
 
 bool hasLoggedInUser() {
   return FirebaseAuth.instance.currentUser != null;
+}
+
+Future registerNewUser(BuildContext context, WidgetRef ref,
+    {required TextEditingController emailController,
+    required TextEditingController passwordController,
+    required TextEditingController confirmPasswordController,
+    required TextEditingController firstNameController,
+    required TextEditingController lastNameController,
+    required TextEditingController mobileNumberController,
+    required TextEditingController addressController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    if (emailController.text.isEmpty ||
+        passwordController.text.isEmpty ||
+        confirmPasswordController.text.isEmpty ||
+        firstNameController.text.isEmpty ||
+        lastNameController.text.isEmpty ||
+        mobileNumberController.text.isEmpty ||
+        addressController.text.isEmpty) {
+      scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Please fill up all given fields.')));
+      return;
+    }
+    if (!emailController.text.contains('@') ||
+        !emailController.text.contains('.com')) {
+      scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Please input a valid email address')));
+      return;
+    }
+    if (passwordController.text != confirmPasswordController.text) {
+      scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('The passwords do not match')));
+      return;
+    }
+    if (passwordController.text.length < 6) {
+      scaffoldMessenger.showSnackBar(const SnackBar(
+          content: Text('The password must be at least six characters long')));
+      return;
+    }
+    if (mobileNumberController.text.length != 11 ||
+        mobileNumberController.text[0] != '0' ||
+        mobileNumberController.text[1] != '9') {
+      scaffoldMessenger.showSnackBar(const SnackBar(
+          content: Text(
+              'The mobile number must be an 11 digit number formatted as: 09XXXXXXXXX')));
+      return;
+    }
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(), password: passwordController.text);
+    await FirebaseFirestore.instance
+        .collection(Collections.users)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({
+      UserFields.email: emailController.text.trim(),
+      UserFields.password: passwordController.text,
+      UserFields.firstName: firstNameController.text.trim(),
+      UserFields.lastName: lastNameController.text.trim(),
+      UserFields.mobileNumber: mobileNumberController.text,
+      UserFields.address: addressController.text.trim(),
+      UserFields.userType: UserTypes.client,
+      UserFields.profileImageURL: '',
+      UserFields.bookmarks: []
+    });
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Successfully registered new user')));
+    await FirebaseAuth.instance.signOut();
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+
+    goRouter.goNamed(GoRoutes.login);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error registering new user: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
 }
 
 Future logInUser(BuildContext context, WidgetRef ref,
@@ -42,14 +119,6 @@ Future logInUser(BuildContext context, WidgetRef ref,
     final userDoc = await getCurrentUserDoc();
     final userData = userDoc.data() as Map<dynamic, dynamic>;
 
-    if (userData[UserFields.userType] != UserTypes.admin) {
-      await FirebaseAuth.instance.signOut();
-      scaffoldMessenger.showSnackBar(const SnackBar(
-          content: Text('Only admins may log-in to the web platform.')));
-      ref.read(loadingProvider.notifier).toggleLoading(false);
-      return;
-    }
-
     //  reset the password in firebase in case client reset it using an email link.
     if (userData[UserFields.password] != passwordController.text) {
       await FirebaseFirestore.instance
@@ -63,6 +132,50 @@ Future logInUser(BuildContext context, WidgetRef ref,
   } catch (error) {
     scaffoldMessenger
         .showSnackBar(SnackBar(content: Text('Error logging in: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future sendResetPasswordEmail(BuildContext context, WidgetRef ref,
+    {required TextEditingController emailController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  if (!emailController.text.contains('@') ||
+      !emailController.text.contains('.com')) {
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Please input a valid email address.')));
+    return;
+  }
+  try {
+    FocusScope.of(context).unfocus();
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    final filteredUsers = await FirebaseFirestore.instance
+        .collection(Collections.users)
+        .where(UserFields.email, isEqualTo: emailController.text.trim())
+        .get();
+
+    if (filteredUsers.docs.isEmpty) {
+      scaffoldMessenger.showSnackBar(const SnackBar(
+          content: Text('There is no user with that email address.')));
+      ref.read(loadingProvider.notifier).toggleLoading(false);
+      return;
+    }
+    if (filteredUsers.docs.first.data()[UserFields.userType] !=
+        UserTypes.client) {
+      scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('This feature is for clients only.')));
+      ref.read(loadingProvider.notifier).toggleLoading(false);
+      return;
+    }
+    await FirebaseAuth.instance
+        .sendPasswordResetEmail(email: emailController.text.trim());
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text('Successfully sent password reset email!')));
+    goRouter.goNamed(GoRoutes.login);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error sending password reset email: $error')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
   }
 }
@@ -95,6 +208,12 @@ Future<List<DocumentSnapshot>> getAllClientDocs() async {
 //==============================================================================
 //ITEMS=========================================================================
 //==============================================================================
+Future<List<DocumentSnapshot>> getAllItemDocs() async {
+  final items =
+      await FirebaseFirestore.instance.collection(Collections.items).get();
+  return items.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
 Future<List<DocumentSnapshot>> getAllWindowDocs() async {
   final items = await FirebaseFirestore.instance
       .collection(Collections.items)
@@ -447,6 +566,7 @@ Future addRawMaterialEntry(BuildContext context, WidgetRef ref,
       ItemFields.name: nameController.text.trim(),
       ItemFields.description: descriptionController.text.trim(),
       ItemFields.price: double.parse(priceController.text.trim()),
+      ItemFields.isAvailable: true
     });
 
     //  Upload Item Images to Firebase Storage
@@ -531,7 +651,9 @@ Future editRawMaterialEntry(BuildContext context, WidgetRef ref,
 }
 
 Future toggleItemAvailability(BuildContext context, WidgetRef ref,
-    {required String itemID, required bool isAvailable}) async {
+    {required String itemID,
+    required String itemType,
+    required bool isAvailable}) async {
   try {
     ref.read(loadingProvider).toggleLoading(true);
     await FirebaseFirestore.instance
@@ -541,7 +663,13 @@ Future toggleItemAvailability(BuildContext context, WidgetRef ref,
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
             'Successfully ${isAvailable ? 'archived' : 'restored'} this item')));
-    ref.read(windowsProvider).setWindowDocs(await getAllWindowDocs());
+    if (itemType == ItemTypes.window) {
+      ref.read(itemsProvider).setItemDocs(await getAllWindowDocs());
+    } else if (itemType == ItemTypes.door) {
+      ref.read(itemsProvider).setItemDocs(await getAllDoorDocs());
+    } else if (itemType == ItemTypes.rawMaterial) {
+      ref.read(itemsProvider).setItemDocs(await getAllRawMaterialDocs());
+    }
     ref.read(loadingProvider).toggleLoading(false);
   } catch (error) {
     ScaffoldMessenger.of(context).showSnackBar(

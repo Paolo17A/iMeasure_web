@@ -13,16 +13,16 @@ import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
 import '../widgets/text_widgets.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final emailController = TextEditingController();
-  final passwordController = TextEditingController();
 
   @override
   void initState() {
@@ -48,9 +48,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           all20Pix(
               child: Row(children: [
             backButton(context,
-                onPress: () => GoRouter.of(context).goNamed(GoRoutes.home))
+                onPress: () => GoRouter.of(context).goNamed(GoRoutes.login))
           ])),
-          Gap(100),
+          Gap(120),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -87,37 +87,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           textColor: Colors.white,
                           displayPrefixIcon: const Icon(Icons.email,
                               color: CustomColors.lavenderMist)),
-                      const Gap(16),
-                      CustomTextField(
-                        text: 'Password',
-                        controller: passwordController,
-                        textInputType: TextInputType.visiblePassword,
-                        fillColor: CustomColors.deepCharcoal,
-                        textColor: Colors.white,
-                        displayPrefixIcon: const Icon(Icons.lock,
-                            color: CustomColors.lavenderMist),
-                        onSearchPress: () => logInUser(context, ref,
-                            emailController: emailController,
-                            passwordController: passwordController),
-                      ),
-                      Divider(),
-                      TextButton(
-                          onPressed: () => GoRouter.of(context)
-                              .goNamed(GoRoutes.forgotPassword),
-                          child: quicksandWhiteRegular("Forgot Password?",
-                              fontSize: 16,
-                              decoration: TextDecoration.underline)),
-                      TextButton(
-                          onPressed: () =>
-                              GoRouter.of(context).goNamed(GoRoutes.register),
-                          child: quicksandWhiteRegular("Don't have an account?",
-                              decoration: TextDecoration.underline,
-                              fontSize: 16)),
                       submitButton(context,
-                          label: 'LOG-IN',
-                          onPress: () => logInUser(context, ref,
-                              emailController: emailController,
-                              passwordController: passwordController)),
+                          label: 'SEND PASSWORD\nRESET EMAIL', onPress: () {}),
                     ],
                   ),
                 ),

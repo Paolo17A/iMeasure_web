@@ -1,10 +1,13 @@
 import 'dart:math';
 
+String loremIpsum = '';
+
 class ImagePaths {
   static const String logo = 'assets/images/RentARide.png';
   static const String heritageBackground =
       'assets/images/heritage_background.jpg';
   static const String heritageIcon = 'assets/images/heritage_icon.png';
+  static const String testimony = 'assets/images/testimony.png';
 }
 
 class StorageFields {
@@ -37,7 +40,9 @@ class UserFields {
   static const String lastName = 'lastName';
   static const String userType = 'userType';
   static const String profileImageURL = 'profileImageURL';
+  static const String mobileNumber = 'mobileNumber';
   static const String address = 'address';
+  static const String bookmarks = 'bookmarks';
 }
 
 class ItemFields {

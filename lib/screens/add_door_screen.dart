@@ -135,7 +135,7 @@ class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
     return all20Pix(
       child: Row(children: [
         backButton(context,
-            onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows))
+            onPress: () => GoRouter.of(context).goNamed(GoRoutes.doors))
       ]),
     );
   }

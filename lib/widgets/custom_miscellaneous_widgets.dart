@@ -68,6 +68,7 @@ Widget viewFlexTextCell(String text,
         child: ClipRRect(
           child: Center(
               child: SelectableText(text,
+                  maxLines: 1,
                   style: GoogleFonts.quicksand(
                       textStyle: TextStyle(
                     color: textColor,
@@ -252,7 +253,8 @@ Widget windowParameterWidget(BuildContext context,
   return all10Pix(
     child: Container(
       decoration: BoxDecoration(
-          border: Border.all(), borderRadius: BorderRadius.circular(10)),
+          border: Border.all(color: Colors.white),
+          borderRadius: BorderRadius.circular(10)),
       padding: EdgeInsets.all(10),
       child: Column(
         children: [
@@ -413,7 +415,8 @@ Widget windowAccessoryWidget(BuildContext context,
   return all10Pix(
     child: Container(
       decoration: BoxDecoration(
-          border: Border.all(), borderRadius: BorderRadius.circular(10)),
+          border: Border.all(color: Colors.white),
+          borderRadius: BorderRadius.circular(10)),
       padding: EdgeInsets.all(10),
       child: Column(
         children: [

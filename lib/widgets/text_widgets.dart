@@ -45,12 +45,15 @@ Text quicksandBlackRegular(String label,
 Text quicksandWhiteRegular(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
-    TextOverflow? textOverflow}) {
+    TextOverflow? textOverflow,
+    TextDecoration? decoration}) {
   return Text(label,
       textAlign: textAlign,
       style: GoogleFonts.quicksand(
           fontSize: fontSize,
           color: Colors.white,
+          decoration: decoration,
+          decorationColor: Colors.white,
           textStyle: TextStyle(overflow: textOverflow)));
 }
 

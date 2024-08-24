@@ -10,6 +10,7 @@ ThemeData themeData = ThemeData(
   snackBarTheme: const SnackBarThemeData(
       backgroundColor: CustomColors.forestGreen,
       contentTextStyle: TextStyle(color: Colors.white)),
+  dividerColor: Colors.white,
   elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
           shape:

@@ -93,8 +93,9 @@ class _AddRawMaterialScreenState extends ConsumerState<AddRawMaterialScreen> {
                     horizontal5Percent(context,
                         child: Column(children: [
                           _newWindowHeaderWidget(),
-                          _windowNameWidget(),
-                          _windowDescriptionWidget(),
+                          _rawMaterialNameWidget(),
+                          _rawMaterialDescriptionWidget(),
+                          _rawMaterialPriceWidget(),
                           Divider(color: CustomColors.lavenderMist),
                           _productImagesWidget(),
                           _submitButtonWidget()
@@ -113,24 +114,25 @@ class _AddRawMaterialScreenState extends ConsumerState<AddRawMaterialScreen> {
     return all20Pix(
       child: Row(children: [
         backButton(context,
-            onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows))
+            onPress: () => GoRouter.of(context).goNamed(GoRoutes.rawMaterial))
       ]),
     );
   }
 
   Widget _newWindowHeaderWidget() {
     return quicksandWhiteBold(
-      'NEW DOOR',
+      'NEW RAW MATERIAL',
       textAlign: TextAlign.center,
       fontSize: 38,
     );
   }
 
-  Widget _windowNameWidget() {
+  Widget _rawMaterialNameWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      vertical10Pix(child: quicksandWhiteBold('Door Name', fontSize: 24)),
+      vertical10Pix(
+          child: quicksandWhiteBold('Raw Material Name', fontSize: 24)),
       CustomTextField(
-          text: 'Door Name',
+          text: 'Raw Material Name',
           height: 40,
           controller: nameController,
           textInputType: TextInputType.text,
@@ -139,14 +141,26 @@ class _AddRawMaterialScreenState extends ConsumerState<AddRawMaterialScreen> {
     ]);
   }
 
-  Widget _windowDescriptionWidget() {
+  Widget _rawMaterialDescriptionWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       vertical10Pix(
-          child: quicksandWhiteBold('Door Description', fontSize: 24)),
+          child: quicksandWhiteBold('Raw Material Description', fontSize: 24)),
       CustomTextField(
-          text: 'Door Description',
+          text: 'Raw Material Description',
           controller: descriptionController,
           textInputType: TextInputType.multiline,
+          displayPrefixIcon: null),
+    ]);
+  }
+
+  Widget _rawMaterialPriceWidget() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      vertical10Pix(
+          child: quicksandWhiteBold('Raw Material Price', fontSize: 24)),
+      CustomTextField(
+          text: 'Raw Material Price',
+          controller: priceController,
+          textInputType: TextInputType.number,
           displayPrefixIcon: null),
     ]);
   }

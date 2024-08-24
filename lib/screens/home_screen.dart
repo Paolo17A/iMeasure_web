@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/string_util.dart';
 import 'package:imeasure/widgets/app_drawer_widget.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
+import 'package:imeasure/widgets/top_navigator_widget.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
@@ -15,7 +18,6 @@ import '../utils/go_router_util.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
-import '../widgets/custom_text_field_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -31,20 +33,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int ordersCount = 0;
   double totalSales = 0;
   double monthlySales = 0;
-  Map<String, double> paymentBreakdown = {
-    TransactionStatuses.approved: 0,
-    TransactionStatuses.pending: 0,
-    TransactionStatuses.denied: 0
-  };
 
-  Map<String, double> orderBreakdown = {
-    OrderStatuses.generated: 0,
-    OrderStatuses.pending: 0,
-    OrderStatuses.processing: 0,
-    OrderStatuses.denied: 0,
-    OrderStatuses.forPickUp: 0,
-    OrderStatuses.pickedUp: 0
-  };
+  //  GUEST
+  List<DocumentSnapshot> itemDocs = [];
 
   //  LOG-IN
   final emailController = TextEditingController();
@@ -63,11 +54,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       try {
+        ref.read(loadingProvider.notifier).toggleLoading(true);
         if (!hasLoggedInUser()) {
+          itemDocs = await getAllItemDocs();
+          ref.read(loadingProvider.notifier).toggleLoading(false);
           return;
         }
 
-        ref.read(loadingProvider.notifier).toggleLoading(true);
         final userDoc = await getCurrentUserDoc();
         final userData = userDoc.data() as Map<dynamic, dynamic>;
         String userType = userData[UserFields.userType];
@@ -81,46 +74,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // windowsCount = windows.length;
           final orders = await getAllOrderDocs();
           ordersCount = orders.length;
-          /*for (var order in orders) {
-          final orderData = order.data() as Map<dynamic, dynamic>;
-          final status = orderData[OrderFields.purchaseStatus];
-          if (status == OrderStatuses.generated) {
-            orderBreakdown[OrderStatuses.generated] =
-                orderBreakdown[OrderStatuses.generated]! + 1;
-          } else if (status == OrderStatuses.pending) {
-            orderBreakdown[OrderStatuses.pending] =
-                orderBreakdown[OrderStatuses.pending]! + 1;
-          } else if (status == OrderStatuses.processing) {
-            orderBreakdown[OrderStatuses.processing] =
-                orderBreakdown[OrderStatuses.processing]! + 1;
-          } else if (status == OrderStatuses.denied) {
-            orderBreakdown[OrderStatuses.denied] =
-                orderBreakdown[OrderStatuses.denied]! + 1;
-          } else if (status == OrderStatuses.forPickUp) {
-            orderBreakdown[OrderStatuses.forPickUp] =
-                orderBreakdown[OrderStatuses.forPickUp]! + 1;
-          } else if (status == OrderStatuses.pickedUp) {
-            orderBreakdown[OrderStatuses.pickedUp] =
-                orderBreakdown[OrderStatuses.pickedUp]! + 1;
-          }
-        }*/
-
-          /*final transactionDocs = await getAllTransactionDocs();
-          for (var transaction in transactionDocs) {
-            final transactionData = transaction.data() as Map<dynamic, dynamic>;
-            final status = transactionData[TransactionFields.paymentStatus];
-            if (status == TransactionStatuses.pending) {
-              paymentBreakdown[TransactionStatuses.pending] =
-                  paymentBreakdown[TransactionStatuses.pending]! + 1;
-            } else if (status == TransactionStatuses.approved) {
-              paymentBreakdown[TransactionStatuses.approved] =
-                  paymentBreakdown[TransactionStatuses.approved]! + 1;
-              totalSales += transactionData[TransactionFields.paidAmount];
-            } else if (status == TransactionStatuses.denied) {
-              paymentBreakdown[TransactionStatuses.denied] =
-                  paymentBreakdown[TransactionStatuses.denied]! + 1;
-            }
-          }*/
         } else {}
 
         ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -137,7 +90,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.watch(loadingProvider);
     ref.watch(userDataProvider);
     return Scaffold(
-      //appBar: appBarWidget(),
+      appBar: hasLoggedInUser() &&
+              ref.read(userDataProvider).userType == UserTypes.client
+          ? null
+          : topGuestNavigator(context, path: GoRoutes.home),
       drawer: hasLoggedInUser()
           ? appDrawer(context, currentPath: GoRoutes.home)
           : null,
@@ -147,8 +103,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           hasLoggedInUser()
               ? ref.read(userDataProvider).userType == UserTypes.admin
                   ? adminDashboard()
-                  : Container()
-              : _logInContainer()),
+                  : ElevatedButton(
+                      onPressed: () => FirebaseAuth.instance.signOut().then(
+                          (value) =>
+                              GoRouter.of(context).goNamed(GoRoutes.login)),
+                      child: quicksandWhiteBold('LOG-OUT'),
+                    )
+              : _guestWidgets()),
     );
   }
 
@@ -286,72 +247,85 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _logInContainer() {
+  //============================================================================
+  //==GUEST WIDGETS=============================================================
+  //============================================================================
+  Widget _guestWidgets() {
     return Container(
-      width: double.infinity,
-      height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Divider(),
+              horizontal5Percent(context,
+                  child: Column(
+                    children: [
+                      _cleanMoistureCare(),
+                      _samples(),
+                    ],
+                  ))
+            ],
+          ),
+        ));
+  }
+
+  Widget _cleanMoistureCare() {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.9,
+      height: MediaQuery.of(context).size.width * 0.3,
       decoration: BoxDecoration(
           image: DecorationImage(
               image: AssetImage(ImagePaths.heritageBackground),
               fit: BoxFit.cover)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Container(
-            width: MediaQuery.of(context).size.width * 0.6,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(ImagePaths.heritageIcon),
-                itcBaumansWhiteBold('HERITAGE ALUMINUM SALES CORPORATION',
-                    fontSize: 40),
-                itcBaumansWhiteBold('• LOS BAÑOS •')
-              ],
-            ),
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width * 0.3,
-            decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.1),
-                border: Border.all(color: CustomColors.lavenderMist),
-                borderRadius: BorderRadius.circular(10)),
-            padding: EdgeInsets.all(20),
-            child: SingleChildScrollView(
+          quicksandWhiteBold('Clean.', fontSize: 36),
+          quicksandWhiteBold('Moisture.', fontSize: 36),
+          quicksandWhiteBold('Care.', fontSize: 36)
+        ],
+      ),
+    );
+  }
+
+  Widget _samples() {
+    return vertical10Pix(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  vertical20Pix(
-                      child: quicksandWhiteBold('iMeasure', fontSize: 40)),
-                  CustomTextField(
-                      text: 'Email Address',
-                      controller: emailController,
-                      textInputType: TextInputType.emailAddress,
-                      fillColor: CustomColors.deepCharcoal,
-                      textColor: Colors.white,
-                      displayPrefixIcon: const Icon(Icons.email,
-                          color: CustomColors.lavenderMist)),
-                  const Gap(16),
-                  CustomTextField(
-                    text: 'Password',
-                    controller: passwordController,
-                    textInputType: TextInputType.visiblePassword,
-                    fillColor: CustomColors.deepCharcoal,
-                    textColor: Colors.white,
-                    displayPrefixIcon: const Icon(Icons.lock,
-                        color: CustomColors.lavenderMist),
-                    onSearchPress: () => logInUser(context, ref,
-                        emailController: emailController,
-                        passwordController: passwordController),
-                  ),
-                  submitButton(context,
-                      label: 'LOG-IN',
-                      onPress: () => logInUser(context, ref,
-                          emailController: emailController,
-                          passwordController: passwordController)),
-                ],
+            children: [
+              quicksandWhiteRegular(
+                  loremIpsum.substring(0, (loremIpsum.length / 2).floor()),
+                  textAlign: TextAlign.justify),
+              submitButton(context,
+                  label: 'SHOP NOW',
+                  onPress: () => GoRouter.of(context).goNamed(GoRoutes.login))
+            ],
+          )),
+          if (itemDocs.isNotEmpty)
+            Flexible(
+                child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: itemDocs.take(3).map((item) {
+                  final itemData = item.data() as Map<dynamic, dynamic>;
+                  String imageURL = itemData[ItemFields.imageURL];
+                  return all10Pix(
+                      child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            fit: BoxFit.fill, image: NetworkImage(imageURL))),
+                  ));
+                }).toList(),
               ),
-            ),
-          )
+            ))
         ],
       ),
     );

@@ -1,50 +1,57 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/color_util.dart';
+import 'package:imeasure/utils/string_util.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
 import '../utils/go_router_util.dart';
 
-PreferredSizeWidget topNavigator(BuildContext context, {required String path}) {
+PreferredSizeWidget topGuestNavigator(BuildContext context,
+    {required String path}) {
   return AppBar(
-    backgroundColor: CustomColors.lavenderMist,
+    backgroundColor: CustomColors.deepCharcoal,
     toolbarHeight: 100,
     automaticallyImplyLeading: false,
     title: Container(
         width: MediaQuery.of(context).size.width,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        child: Column(
           children: [
-            topNavigatorButton(context,
-                label: 'DASHBOARD', thisPath: GoRoutes.home, currentPath: path),
-            topNavigatorButton(context,
-                label: 'USERS', thisPath: GoRoutes.users, currentPath: path),
-            topNavigatorButton(context,
-                label: 'WINDOWS',
-                thisPath: GoRoutes.windows,
-                currentPath: path),
-            topNavigatorButton(context,
-                label: 'TRANSACTIONS',
-                thisPath: GoRoutes.transactions,
-                currentPath: path),
-            topNavigatorButton(context,
-                label: 'ORDERS', thisPath: GoRoutes.orders, currentPath: path),
-            Column(
-              mainAxisSize: MainAxisSize.min,
+            Gap(40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                quicksandBlackBold('ADMIN', fontSize: 12),
                 TextButton(
-                    onPressed: () {
-                      FirebaseAuth.instance.signOut().then((value) {
-                        GoRouter.of(context).goNamed(GoRoutes.home);
-                        GoRouter.of(context)
-                            .pushReplacementNamed(GoRoutes.home);
-                      });
-                    },
-                    child: quicksandRedBold('LOG-OUT', fontSize: 12))
+                  onPressed: path == GoRoutes.home
+                      ? null
+                      : () => GoRouter.of(context).goNamed(GoRoutes.home),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Gap(40),
+                    Image.asset(ImagePaths.heritageIcon, scale: 4),
+                    Gap(8),
+                    quicksandWhiteBold('iMeasure', fontSize: 28)
+                  ]),
+                ),
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  topNavigatorButton(context,
+                      label: 'HOME',
+                      thisPath: GoRoutes.home,
+                      currentPath: path),
+                  topNavigatorButton(context,
+                      label: 'ABOUT',
+                      thisPath: GoRoutes.about,
+                      currentPath: path),
+                  topNavigatorButton(context,
+                      label: 'ITEMS',
+                      thisPath: GoRoutes.items,
+                      currentPath: path),
+                  topNavigatorButton(context,
+                      label: 'SHOP',
+                      thisPath: GoRoutes.shop,
+                      currentPath: path),
+                ])
               ],
-            )
+            ),
           ],
         )),
   );
@@ -54,18 +61,19 @@ topNavigatorButton(BuildContext context,
     {required String label,
     required String thisPath,
     required String currentPath}) {
-  return Flexible(
-      flex: 2,
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.15,
-        height: 50,
-        child: TextButton(
-            onPressed: () {
-              GoRouter.of(context).goNamed(thisPath);
-              if (thisPath == GoRoutes.home) {
-                GoRouter.of(context).pushReplacementNamed(thisPath);
-              }
-            },
-            child: quicksandBlackBold(label)),
-      ));
+  return Container(
+    width: MediaQuery.of(context).size.width * 0.1,
+    height: 50,
+    child: TextButton(
+        onPressed: () {
+          if (thisPath.isEmpty || thisPath == currentPath) return;
+          GoRouter.of(context).goNamed(thisPath);
+          if (thisPath == GoRoutes.home) {
+            GoRouter.of(context).pushReplacementNamed(thisPath);
+          }
+        },
+        child: thisPath == currentPath
+            ? quicksandWhiteBold(label)
+            : quicksandWhiteRegular(label, fontSize: 16)),
+  );
 }
