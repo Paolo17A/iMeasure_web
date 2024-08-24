@@ -14,7 +14,6 @@ import '../providers/user_data_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/delete_entry_dialog_util.dart';
 import '../utils/firebase_util.dart';
-import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/text_widgets.dart';
 
@@ -59,7 +58,6 @@ class _ViewRawMaterialsScreenState
     ref.watch(loadingProvider);
     ref.watch(itemsProvider);
     return Scaffold(
-      drawer: appDrawer(context, currentPath: GoRoutes.windows),
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           Row(

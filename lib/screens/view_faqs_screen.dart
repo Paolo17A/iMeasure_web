@@ -10,7 +10,6 @@ import '../utils/color_util.dart';
 import '../utils/delete_entry_dialog_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
@@ -59,7 +58,6 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
-      drawer: appDrawer(context, currentPath: GoRoutes.viewFAQs),
       body: stackedLoadingContainer(
         context,
         ref.read(loadingProvider).isLoading,

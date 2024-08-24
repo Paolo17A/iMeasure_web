@@ -166,6 +166,30 @@ class TransactionStatuses {
   static const String denied = 'DENIED';
 }
 
+class CartFields {
+  static const String clientID = 'clientID';
+  static const String itemID = 'itemID';
+  static const String quantity = 'quantity';
+  static const String quotationID = 'quotationID';
+}
+
+class QuotationFields {
+  static const String clientID = 'clientID';
+  static const String itemID = 'windowID';
+  static const String width = 'width';
+  static const String height = 'height';
+  static const String glassType = 'glassType';
+  static const String color = 'color';
+  static const String purchaseStatus = 'purchaseStatus';
+  static const String dateCreated = 'dateCreated';
+  static const String datePickedUp = 'datePickedUp';
+  static const String mandatoryMap = 'mandatoryMap';
+  static const String optionalMap = 'optionalMap';
+  static const String itemOverallPrice = 'itemOverallPrice';
+  static const String laborPrice = 'laborPrice';
+  static const String quotationURL = 'quotationURL';
+}
+
 class GalleryFields {
   static const String galleryType = 'galleryType';
   static const String title = 'title';
@@ -181,7 +205,6 @@ class GalleryTypes {
 
 class PathParameters {
   static const String userID = 'userID';
-  //static const String windowID = 'windowID';
   static const String itemID = 'itemID';
   static const String faqID = 'faqID';
   static const String orderID = 'orderID';

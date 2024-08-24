@@ -12,7 +12,6 @@ import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
@@ -132,7 +131,6 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
     ref.watch(loadingProvider);
     ref.watch(uploadedImageProvider);
     return Scaffold(
-      drawer: appDrawer(context, currentPath: GoRoutes.windows),
       body: switchedLoadingContainer(
         ref.read(loadingProvider).isLoading,
         Row(

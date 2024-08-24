@@ -6,7 +6,6 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/string_util.dart';
-import 'package:imeasure/widgets/app_drawer_widget.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 import 'package:imeasure/widgets/top_navigator_widget.dart';
@@ -91,12 +90,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.watch(userDataProvider);
     return Scaffold(
       appBar: hasLoggedInUser() &&
-              ref.read(userDataProvider).userType == UserTypes.client
+              ref.read(userDataProvider).userType == UserTypes.admin
           ? null
           : topGuestNavigator(context, path: GoRoutes.home),
-      drawer: hasLoggedInUser()
-          ? appDrawer(context, currentPath: GoRoutes.home)
-          : null,
       body: stackedLoadingContainer(
           context,
           ref.read(loadingProvider).isLoading,

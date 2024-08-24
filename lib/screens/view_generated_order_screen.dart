@@ -14,7 +14,6 @@ import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 
@@ -89,7 +88,6 @@ class _ViewGeneratedOrderScreenState
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
-      drawer: appDrawer(context, currentPath: GoRoutes.orders),
       body: stackedLoadingContainer(
           context,
           ref.read(loadingProvider).isLoading,

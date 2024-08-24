@@ -13,7 +13,6 @@ import '../utils/delete_entry_dialog_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/text_widgets.dart';
 
@@ -57,7 +56,6 @@ class _ViewTransactionsScreenState
     ref.watch(loadingProvider);
     ref.watch(transactionsProvider);
     return Scaffold(
-      drawer: appDrawer(context, currentPath: GoRoutes.transactions),
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           Row(

@@ -10,7 +10,6 @@ import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/text_widgets.dart';
 
@@ -50,7 +49,6 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
     ref.watch(loadingProvider);
     ref.watch(ordersProvider);
     return Scaffold(
-      drawer: appDrawer(context, currentPath: GoRoutes.orders),
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           Row(

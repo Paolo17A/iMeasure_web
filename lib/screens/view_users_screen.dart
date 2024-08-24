@@ -13,7 +13,6 @@ import '../providers/users_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
-import '../widgets/app_drawer_widget.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 
@@ -80,7 +79,6 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
     ref.watch(usersProvider);
     ref.watch(userDataProvider);
     return Scaffold(
-      drawer: appDrawer(context, currentPath: GoRoutes.users),
       body: stackedLoadingContainer(
         context,
         ref.read(loadingProvider).isLoading,
