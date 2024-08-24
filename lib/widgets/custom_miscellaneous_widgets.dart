@@ -204,6 +204,15 @@ Widget selectedMemoryImageDisplay(
   );
 }
 
+Widget square300NetworkImage(String url) {
+  return Container(
+    width: 300,
+    height: 300,
+    decoration: BoxDecoration(
+        image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover)),
+  );
+}
+
 Widget selectedNetworkImageDisplay(String imageSource) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 40),

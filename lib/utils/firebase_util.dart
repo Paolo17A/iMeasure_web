@@ -205,6 +205,52 @@ Future<List<DocumentSnapshot>> getAllClientDocs() async {
   return users.docs;
 }
 
+Future editUserProfile(BuildContext context, WidgetRef ref,
+    {required TextEditingController firstNameController,
+    required TextEditingController lastNameController,
+    required TextEditingController addressController,
+    required TextEditingController mobileNumberController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    if (firstNameController.text.isEmpty ||
+        lastNameController.text.isEmpty ||
+        mobileNumberController.text.isEmpty ||
+        addressController.text.isEmpty) {
+      scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Please fill up all given fields.')));
+      return;
+    }
+
+    if (mobileNumberController.text.length != 11 ||
+        mobileNumberController.text[0] != '0' ||
+        mobileNumberController.text[1] != '9') {
+      scaffoldMessenger.showSnackBar(const SnackBar(
+          content: Text(
+              'The mobile number must be an 11 digit number formatted as: 09XXXXXXXXX')));
+      return;
+    }
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.users)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .update({
+      UserFields.firstName: firstNameController.text.trim(),
+      UserFields.lastName: lastNameController.text.trim(),
+      UserFields.address: addressController.text.trim(),
+      UserFields.mobileNumber: mobileNumberController.text.trim()
+    });
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully edited your profile.')));
+    goRouter.goNamed(GoRoutes.profile);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error editing user profile: $error')));
+  }
+}
+
 //==============================================================================
 //ITEMS=========================================================================
 //==============================================================================

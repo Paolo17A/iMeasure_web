@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -36,16 +35,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   //  GUEST
   List<DocumentSnapshot> itemDocs = [];
 
-  //  LOG-IN
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    super.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-  }
+  //  USER
+  List<DocumentSnapshot> serviceDocs = [];
+  List<DocumentSnapshot> testimonialDocs = [];
+  List<DocumentSnapshot> portfolioDocs = [];
 
   @override
   void initState() {
@@ -66,14 +59,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.read(userDataProvider).setUserType(userType);
         if (ref.read(userDataProvider).userType == UserTypes.admin) {
           windowDocs = await getAllWindowDocs();
-
           final users = await getAllClientDocs();
           usersCount = users.length;
-          // final windows = await getAllWindowDocs();
-          // windowsCount = windows.length;
+
           final orders = await getAllOrderDocs();
           ordersCount = orders.length;
-        } else {}
+        } else if (ref.read(userDataProvider).userType == UserTypes.client) {
+          serviceDocs = await getAllServiceGalleryDocs();
+          serviceDocs.shuffle();
+          testimonialDocs = await getAllTestimonialGalleryDocs();
+          testimonialDocs.shuffle();
+          portfolioDocs = await getAllPortfolioGalleryDocs();
+          portfolioDocs.shuffle();
+          itemDocs = await getAllItemDocs();
+          itemDocs.shuffle();
+        }
 
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
@@ -89,22 +89,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.watch(loadingProvider);
     ref.watch(userDataProvider);
     return Scaffold(
-      appBar: hasLoggedInUser() &&
-              ref.read(userDataProvider).userType == UserTypes.admin
-          ? null
-          : topGuestNavigator(context, path: GoRoutes.home),
+      appBar: !hasLoggedInUser()
+          ? topGuestNavigator(context, path: GoRoutes.home)
+          : ref.read(userDataProvider).userType == UserTypes.client
+              ? topUserNavigator(context, path: GoRoutes.home)
+              : null,
       body: stackedLoadingContainer(
           context,
           ref.read(loadingProvider).isLoading,
           hasLoggedInUser()
               ? ref.read(userDataProvider).userType == UserTypes.admin
                   ? adminDashboard()
-                  : ElevatedButton(
-                      onPressed: () => FirebaseAuth.instance.signOut().then(
-                          (value) =>
-                              GoRouter.of(context).goNamed(GoRoutes.login)),
-                      child: quicksandWhiteBold('LOG-OUT'),
-                    )
+                  : _userWidgets()
               : _guestWidgets()),
     );
   }
@@ -238,6 +234,111 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 image: DecorationImage(
                     image: NetworkImage(imageURL), fit: BoxFit.cover)),
           ),
+        ],
+      ),
+    );
+  }
+
+  //============================================================================
+  //==USER WIDGETS==============================================================
+  //============================================================================
+  Widget _userWidgets() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      child: SingleChildScrollView(
+          child: Column(
+        children: [
+          Divider(),
+          horizontal5Percent(context,
+              child: Column(
+                children: [
+                  _heritageBanner(),
+                  _gallery(),
+                  _productsAndItems(),
+                ],
+              ))
+        ],
+      )),
+    );
+  }
+
+  Widget _heritageBanner() {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.9,
+      height: MediaQuery.of(context).size.width * 0.3,
+      decoration: BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage(ImagePaths.heritageBackground),
+              fit: BoxFit.cover)),
+      padding: EdgeInsets.all(20),
+      child: Center(
+          child: itcBaumansWhiteBold('HERITAGE ALUMINUM SALES CORPORATION',
+              fontSize: 36)),
+    );
+  }
+
+  Widget _gallery() {
+    String serviceURL = '';
+    String testimonialURL = '';
+    String portfolioURL = '';
+    if (serviceDocs.isNotEmpty) {
+      final serviceData = serviceDocs.first.data() as Map<dynamic, dynamic>;
+      serviceURL = serviceData[GalleryFields.imageURL];
+    }
+    if (testimonialDocs.isNotEmpty) {
+      final testimonialData =
+          testimonialDocs.first.data() as Map<dynamic, dynamic>;
+      testimonialURL = testimonialData[GalleryFields.imageURL];
+    }
+    if (portfolioDocs.isNotEmpty) {
+      final portfolioData = portfolioDocs.first.data() as Map<dynamic, dynamic>;
+      portfolioURL = portfolioData[GalleryFields.imageURL];
+    }
+    return vertical20Pix(
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+      if (serviceURL.isNotEmpty)
+        Column(children: [
+          quicksandWhiteBold('SERVICES'),
+          Gap(4),
+          square300NetworkImage(serviceURL)
+        ]),
+      if (testimonialURL.isNotEmpty)
+        Column(children: [
+          quicksandWhiteBold('TESTIMONIALS'),
+          Gap(4),
+          square300NetworkImage(testimonialURL)
+        ]),
+      if (portfolioURL.isNotEmpty)
+        Column(children: [
+          quicksandWhiteBold('PORTFOLIO'),
+          Gap(4),
+          square300NetworkImage(portfolioURL)
+        ]),
+    ]));
+  }
+
+  Widget _productsAndItems() {
+    return vertical20Pix(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Flexible(child: Divider()),
+              quicksandWhiteRegular('Products and Items'),
+              Flexible(child: Divider()),
+            ],
+          ),
+          Gap(40),
+          Wrap(
+              spacing: 40,
+              runSpacing: 40,
+              children: itemDocs.take(6).map((itemDoc) {
+                final itemData = itemDoc.data() as Map<dynamic, dynamic>;
+                return GestureDetector(
+                    onTap: () {},
+                    child:
+                        square300NetworkImage(itemData[ItemFields.imageURL]));
+              }).toList())
         ],
       ),
     );

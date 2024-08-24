@@ -9,12 +9,14 @@ import 'package:imeasure/screens/add_testimonial_screen.dart';
 import 'package:imeasure/screens/add_window_screen.dart';
 import 'package:imeasure/screens/edit_door_screen.dart';
 import 'package:imeasure/screens/edit_portfolio_screen.dart';
+import 'package:imeasure/screens/edit_profile_screen.dart';
 import 'package:imeasure/screens/edit_raw_material_screen.dart';
 import 'package:imeasure/screens/edit_testimonial_screen.dart';
 import 'package:imeasure/screens/edit_window_screen.dart';
 import 'package:imeasure/screens/forgot_password_screen.dart';
 import 'package:imeasure/screens/items_screen.dart';
 import 'package:imeasure/screens/login_screen.dart';
+import 'package:imeasure/screens/profile_screen.dart';
 import 'package:imeasure/screens/register_screen.dart';
 import 'package:imeasure/screens/shop_screen.dart';
 import 'package:imeasure/screens/view_doors_screen.dart';
@@ -48,6 +50,9 @@ class GoRoutes {
   static const about = 'about';
   static const items = 'items';
   static const shop = 'shop';
+  //  USER
+  static const profile = 'profile';
+  static const editProfile = 'editProfile';
   //  ADMIN
   static const users = 'users';
   static const selectedUser = 'selectedUser';
@@ -118,6 +123,16 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.shop,
             pageBuilder: (context, state) =>
                 customTransition(context, state, const ShopScreen())),
+        GoRoute(
+            name: GoRoutes.profile,
+            path: GoRoutes.profile,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const ProfileScreen())),
+        GoRoute(
+            name: GoRoutes.editProfile,
+            path: GoRoutes.editProfile,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const EditProfileScreen())),
         GoRoute(
             name: GoRoutes.users,
             path: GoRoutes.users,

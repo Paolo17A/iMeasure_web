@@ -2,7 +2,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/utils/string_util.dart';
 import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
@@ -23,6 +25,8 @@ class ShopScreen extends ConsumerStatefulWidget {
 
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   List<DocumentSnapshot> itemDocs = [];
+  List<DocumentSnapshot> filteredDocs = [];
+  String currentItemType = ItemTypes.window;
 
   @override
   void initState() {
@@ -32,11 +36,21 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       final goRouter = GoRouter.of(context);
       try {
         if (hasLoggedInUser()) {
-          goRouter.goNamed(GoRoutes.home);
-          return;
+          final userDoc = await getCurrentUserDoc();
+          final userData = userDoc.data() as Map<dynamic, dynamic>;
+          String userType = userData[UserFields.userType];
+          ref.read(userDataProvider).setUserType(userType);
+          if (ref.read(userDataProvider).userType == UserTypes.admin) {
+            goRouter.goNamed(GoRoutes.home);
+            return;
+          }
         }
         ref.read(loadingProvider).toggleLoading(true);
         itemDocs = await getAllItemDocs();
+        print('item docs: ${itemDocs.length}');
+        filterDocsByItemType();
+
+        print(currentItemType);
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);
@@ -46,22 +60,142 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     });
   }
 
+  void filterDocsByItemType() {
+    print('current item type: $currentItemType');
+    setState(() {
+      filteredDocs = itemDocs.where((itemDoc) {
+        final itemData = itemDoc.data() as Map<dynamic, dynamic>;
+        return itemData[ItemFields.itemType] == currentItemType;
+      }).toList();
+      print('filtered docs: ${filteredDocs.length}');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
+    ref.watch(userDataProvider);
     return Scaffold(
-      appBar: topGuestNavigator(context, path: GoRoutes.shop),
+      appBar: hasLoggedInUser()
+          ? topUserNavigator(context, path: GoRoutes.shop)
+          : topGuestNavigator(context, path: GoRoutes.shop),
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           SingleChildScrollView(
             child: Column(children: [
-              Divider(),
-              horizontal5Percent(context,
-                  child: Column(
-                    children: [_onlineShop(), _itemCarousel()],
-                  ))
+              hasLoggedInUser() ? _userWidgets() : _guestWidgets()
             ]),
           )),
+    );
+  }
+
+  //============================================================================
+  //===USER WIDGETS=============================================================
+  //============================================================================
+  Widget _userWidgets() {
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      itemTypeNavigator(context),
+      Container(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height - 100,
+        decoration: BoxDecoration(border: Border.all(color: Colors.white)),
+        child: SingleChildScrollView(child: _filteredItemEntries()),
+      )
+    ]);
+  }
+
+  Widget itemTypeNavigator(BuildContext context) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.2,
+      height: MediaQuery.of(context).size.height - 100,
+      decoration: BoxDecoration(
+          color: CustomColors.deepCharcoal,
+          border: Border.all(color: Colors.white)),
+      child: Column(
+        children: [
+          Gap(40),
+          itemButton(context, label: 'WINDOWS', itemType: ItemTypes.window),
+          itemButton(context, label: 'DOORS', itemType: ItemTypes.door),
+          itemButton(context,
+              label: 'RAW MATERIALS', itemType: ItemTypes.rawMaterial),
+        ],
+      ),
+    );
+  }
+
+  Widget itemButton(BuildContext context,
+      {required String label, required String itemType}) {
+    return all20Pix(
+        child: SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              backgroundColor: itemType == currentItemType
+                  ? CustomColors.forestGreen
+                  : CustomColors.lavenderMist),
+          onPressed: () {
+            setState(() {
+              currentItemType = itemType;
+            });
+            filterDocsByItemType();
+          },
+          child: itemType == currentItemType
+              ? quicksandWhiteBold(label, fontSize: 22)
+              : quicksandBlackRegular(label, fontSize: 22)),
+    ));
+  }
+
+  Widget _filteredItemEntries() {
+    return Center(
+      child: all20Pix(
+        child: filteredDocs.isNotEmpty
+            ? Wrap(
+                spacing: 40,
+                runSpacing: 40,
+                children: filteredDocs
+                    .map((itemDoc) => _filteredItemEntry(itemDoc))
+                    .toList(),
+              )
+            : Center(
+                child: quicksandWhiteBold('NO ITEMS AVAILABLE', fontSize: 32),
+              ),
+      ),
+    );
+  }
+
+  Widget _filteredItemEntry(DocumentSnapshot itemDoc) {
+    final itemData = itemDoc.data() as Map<dynamic, dynamic>;
+    String imageURL = itemData[ItemFields.imageURL];
+    String name = itemData[ItemFields.name];
+    return Container(
+      decoration: BoxDecoration(border: Border.all(color: Colors.white)),
+      padding: EdgeInsets.all(12),
+      child: Column(
+        children: [
+          square300NetworkImage(imageURL),
+          vertical10Pix(child: quicksandWhiteBold(name)),
+          ElevatedButton(
+              onPressed: () {}, child: quicksandWhiteRegular('ADD TO CART'))
+        ],
+      ),
+    );
+  }
+
+  //============================================================================
+  //===GUEST WIDGETS============================================================
+  //============================================================================
+
+  Widget _guestWidgets() {
+    return Column(
+      children: [
+        Divider(),
+        horizontal5Percent(
+          context,
+          child: Column(
+            children: [_onlineShop(), _itemCarousel()],
+          ),
+        ),
+      ],
     );
   }
 
