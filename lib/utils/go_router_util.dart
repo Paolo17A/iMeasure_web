@@ -7,6 +7,7 @@ import 'package:imeasure/screens/add_raw_material_screen.dart';
 import 'package:imeasure/screens/add_service_screen.dart';
 import 'package:imeasure/screens/add_testimonial_screen.dart';
 import 'package:imeasure/screens/add_window_screen.dart';
+import 'package:imeasure/screens/cart_screen.dart';
 import 'package:imeasure/screens/edit_door_screen.dart';
 import 'package:imeasure/screens/edit_portfolio_screen.dart';
 import 'package:imeasure/screens/edit_profile_screen.dart';
@@ -16,6 +17,7 @@ import 'package:imeasure/screens/edit_window_screen.dart';
 import 'package:imeasure/screens/forgot_password_screen.dart';
 import 'package:imeasure/screens/items_screen.dart';
 import 'package:imeasure/screens/login_screen.dart';
+import 'package:imeasure/screens/order_history_screen.dart';
 import 'package:imeasure/screens/profile_screen.dart';
 import 'package:imeasure/screens/register_screen.dart';
 import 'package:imeasure/screens/shop_screen.dart';
@@ -26,6 +28,7 @@ import 'package:imeasure/screens/view_orders_screen.dart';
 import 'package:imeasure/screens/view_portfolio_screen.dart';
 import 'package:imeasure/screens/view_raw_materials_screen.dart';
 import 'package:imeasure/screens/view_selected_door_screen.dart';
+import 'package:imeasure/screens/view_selected_raw_material_screen.dart';
 import 'package:imeasure/screens/view_selected_user_screen.dart';
 import 'package:imeasure/screens/view_services_screen.dart';
 import 'package:imeasure/screens/view_testimonials_screen.dart';
@@ -33,11 +36,8 @@ import 'package:imeasure/screens/view_transactions_screen.dart';
 import 'package:imeasure/screens/view_users_screen.dart';
 import 'package:imeasure/screens/view_windows_screen.dart';
 
-import '../screens/add_faq_screen.dart';
-import '../screens/edit_faq_screen.dart';
 import '../screens/edit_service_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/view_faqs_screen.dart';
 import '../screens/view_selected_window_screen.dart';
 import 'string_util.dart';
 
@@ -51,8 +51,10 @@ class GoRoutes {
   static const items = 'items';
   static const shop = 'shop';
   //  USER
+  static const cart = 'cart';
   static const profile = 'profile';
   static const editProfile = 'editProfile';
+  static const orderHistory = 'orderHistory';
   //  ADMIN
   static const users = 'users';
   static const selectedUser = 'selectedUser';
@@ -124,6 +126,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             pageBuilder: (context, state) =>
                 customTransition(context, state, const ShopScreen())),
         GoRoute(
+            name: GoRoutes.cart,
+            path: GoRoutes.cart,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const CartScreen())),
+        GoRoute(
             name: GoRoutes.profile,
             path: GoRoutes.profile,
             pageBuilder: (context, state) =>
@@ -133,6 +140,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.editProfile,
             pageBuilder: (context, state) =>
                 customTransition(context, state, const EditProfileScreen())),
+        GoRoute(
+            name: GoRoutes.orderHistory,
+            path: GoRoutes.orderHistory,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const OrderHistoryScreen())),
         GoRoute(
             name: GoRoutes.users,
             path: GoRoutes.users,
@@ -217,6 +229,14 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 EditRawMaterialScreen(
                     itemID: state.pathParameters[PathParameters.itemID]!))),
         GoRoute(
+            name: GoRoutes.selectedRawMaterial,
+            path: '${GoRoutes.rawMaterial}/:${PathParameters.itemID}',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                ViewSelectedRawMaterialScreen(
+                    itemID: state.pathParameters[PathParameters.itemID]!))),
+        GoRoute(
             name: GoRoutes.transactions,
             path: GoRoutes.transactions,
             pageBuilder: (context, state) => customTransition(
@@ -235,7 +255,7 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 ViewGeneratedOrderScreen(
                     orderID: state.pathParameters[PathParameters.orderID]!))),
         //  FAQs
-        GoRoute(
+        /*GoRoute(
             name: GoRoutes.viewFAQs,
             path: GoRoutes.viewFAQs,
             pageBuilder: (context, state) =>
@@ -252,7 +272,7 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 context,
                 state,
                 EditFAQScreen(
-                    faqID: state.pathParameters[PathParameters.faqID]!))),
+                    faqID: state.pathParameters[PathParameters.faqID]!))),*/
         //  GALLERY
         GoRoute(
             name: GoRoutes.gallery,

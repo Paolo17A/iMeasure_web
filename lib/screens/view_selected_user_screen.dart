@@ -139,41 +139,48 @@ class _ViewSelectedUserScreenState
   }
 
   Widget orderEntries() {
-    return orderDocs.isNotEmpty
-        ? Center(
-            child: Wrap(
-                alignment: WrapAlignment.start,
-                children: orderDocs
-                    .map((order) => _orderHistoryEntry(order))
-                    .toList()),
-          )
-        : all20Pix(
-            child: quicksandWhiteBold('THIS USER HAS NO ORDER HISTORY YET',
-                fontSize: 20));
+    return vertical10Pix(
+      child: orderDocs.isNotEmpty
+          ? Center(
+              child: Wrap(
+                  spacing: 40,
+                  runSpacing: 40,
+                  alignment: WrapAlignment.start,
+                  children: orderDocs
+                      .map((order) => _orderHistoryEntry(order))
+                      .toList()),
+            )
+          : all20Pix(
+              child: quicksandWhiteBold('THIS USER HAS NO ORDER HISTORY YET',
+                  fontSize: 20)),
+    );
   }
 
   Widget _orderHistoryEntry(DocumentSnapshot orderDoc) {
     final orderData = orderDoc.data() as Map<dynamic, dynamic>;
-    String status = orderData[OrderFields.purchaseStatus];
-    String windowID = orderData[OrderFields.windowID];
-    String glassType = orderData[OrderFields.glassType];
-    String color = orderData[OrderFields.color];
-    double price = orderData[OrderFields.laborPrice] +
-        orderData[OrderFields.windowOverallPrice];
+    String status = orderData[OrderFields.orderStatus];
+    String itemID = orderData[OrderFields.itemID];
+    String glassType =
+        orderData[OrderFields.quotation][QuotationFields.glassType] ?? '';
+    String color =
+        orderData[OrderFields.quotation][QuotationFields.color] ?? '';
+    double price =
+        orderData[OrderFields.quotation][QuotationFields.itemOverallPrice];
+    num quantity = orderData[OrderFields.quantity];
     return FutureBuilder(
-      future: getThisWindowDoc(windowID),
+      future: getThisItemDoc(itemID),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting ||
             !snapshot.hasData ||
             snapshot.hasError) return snapshotHandler(snapshot);
 
-        final productData = snapshot.data!.data() as Map<dynamic, dynamic>;
-        String imageURL = productData[WindowFields.imageURL];
-        String name = productData[WindowFields.name];
-        return all10Pix(
-            child: Container(
-          width: 400,
-          height: 200,
+        final itemData = snapshot.data!.data() as Map<dynamic, dynamic>;
+        String itemType = itemData[ItemFields.itemType];
+        String imageURL = itemData[ItemFields.imageURL];
+        String name = itemData[ItemFields.name];
+        return Container(
+          width: 450,
+          height: 220,
           decoration: BoxDecoration(border: Border.all(color: Colors.white)),
           padding: EdgeInsets.all(16),
           child: Row(
@@ -181,8 +188,8 @@ class _ViewSelectedUserScreenState
             children: [
               Image.network(
                 imageURL,
-                width: 150,
-                height: 150,
+                width: 180,
+                height: 180,
                 fit: BoxFit.cover,
               ),
               Gap(10),
@@ -190,20 +197,32 @@ class _ViewSelectedUserScreenState
                 width: 200,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    quicksandWhiteBold(name, fontSize: 24),
-                    quicksandWhiteRegular('Glass Type: $glassType',
-                        textAlign: TextAlign.left, fontSize: 12),
-                    quicksandWhiteRegular('Color: $color', fontSize: 12),
-                    quicksandWhiteRegular('Status: $status', fontSize: 12),
-                    quicksandWhiteBold('PHP ${formatPrice(price)}',
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        quicksandWhiteBold(name,
+                            fontSize: 24, textAlign: TextAlign.left),
+                        quicksandWhiteRegular('Quantity: $quantity',
+                            fontSize: 12),
+                        if (itemType != ItemTypes.rawMaterial) ...[
+                          quicksandWhiteRegular('Glass Type: $glassType',
+                              textAlign: TextAlign.left, fontSize: 12),
+                          quicksandWhiteRegular('Color: $color', fontSize: 12)
+                        ],
+                        quicksandWhiteRegular('Status: $status', fontSize: 12),
+                      ],
+                    ),
+                    quicksandWhiteBold('PHP ${formatPrice(price * quantity)}',
                         fontSize: 24),
                   ],
                 ),
               ),
             ],
           ),
-        ));
+        );
       },
     );
   }

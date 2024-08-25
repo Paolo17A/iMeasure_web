@@ -55,25 +55,28 @@ class _ViewGeneratedOrderScreenState
         ref.read(loadingProvider).toggleLoading(true);
         final orderDoc = await getThisOrderDoc(widget.orderID);
         final orderData = orderDoc.data() as Map<dynamic, dynamic>;
-        String status = orderData[OrderFields.purchaseStatus];
+        String status = orderData[OrderFields.orderStatus];
         if (status != OrderStatuses.generated) {
           GoRouter.of(context).goNamed(GoRoutes.home);
           ref.read(loadingProvider).toggleLoading(false);
           return;
         }
-        width = orderData[OrderFields.width];
-        height = orderData[OrderFields.height];
-        glassType = orderData[OrderFields.glassType];
-        color = orderData[OrderFields.color];
-        mandatoryMap = orderData[OrderFields.mandatoryMap];
-        optionalMap = orderData[OrderFields.optionalMap];
-        windowOverallPrice = orderData[OrderFields.windowOverallPrice];
+        width = orderData[OrderFields.quotation][QuotationFields.width];
+        height = orderData[OrderFields.quotation][QuotationFields.height];
+        glassType = orderData[OrderFields.quotation][QuotationFields.glassType];
+        color = orderData[OrderFields.quotation][QuotationFields.color];
+        mandatoryMap =
+            orderData[OrderFields.quotation][QuotationFields.mandatoryMap];
+        optionalMap =
+            orderData[OrderFields.quotation][QuotationFields.optionalMap];
+        windowOverallPrice =
+            orderData[OrderFields.quotation][QuotationFields.itemOverallPrice];
 
         //  Window Data
-        String windowID = orderData[OrderFields.windowID];
-        final windowDoc = await getThisWindowDoc(windowID);
-        final windowData = windowDoc.data() as Map<dynamic, dynamic>;
-        windowName = windowData[WindowFields.name];
+        String windowID = orderData[OrderFields.itemID];
+        final itemDoc = await getThisItemDoc(windowID);
+        final itemData = itemDoc.data() as Map<dynamic, dynamic>;
+        windowName = itemData[ItemFields.name];
 
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {

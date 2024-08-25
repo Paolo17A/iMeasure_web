@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/orders_provider.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
+import 'package:intl/intl.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
@@ -99,7 +101,9 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   Widget _ordersLabelRow() {
     return viewContentLabelRow(context, children: [
       viewFlexLabelTextCell('Buyer', 2),
+      viewFlexLabelTextCell('Date Ordered', 2),
       viewFlexLabelTextCell('Item', 2),
+      viewFlexLabelTextCell('Cost', 2),
       viewFlexLabelTextCell('Status', 2)
     ]);
   }
@@ -112,9 +116,12 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
           final orderData = ref.read(ordersProvider).orderDocs[index].data()
               as Map<dynamic, dynamic>;
           String clientID = orderData[OrderFields.clientID];
-          String windowID = orderData[OrderFields.windowID];
-          String status = orderData[OrderFields.purchaseStatus];
-
+          String windowID = orderData[OrderFields.itemID];
+          String status = orderData[OrderFields.orderStatus];
+          DateTime dateCreated =
+              (orderData[OrderFields.dateCreated] as Timestamp).toDate();
+          num itemOverallPrice = orderData[OrderFields.quotation]
+              [QuotationFields.itemOverallPrice];
           return FutureBuilder(
               future: getThisUserDoc(clientID),
               builder: (context, snapshot) {
@@ -128,7 +135,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                     '${clientData[UserFields.firstName]} ${clientData[UserFields.lastName]}';
 
                 return FutureBuilder(
-                    future: getThisWindowDoc(windowID),
+                    future: getThisItemDoc(windowID),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting ||
                           !snapshot.hasData ||
@@ -146,7 +153,17 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                             flex: 2,
                             backgroundColor: backgroundColor,
                             textColor: entryColor),
+                        viewFlexTextCell(
+                            DateFormat('MMM dd, yyyy').format(dateCreated),
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
                         viewFlexTextCell(name,
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
+                        viewFlexTextCell(
+                            'PHP ${formatPrice(itemOverallPrice.toDouble())}',
                             flex: 2,
                             backgroundColor: backgroundColor,
                             textColor: entryColor),

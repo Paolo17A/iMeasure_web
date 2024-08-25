@@ -1,8 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/loading_provider.dart';
+import 'package:imeasure/providers/profile_image_url_provider.dart';
+import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/utils/firebase_util.dart';
 import 'package:imeasure/utils/go_router_util.dart';
 import 'package:imeasure/widgets/custom_button_widgets.dart';
@@ -22,7 +25,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  String profileImageURL = '';
   String formattedName = '';
   String address = '';
   String mobileNumber = '';
@@ -50,7 +52,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         }
         formattedName =
             '${userData[UserFields.firstName]} ${userData[UserFields.lastName]}';
-        profileImageURL = userData[UserFields.profileImageURL];
+        ref
+            .read(profileImageURLProvider)
+            .setImageURL(userData[UserFields.profileImageURL]);
         address = userData[UserFields.address];
         mobileNumber = userData[UserFields.mobileNumber];
         ref.read(loadingProvider).toggleLoading(false);
@@ -90,7 +94,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _profileDataWidgets() {
     return vertical20Pix(
       child: Column(children: [
-        buildProfileImage(profileImageURL: profileImageURL),
+        Stack(
+          children: [
+            buildProfileImage(
+                profileImageURL:
+                    ref.read(profileImageURLProvider).profileImageURL),
+            Positioned(
+                right: 0,
+                bottom: 0,
+                child: GestureDetector(
+                  onTap: () => uploadProfilePicture(context, ref),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        border: Border.all(),
+                        color: CustomColors.lavenderMist,
+                        shape: BoxShape.circle),
+                    child: Icon(Icons.photo_camera),
+                  ),
+                ))
+          ],
+        ),
         Gap(8),
         quicksandWhiteBold(formattedName, fontSize: 24),
         Row(children: [
@@ -117,8 +142,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               label: 'EDIT PROFILE',
               onPress: () =>
                   GoRouter.of(context).goNamed(GoRoutes.editProfile)),
-          Gap(12),
-          submitButton(context, label: 'ORDER HISTORY', onPress: () {}),
+          submitButton(context,
+              label: 'ORDER HISTORY',
+              onPress: () =>
+                  GoRouter.of(context).goNamed(GoRoutes.orderHistory)),
+          Gap(16),
+          ElevatedButton(
+              onPressed: () {
+                FirebaseAuth.instance.signOut().then((value) {
+                  GoRouter.of(context).goNamed(GoRoutes.home);
+                  GoRouter.of(context).pushNamed(GoRoutes.home);
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: CustomColors.coralRed),
+              child: quicksandWhiteBold('LOG-OUT'))
         ]);
   }
 }

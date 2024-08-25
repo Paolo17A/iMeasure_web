@@ -5,9 +5,11 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
+import 'package:imeasure/utils/quotation_dialog_util.dart';
 import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
+import 'package:intl/intl.dart';
 
 import '../models/glass_model.dart';
 import '../providers/cart_provider.dart';
@@ -41,7 +43,7 @@ class _SelectedWindowScreenState
   num maxHeight = 0;
   String imageURL = '';
   //int currentImageIndex = 0;
-  //List<DocumentSnapshot> orderDocs = [];
+  List<DocumentSnapshot> orderDocs = [];
 
   //  USER VARIABLES
   final widthController = TextEditingController();
@@ -78,7 +80,7 @@ class _SelectedWindowScreenState
         maxHeight = itemData[ItemFields.maxHeight];
         minWidth = itemData[ItemFields.minWidth];
         maxWidth = itemData[ItemFields.maxWidth];
-        //orderDocs = await getAllWindowOrderDocs(widget.windowID);
+        orderDocs = await getAllWindowOrderDocs(widget.itemID);
 
         if (ref.read(userDataProvider).userType == UserTypes.client) {
           List<dynamic> windowFields = itemData[ItemFields.windowFields];
@@ -217,15 +219,18 @@ class _SelectedWindowScreenState
             Row(children: [
               quicksandWhiteBold(name, fontSize: 36, textAlign: TextAlign.left)
             ]),
-            /*orderDocs.isNotEmpty
-                ? Wrap(
-                    children: orderDocs
-                        .map((order) => _orderHistoryEntry(order))
-                        .toList())
+            orderDocs.isNotEmpty
+                ? SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: Wrap(
+                        children: orderDocs
+                            .map((order) => _orderHistoryEntry(order))
+                            .toList()),
+                  )
                 : all20Pix(
                     child: quicksandWhiteBold(
                         'THIS WINDOW HAS NOT BEEN ORDERED YET.',
-                        fontSize: 20)),*/
+                        fontSize: 20)),
           ],
         ),
       ),
@@ -234,13 +239,17 @@ class _SelectedWindowScreenState
 
   Widget _orderHistoryEntry(DocumentSnapshot orderDoc) {
     final orderData = orderDoc.data() as Map<dynamic, dynamic>;
-    String status = orderData[OrderFields.purchaseStatus];
+    String status = orderData[OrderFields.orderStatus];
     String clientID = orderData[OrderFields.clientID];
-    String glassType = orderData[OrderFields.glassType];
-    String color = orderData[OrderFields.color];
-    double price = orderData[OrderFields.laborPrice] +
-        orderData[OrderFields.windowOverallPrice];
-
+    String glassType =
+        orderData[OrderFields.quotation][QuotationFields.glassType];
+    String color = orderData[OrderFields.quotation][QuotationFields.color];
+    double price = orderData[OrderFields.quotation]
+            [QuotationFields.laborPrice] +
+        orderData[OrderFields.quotation][QuotationFields.itemOverallPrice];
+    num quantity = orderData[OrderFields.quantity];
+    DateTime dateCreated =
+        (orderData[OrderFields.dateCreated] as Timestamp).toDate();
     return FutureBuilder(
       future: getThisUserDoc(clientID),
       builder: (context, snapshot) {
@@ -257,32 +266,47 @@ class _SelectedWindowScreenState
         return all10Pix(
             child: Container(
           width: 350,
-          height: 350,
+          height: 260,
           decoration: BoxDecoration(border: Border.all(color: Colors.white)),
           padding: EdgeInsets.all(10),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              buildProfileImage(profileImageURL: profileImageURL),
-              Gap(10),
-              quicksandWhiteBold('$firstName $lastName', fontSize: 20),
-              Row(
+              Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
-                    width: 320,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        quicksandWhiteRegular('Glass Type: $glassType',
-                            fontSize: 18, textAlign: TextAlign.left),
-                        quicksandWhiteRegular('Color: $color', fontSize: 12),
-                        quicksandWhiteRegular('Status: $status', fontSize: 12),
-                        Gap(10),
-                        quicksandWhiteBold('PHP ${formatPrice(price)}'),
-                      ],
-                    ),
+                  buildProfileImage(
+                      profileImageURL: profileImageURL, radius: 35),
+                  Gap(10),
+                  quicksandWhiteBold('$firstName $lastName', fontSize: 20),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 320,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Gap(12),
+                            quicksandWhiteRegular('Quantity: $quantity',
+                                fontSize: 12, textAlign: TextAlign.left),
+                            quicksandWhiteRegular('Glass Type: $glassType',
+                                fontSize: 12, textAlign: TextAlign.left),
+                            quicksandWhiteRegular('Color: $color',
+                                fontSize: 12, textAlign: TextAlign.left),
+                            quicksandWhiteRegular(
+                                'Date Ordered: ${DateFormat('MMM dd, yyyy').format(dateCreated)}',
+                                fontSize: 12,
+                                textAlign: TextAlign.left),
+                            quicksandWhiteRegular('Status: $status',
+                                fontSize: 12, textAlign: TextAlign.left),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              quicksandWhiteBold('PHP ${formatPrice(price * quantity)}'),
             ],
           ),
         ));
@@ -345,50 +369,21 @@ class _SelectedWindowScreenState
   Widget _itemFieldInputs() {
     return Flexible(
         flex: 2,
-        child: SizedBox(
-          // height: 300,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              //  INPUT FIELDS
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.2,
-                            child: CustomTextField(
-                                text: 'Insert Height',
-                                controller: heightController,
-                                textInputType: TextInputType.number)),
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.2,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5)),
-                          child: dropdownWidget(
-                              ref.read(cartProvider).selectedGlassType,
-                              (newVal) {
-                            ref.read(cartProvider).setGlassType(newVal!);
-                          },
-                              allGlassModels
-                                  .map((glassModel) => glassModel.glassTypeName)
-                                  .toList(),
-                              'Select your glass type',
-                              false),
-                        ),
-                      ]),
-                  Gap(20),
-                  Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            //  INPUT FIELDS
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       SizedBox(
                           width: MediaQuery.of(context).size.width * 0.2,
                           child: CustomTextField(
-                              text: 'Insert Width',
-                              controller: widthController,
+                              text: 'Insert Height',
+                              controller: heightController,
                               textInputType: TextInputType.number)),
                       Container(
                         width: MediaQuery.of(context).size.width * 0.2,
@@ -396,24 +391,49 @@ class _SelectedWindowScreenState
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5)),
                         child: dropdownWidget(
-                            ref.read(cartProvider).selectedColor, (newVal) {
-                          ref.read(cartProvider).setSelectedColor(newVal!);
-                        }, [
-                          WindowColors.brown,
-                          WindowColors.white,
-                          WindowColors.mattBlack,
-                          WindowColors.mattGray,
-                          WindowColors.woodFinish
-                        ], 'Select window color', false),
-                      )
-                    ],
-                  ),
-                  if (optionalWindowFields.isNotEmpty) _optionalWindowFields(),
-                ],
-              ),
-              _userButtons()
-            ],
-          ),
+                            ref.read(cartProvider).selectedGlassType, (newVal) {
+                          ref.read(cartProvider).setGlassType(newVal!);
+                        },
+                            allGlassModels
+                                .map((glassModel) => glassModel.glassTypeName)
+                                .toList(),
+                            'Select your glass type',
+                            false),
+                      ),
+                    ]),
+                Gap(20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.2,
+                        child: CustomTextField(
+                            text: 'Insert Width',
+                            controller: widthController,
+                            textInputType: TextInputType.number)),
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.2,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(5)),
+                      child: dropdownWidget(
+                          ref.read(cartProvider).selectedColor, (newVal) {
+                        ref.read(cartProvider).setSelectedColor(newVal!);
+                      }, [
+                        WindowColors.brown,
+                        WindowColors.white,
+                        WindowColors.mattBlack,
+                        WindowColors.mattGray,
+                        WindowColors.woodFinish
+                      ], 'Select window color', false),
+                    )
+                  ],
+                ),
+                if (optionalWindowFields.isNotEmpty) _optionalWindowFields(),
+              ],
+            ),
+            _userButtons()
+          ],
         ));
   }
 
@@ -439,25 +459,12 @@ class _SelectedWindowScreenState
                             optionalWindowFields[index]
                                 [OptionalWindowFields.isSelected] = newVal;
                           });
-
-                          //setTotalOverallPayment();
                         }),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.35,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          quicksandWhiteRegular(
-                              optionalWindowFields[index]
-                                      [OptionalWindowFields.optionalFields]
-                                  [WindowSubfields.name],
-                              fontSize: 14),
-                          /*quicksandWhiteRegular(
-                              'PHP ${formatPrice(optionalWindowFields[index][OptionalWindowFields.price].toDouble())}',
-                              fontSize: 14),*/
-                        ],
-                      ),
-                    ),
+                    quicksandWhiteRegular(
+                        optionalWindowFields[index]
+                                [OptionalWindowFields.optionalFields]
+                            [WindowSubfields.name],
+                        fontSize: 14),
                   ],
                 );
               }),
@@ -473,6 +480,16 @@ class _SelectedWindowScreenState
         ElevatedButton(
             onPressed: () {
               if (mayProceedToInitialQuotationScreen()) {
+                addFurnitureItemToCart(context, ref,
+                    itemID: widget.itemID,
+                    itemType: ItemTypes.window,
+                    width: double.parse(widthController.text),
+                    height: double.parse(heightController.text),
+                    mandatoryWindowFields: mandatoryWindowFields,
+                    optionalWindowFields: pricedOptionalWindowFields(ref,
+                        width: double.parse(widthController.text),
+                        height: double.parse(heightController.text),
+                        oldOptionalWindowFields: optionalWindowFields));
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content:
@@ -482,7 +499,11 @@ class _SelectedWindowScreenState
             child: quicksandWhiteBold('ADD TO CART')),
         submitButton(context, label: 'VIEW ESTIMATED QUOTE', onPress: () {
           if (mayProceedToInitialQuotationScreen()) {
-            showQuotation();
+            showQuotationDialog(context, ref,
+                widthController: widthController,
+                heightController: heightController,
+                mandatoryWindowFields: mandatoryWindowFields,
+                optionalWindowFields: optionalWindowFields);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content:
@@ -491,262 +512,5 @@ class _SelectedWindowScreenState
         })
       ],
     );
-  }
-
-  void setTotalOverallPayment() {
-    num totalOptionalPayments = 0;
-    for (var optionalFields in optionalWindowFields) {
-      if (optionalFields['isSelected']) {
-        totalOptionalPayments += optionalFields['price'];
-      }
-    }
-    setState(() {
-      totalOverallPayment = totalMandatoryPayment + totalOptionalPayments;
-    });
-  }
-
-  void showQuotation() {
-    num optionalPrice = 0;
-    for (int i = 0; i < optionalWindowFields.length; i++) {
-      num price = 0;
-      if (optionalWindowFields[i][OptionalWindowFields.optionalFields]
-              [WindowSubfields.priceBasis] ==
-          'HEIGHT') {
-        switch (ref.read(cartProvider).selectedColor) {
-          case WindowColors.brown:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.brownPrice] /
-                    21) *
-                double.parse(heightController.text);
-            break;
-          case WindowColors.white:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.whitePrice] /
-                    21) *
-                double.parse(heightController.text);
-            break;
-          case WindowColors.mattBlack:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.mattBlackPrice] /
-                    21) *
-                double.parse(heightController.text);
-            break;
-          case WindowColors.mattGray:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.mattGrayPrice] /
-                    21) *
-                double.parse(heightController.text);
-            break;
-          case WindowColors.woodFinish:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.woodFinishPrice] /
-                    21) *
-                double.parse(heightController.text);
-            break;
-        }
-      } else if (optionalWindowFields[i][OptionalWindowFields.optionalFields]
-              [WindowSubfields.priceBasis] ==
-          'WIDTH') {
-        switch (ref.read(cartProvider).selectedColor) {
-          case WindowColors.brown:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.brownPrice] /
-                    21) *
-                double.parse(widthController.text);
-            break;
-          case WindowColors.white:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.whitePrice] /
-                    21) *
-                double.parse(widthController.text);
-            break;
-          case WindowColors.mattBlack:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.mattBlackPrice] /
-                    21) *
-                double.parse(widthController.text);
-            break;
-          case WindowColors.mattGray:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.mattGrayPrice] /
-                    21) *
-                double.parse(widthController.text);
-            break;
-          case WindowColors.woodFinish:
-            price = (optionalWindowFields[i]
-                            [OptionalWindowFields.optionalFields]
-                        [WindowSubfields.woodFinishPrice] /
-                    21) *
-                double.parse(widthController.text);
-            break;
-        }
-      }
-      optionalWindowFields[i][OptionalWindowFields.price] = price;
-      if (optionalWindowFields[i][OptionalWindowFields.isSelected])
-        optionalPrice += price;
-    }
-    for (var windowSubField in mandatoryWindowFields) {
-      if (windowSubField[WindowSubfields.priceBasis] == 'HEIGHT') {
-        switch (ref.read(cartProvider).selectedColor) {
-          case WindowColors.brown:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.brownPrice] / 21) *
-                    double.parse(heightController.text);
-            break;
-          case WindowColors.white:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.whitePrice] / 21) *
-                    double.parse(heightController.text);
-            break;
-          case WindowColors.mattBlack:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.mattBlackPrice] / 21) *
-                    double.parse(heightController.text);
-            break;
-          case WindowColors.mattGray:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.mattGrayPrice] / 21) *
-                    double.parse(heightController.text);
-            break;
-          case WindowColors.woodFinish:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
-                    double.parse(heightController.text);
-            break;
-        }
-      } else if (windowSubField[WindowSubfields.priceBasis] == 'WIDTH') {
-        switch (ref.read(cartProvider).selectedColor) {
-          case WindowColors.brown:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.brownPrice] / 21) *
-                    double.parse(widthController.text);
-            break;
-          case WindowColors.white:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.whitePrice] / 21) *
-                    double.parse(widthController.text);
-            break;
-          case WindowColors.mattBlack:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.mattBlackPrice] / 21) *
-                    double.parse(widthController.text);
-            break;
-          case WindowColors.mattGray:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.mattGrayPrice] / 21) *
-                    double.parse(widthController.text);
-            break;
-          case WindowColors.woodFinish:
-            totalMandatoryPayment +=
-                (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
-                    double.parse(widthController.text);
-            break;
-        }
-      }
-    }
-    List<Map<dynamic, dynamic>> selectedOptionalFields = optionalWindowFields
-        .where((window) => window[OptionalWindowFields.isSelected])
-        .toList();
-
-    totalGlassPrice =
-        getProperGlass(ref.read(cartProvider).selectedGlassType) != null
-            ? (getProperGlass(ref.read(cartProvider).selectedGlassType)!
-                    .pricePerSFT) *
-                double.parse(widthController.text) *
-                double.parse(heightController.text)
-            : 0;
-    totalMandatoryPayment = totalMandatoryPayment + totalGlassPrice;
-    totalOverallPayment = totalMandatoryPayment + optionalPrice;
-
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => Dialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                      TextButton(
-                          onPressed: () => GoRouter.of(context).pop(),
-                          child: quicksandBlackBold('X'))
-                    ]),
-                    quicksandBlackBold('ESTIMATED QUOTATION', fontSize: 16),
-                    all20Pix(
-                      child: Container(
-                        //width: MediaQuery.of(context).size.width * 0.4,
-                        decoration: BoxDecoration(border: Border.all()),
-                        padding: EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: mandatoryWindowFields
-                                    .toList()
-                                    .map((windowFieldModel) =>
-                                        mandatoryWindowSubfield(ref,
-                                            width: double.parse(
-                                                widthController.text),
-                                            height: double.parse(
-                                                heightController.text),
-                                            windowSubField: windowFieldModel))
-                                    .toList()),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                quicksandBlackRegular('Glass: ', fontSize: 14),
-                                quicksandBlackRegular(
-                                    'PHP ${formatPrice(totalGlassPrice.toDouble())}',
-                                    fontSize: 14),
-                              ],
-                            ),
-                            Gap(12),
-                            Column(
-                              children: selectedOptionalFields
-                                  .map((optionalField) => Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          quicksandBlackRegular(
-                                              optionalField[OptionalWindowFields
-                                                      .optionalFields]
-                                                  [WindowFields.name],
-                                              fontSize: 14),
-                                          quicksandBlackRegular(
-                                              'PHP ${formatPrice(optionalField[OptionalWindowFields.price] as double)}',
-                                              fontSize: 14),
-                                        ],
-                                      ))
-                                  .toList(),
-                            ),
-                            Gap(12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                quicksandBlackBold('Total Quotation: ',
-                                    fontSize: 14),
-                                quicksandBlackBold(
-                                    'PHP ${formatPrice(totalOverallPayment.toDouble())}',
-                                    fontSize: 14),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ));
   }
 }

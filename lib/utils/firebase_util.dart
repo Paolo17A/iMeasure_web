@@ -11,16 +11,18 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:imeasure/providers/gallery_provider.dart';
 import 'package:imeasure/providers/items_provider.dart';
 import 'package:imeasure/providers/orders_provider.dart';
 import 'package:imeasure/providers/transactions_provider.dart';
 import 'package:imeasure/providers/uploaded_image_provider.dart';
-import 'package:imeasure/providers/windows_provider.dart';
+import 'package:imeasure/utils/quotation_dialog_util.dart';
 
 import '../models/window_models.dart';
 import '../providers/cart_provider.dart';
 import '../providers/loading_provider.dart';
+import '../providers/profile_image_url_provider.dart';
 import 'go_router_util.dart';
 import 'string_util.dart';
 
@@ -252,12 +254,50 @@ Future editUserProfile(BuildContext context, WidgetRef ref,
   }
 }
 
+Future uploadProfilePicture(BuildContext context, WidgetRef ref) async {
+  try {
+    final selectedXFile = await ImagePickerWeb.getImageAsBytes();
+    if (selectedXFile == null) {
+      return;
+    }
+    //  Upload proof of employment to Firebase Storage
+    ref.read(loadingProvider).toggleLoading(true);
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child(StorageFields.profilePics)
+        .child('${FirebaseAuth.instance.currentUser!.uid}.png');
+    final uploadTask = storageRef.putData(selectedXFile);
+    final taskSnapshot = await uploadTask;
+    final String downloadURL = await taskSnapshot.ref.getDownloadURL();
+    await FirebaseFirestore.instance
+        .collection(Collections.users)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .update({UserFields.profileImageURL: downloadURL});
+    ref.read(profileImageURLProvider).setImageURL(downloadURL);
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error uploading new profile picture: $error')));
+    ref.read(loadingProvider).toggleLoading(false);
+  }
+}
+
 //==============================================================================
 //ITEMS=========================================================================
 //==============================================================================
 Future<List<DocumentSnapshot>> getAllItemDocs() async {
   final items =
       await FirebaseFirestore.instance.collection(Collections.items).get();
+  return items.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> getSelectedItemDocs(
+    List<dynamic> itemIDs) async {
+  if (itemIDs.isEmpty) return [];
+  final items = await FirebaseFirestore.instance
+      .collection(Collections.items)
+      .where(FieldPath.documentId, whereIn: itemIDs)
+      .get();
   return items.docs.map((e) => e as DocumentSnapshot).toList();
 }
 
@@ -728,295 +768,11 @@ Future toggleItemAvailability(BuildContext context, WidgetRef ref,
 //==============================================================================
 //WINDOWS=======================================================================
 //==============================================================================
-/*Future<List<DocumentSnapshot>> getAllWindowDocs() async {
-  final windows =
-      await FirebaseFirestore.instance.collection(Collections.windows).get();
-  return windows.docs.map((window) => window as DocumentSnapshot).toList();
-}*/
-
-Future<DocumentSnapshot> getThisWindowDoc(String windowID) async {
+/*Future<DocumentSnapshot> getThisWindowDoc(String windowID) async {
   return await FirebaseFirestore.instance
       .collection(Collections.windows)
       .doc(windowID)
       .get();
-}
-
-Future addWindowEntry(BuildContext context, WidgetRef ref,
-    {required TextEditingController nameController,
-    required TextEditingController descriptionController,
-    required TextEditingController minHeightController,
-    required TextEditingController maxHeightController,
-    required TextEditingController minWidthController,
-    required TextEditingController maxWidthController,
-    required List<WindowFieldModel> windowFieldModels,
-    required List<WindowAccessoryModel> windowAccesoryModels}) async {
-  final scaffoldMessenger = ScaffoldMessenger.of(context);
-  final goRouter = GoRouter.of(context);
-  if (nameController.text.isEmpty ||
-      descriptionController.text.isEmpty ||
-      minHeightController.text.isEmpty ||
-      maxHeightController.text.isEmpty ||
-      minWidthController.text.isEmpty ||
-      maxWidthController.text.isEmpty) {
-    scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Please fill up all fields.')));
-    return;
-  }
-  if (double.tryParse(minHeightController.text) == null ||
-      double.parse(minHeightController.text) <= 0) {
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text(
-            'Please input a valid whole number greater than zero for the minimum height.')));
-    return;
-  }
-  if (double.tryParse(maxHeightController.text) == null ||
-      double.parse(maxHeightController.text) <= 0) {
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text(
-            'Please input a valid number greater than zero for maximum height.')));
-    return;
-  }
-  if (double.tryParse(minWidthController.text) == null ||
-      double.parse(minWidthController.text) <= 0) {
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text(
-            'Please input a valid whole number greater than zero for the minimum width.')));
-    return;
-  }
-  if (double.tryParse(maxWidthController.text) == null ||
-      double.parse(maxWidthController.text) <= 0) {
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text(
-            'Please input a valid number greater than zero for maximum width.')));
-    return;
-  }
-  if (ref.read(uploadedImageProvider).uploadedImage == null) {
-    scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Please upload a window image.')));
-    return;
-  }
-  if (WindowFieldModel.hasInvalidField(windowFieldModels)) {
-    scaffoldMessenger.showSnackBar(SnackBar(
-        content: Text(
-            'Please fill up all window field parameters with valid input.')));
-    return;
-  }
-
-  if (WindowAccessoryModel.hasInvalidField(windowAccesoryModels)) {
-    scaffoldMessenger.showSnackBar(SnackBar(
-        content: Text(
-            'Please fill up all window accessory parameters with valid input.')));
-    return;
-  }
-  try {
-    ref.read(loadingProvider.notifier).toggleLoading(true);
-
-    List<Map<dynamic, dynamic>> windowFields = [];
-    for (var windowFieldModel in windowFieldModels) {
-      Map<dynamic, dynamic> windowField = {
-        WindowSubfields.name: windowFieldModel.nameController.text.trim(),
-        WindowSubfields.isMandatory: windowFieldModel.isMandatory,
-        WindowSubfields.priceBasis: windowFieldModel.priceBasis,
-        WindowSubfields.brownPrice:
-            double.parse(windowFieldModel.brownPriceController.text.trim()),
-        WindowSubfields.mattBlackPrice:
-            double.parse(windowFieldModel.mattBlackPriceController.text.trim()),
-        WindowSubfields.mattGrayPrice:
-            double.parse(windowFieldModel.mattGrayPriceController.text.trim()),
-        WindowSubfields.woodFinishPrice: double.parse(
-            windowFieldModel.woodFinishPriceController.text.trim()),
-        WindowSubfields.whitePrice:
-            double.parse(windowFieldModel.whitePriceController.text.trim())
-      };
-      windowFields.add(windowField);
-    }
-
-    List<Map<dynamic, dynamic>> accessoryFields = [];
-    for (var windowAccessoryModel in windowAccesoryModels) {
-      Map<dynamic, dynamic> accessoryField = {
-        WindowAccessorySubfields.name:
-            windowAccessoryModel.nameController.text.trim(),
-        WindowAccessorySubfields.price:
-            double.parse(windowAccessoryModel.priceController.text.trim())
-      };
-      accessoryFields.add(accessoryField);
-    }
-
-    final windowReference =
-        await FirebaseFirestore.instance.collection(Collections.windows).add({
-      WindowFields.name: nameController.text.trim(),
-      WindowFields.description: descriptionController.text.trim(),
-      WindowFields.minWidth: double.parse(minWidthController.text),
-      WindowFields.maxWidth: double.parse(maxWidthController.text),
-      WindowFields.minHeight: double.parse(minHeightController.text),
-      WindowFields.maxHeight: double.parse(maxHeightController.text),
-      WindowFields.isAvailable: true,
-      WindowFields.windowFields: windowFields,
-      WindowFields.accessoryFields: accessoryFields
-    });
-
-    //  Upload Item Images to Firebase Storage
-    final storageRef = FirebaseStorage.instance
-        .ref()
-        .child(StorageFields.windows)
-        .child('${windowReference.id}.png');
-    final uploadTask =
-        storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
-    final taskSnapshot = await uploadTask;
-    final downloadURL = await taskSnapshot.ref.getDownloadURL();
-
-    await FirebaseFirestore.instance
-        .collection(Collections.windows)
-        .doc(windowReference.id)
-        .update({WindowFields.imageURL: downloadURL});
-    ref.read(loadingProvider.notifier).toggleLoading(false);
-
-    scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Successfully added new window.')));
-    goRouter.goNamed(GoRoutes.windows);
-  } catch (error) {
-    scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Error adding new window: $error')));
-    ref.read(loadingProvider.notifier).toggleLoading(false);
-  }
-}
-
-Future editWindowEntry(BuildContext context, WidgetRef ref,
-    {required String windowID,
-    required TextEditingController nameController,
-    required TextEditingController descriptionController,
-    required TextEditingController minHeightController,
-    required TextEditingController maxHeightController,
-    required TextEditingController minWidthController,
-    required TextEditingController maxWidthController,
-    required List<WindowFieldModel> windowFieldModels,
-    required List<WindowAccessoryModel> windowAccesoryModels}) async {
-  final scaffoldMessenger = ScaffoldMessenger.of(context);
-  final goRouter = GoRouter.of(context);
-  if (nameController.text.isEmpty ||
-      descriptionController.text.isEmpty ||
-      minHeightController.text.isEmpty ||
-      maxHeightController.text.isEmpty ||
-      minWidthController.text.isEmpty ||
-      maxWidthController.text.isEmpty) {
-    scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Please fill up all fields.')));
-    return;
-  }
-  if (double.tryParse(minHeightController.text) == null ||
-      double.parse(maxHeightController.text) <= 0) {
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text(
-            'Please input a valid whole number greater than zero for the minimum height.')));
-    return;
-  }
-  if (double.tryParse(maxHeightController.text) == null ||
-      double.parse(maxHeightController.text) <= 0) {
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text(
-            'Please input a valid number greater than zero for maximum height.')));
-    return;
-  }
-  if (double.tryParse(minWidthController.text) == null ||
-      double.parse(minWidthController.text) <= 0) {
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text(
-            'Please input a valid whole number greater than zero for the minimum width.')));
-    return;
-  }
-  if (double.tryParse(maxWidthController.text) == null ||
-      double.parse(maxWidthController.text) <= 0) {
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text(
-            'Please input a valid number greater than zero for maximum width.')));
-    return;
-  }
-  if (WindowFieldModel.hasInvalidField(windowFieldModels)) {
-    scaffoldMessenger.showSnackBar(SnackBar(
-        content: Text(
-            'Please fill up all window field parameters with valid input.')));
-  }
-
-  if (WindowAccessoryModel.hasInvalidField(windowAccesoryModels)) {
-    scaffoldMessenger.showSnackBar(SnackBar(
-        content: Text(
-            'Please fill up all window accessory parameters with valid input.')));
-  }
-  try {
-    ref.read(loadingProvider.notifier).toggleLoading(true);
-
-    List<Map<dynamic, dynamic>> windowFields = [];
-    for (var windowFieldModel in windowFieldModels) {
-      Map<dynamic, dynamic> windowField = {
-        WindowSubfields.name: windowFieldModel.nameController.text.trim(),
-        WindowSubfields.isMandatory: windowFieldModel.isMandatory,
-        WindowSubfields.priceBasis: windowFieldModel.priceBasis,
-        WindowSubfields.brownPrice:
-            double.parse(windowFieldModel.brownPriceController.text.trim()),
-        WindowSubfields.mattBlackPrice:
-            double.parse(windowFieldModel.mattBlackPriceController.text.trim()),
-        WindowSubfields.mattGrayPrice:
-            double.parse(windowFieldModel.mattGrayPriceController.text.trim()),
-        WindowSubfields.woodFinishPrice: double.parse(
-            windowFieldModel.woodFinishPriceController.text.trim()),
-        WindowSubfields.whitePrice:
-            double.parse(windowFieldModel.whitePriceController.text.trim())
-      };
-      windowFields.add(windowField);
-    }
-
-    List<Map<dynamic, dynamic>> accessoryFields = [];
-    for (var windowAccessoryModel in windowAccesoryModels) {
-      Map<dynamic, dynamic> accessoryField = {
-        WindowAccessorySubfields.name:
-            windowAccessoryModel.nameController.text.trim(),
-        WindowAccessorySubfields.price:
-            double.parse(windowAccessoryModel.priceController.text.trim())
-      };
-      accessoryFields.add(accessoryField);
-    }
-
-    await FirebaseFirestore.instance
-        .collection(Collections.windows)
-        .doc(windowID)
-        .update({
-      WindowFields.name: nameController.text.trim(),
-      WindowFields.description: descriptionController.text.trim(),
-      WindowFields.minWidth: double.parse(minWidthController.text),
-      WindowFields.maxWidth: double.parse(maxWidthController.text),
-      WindowFields.minHeight: double.parse(minHeightController.text),
-      WindowFields.maxHeight: double.parse(maxHeightController.text),
-      WindowFields.windowFields: windowFields,
-      WindowFields.accessoryFields: accessoryFields
-    });
-
-    //  Upload Item Images to Firebase Storage
-    if (ref.read(uploadedImageProvider).uploadedImage != null) {
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child(StorageFields.windows)
-          .child('${windowID}.png');
-      final uploadTask =
-          storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
-      final taskSnapshot = await uploadTask;
-      final downloadURL = await taskSnapshot.ref.getDownloadURL();
-
-      await FirebaseFirestore.instance
-          .collection(Collections.windows)
-          .doc(windowID)
-          .update({WindowFields.imageURL: downloadURL});
-    }
-
-    ref.read(loadingProvider.notifier).toggleLoading(false);
-
-    scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Successfully edited window.')));
-    goRouter.goNamed(GoRoutes.windows);
-  } catch (error) {
-    scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Error editing this window: $error')));
-    ref.read(loadingProvider.notifier).toggleLoading(false);
-  }
 }
 
 Future toggleWindowAvailability(BuildContext context, WidgetRef ref,
@@ -1037,7 +793,7 @@ Future toggleWindowAvailability(BuildContext context, WidgetRef ref,
         SnackBar(content: Text('Error togging window availability: $error')));
     ref.read(loadingProvider).toggleLoading(false);
   }
-}
+}*/
 
 //==============================================================================
 //TRANSACTIONS-=================================================================
@@ -1052,7 +808,7 @@ Future<List<DocumentSnapshot>> getAllTransactionDocs() async {
 }
 
 Future approveThisPayment(BuildContext context, WidgetRef ref,
-    {required String paymentID}) async {
+    {required String paymentID, required List<dynamic> orderIDs}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
@@ -1063,13 +819,16 @@ Future approveThisPayment(BuildContext context, WidgetRef ref,
         .update({
       TransactionFields.dateApproved: DateTime.now(),
       TransactionFields.paymentVerified: true,
-      TransactionFields.paymentStatus: TransactionStatuses.approved
+      TransactionFields.transactionStatus: TransactionStatuses.approved
     });
 
-    await FirebaseFirestore.instance
-        .collection(Collections.orders)
-        .doc(paymentID)
-        .update({OrderFields.purchaseStatus: OrderStatuses.processing});
+    for (var orderID in orderIDs) {
+      await FirebaseFirestore.instance
+          .collection(Collections.orders)
+          .doc(orderID)
+          .update({OrderFields.orderStatus: OrderStatuses.processing});
+    }
+
     ref
         .read(transactionsProvider)
         .setTransactionDocs(await getAllTransactionDocs());
@@ -1084,7 +843,7 @@ Future approveThisPayment(BuildContext context, WidgetRef ref,
 }
 
 Future denyThisPayment(BuildContext context, WidgetRef ref,
-    {required String paymentID}) async {
+    {required String paymentID, required List<dynamic> orderIDs}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
@@ -1095,13 +854,15 @@ Future denyThisPayment(BuildContext context, WidgetRef ref,
         .update({
       TransactionFields.dateApproved: DateTime.now(),
       TransactionFields.paymentVerified: true,
-      TransactionFields.paymentStatus: TransactionStatuses.denied
+      TransactionFields.transactionStatus: TransactionStatuses.denied
     });
+    for (var orderID in orderIDs) {
+      await FirebaseFirestore.instance
+          .collection(Collections.orders)
+          .doc(orderID)
+          .update({OrderFields.orderStatus: OrderStatuses.denied});
+    }
 
-    await FirebaseFirestore.instance
-        .collection(Collections.orders)
-        .doc(paymentID)
-        .update({OrderFields.purchaseStatus: OrderStatuses.denied});
     ref
         .read(transactionsProvider)
         .setTransactionDocs(await getAllTransactionDocs());
@@ -1144,9 +905,97 @@ Future<List<DocumentSnapshot>> getAllClientOrderDocs(String clientID) async {
 Future<List<DocumentSnapshot>> getAllWindowOrderDocs(String windowID) async {
   final orders = await FirebaseFirestore.instance
       .collection(Collections.orders)
-      .where(OrderFields.windowID, isEqualTo: windowID)
+      .where(OrderFields.itemID, isEqualTo: windowID)
       .get();
   return orders.docs.map((order) => order as DocumentSnapshot).toList();
+}
+
+Future purchaseSelectedCartItems(BuildContext context, WidgetRef ref,
+    {required num paidAmount}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    //  1. Generate a purchase document for the selected cart item
+    List<String> orderIDs = [];
+    for (var cartItem in ref.read(cartProvider).selectedCartItemIDs) {
+      final cartDoc = await getThisCartEntry(cartItem);
+      final cartData = cartDoc.data() as Map<dynamic, dynamic>;
+      Map<dynamic, dynamic> quotation = {};
+      num price = 0;
+      if (cartData[CartFields.itemType] != ItemTypes.rawMaterial) {
+        quotation = cartData[CartFields.quotation];
+        quotation[QuotationFields.laborPrice] = 0;
+      } else {
+        String itemID = cartData[CartFields.itemID];
+        final item = await getThisItemDoc(itemID);
+        final itemData = item.data() as Map<dynamic, dynamic>;
+        price = itemData[ItemFields.price];
+      }
+
+      DocumentReference orderReference =
+          await FirebaseFirestore.instance.collection(Collections.orders).add({
+        OrderFields.itemID: cartData[CartFields.itemID],
+        OrderFields.clientID: cartData[CartFields.clientID],
+        OrderFields.quantity: cartData[CartFields.quantity],
+        OrderFields.orderStatus: OrderStatuses.pending,
+        OrderFields.dateCreated: DateTime.now(),
+        OrderFields.quotation:
+            cartData[CartFields.itemType] != ItemTypes.rawMaterial
+                ? quotation
+                : {QuotationFields.itemOverallPrice: price}
+      });
+
+      orderIDs.add(orderReference.id);
+
+      await FirebaseFirestore.instance
+          .collection(Collections.cart)
+          .doc(cartItem)
+          .delete();
+    }
+
+    //  2. Generate a payment document in Firestore
+    DocumentReference transactionReference = await FirebaseFirestore.instance
+        .collection(Collections.transactions)
+        .add({
+      TransactionFields.clientID: FirebaseAuth.instance.currentUser!.uid,
+      TransactionFields.paidAmount: paidAmount,
+      TransactionFields.paymentVerified: false,
+      TransactionFields.transactionStatus: TransactionStatuses.pending,
+      TransactionFields.paymentMethod:
+          ref.read(cartProvider).selectedPaymentMethod,
+      TransactionFields.dateCreated: DateTime.now(),
+      TransactionFields.dateApproved: DateTime(1970),
+      TransactionFields.orderIDs: orderIDs
+    });
+
+    //  2. Upload the proof of payment image to Firebase Storage
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child(StorageFields.payments)
+        .child('${transactionReference.id}.png');
+    final uploadTask =
+        storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+    final taskSnapshot = await uploadTask;
+    final downloadURL = await taskSnapshot.ref.getDownloadURL();
+
+    await FirebaseFirestore.instance
+        .collection(Collections.transactions)
+        .doc(transactionReference.id)
+        .update({TransactionFields.proofOfPayment: downloadURL});
+
+    ref.read(cartProvider).setCartItems(await getCartEntries(context));
+    ref.read(cartProvider).resetSelectedCartItems();
+    ref.read(uploadedImageProvider).removeImage();
+    ref.read(cartProvider).setSelectedPaymentMethod('');
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content:
+            Text('Successfully settled payment and created purchase order')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error purchasing this cart item: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
 }
 
 Future markOrderAsReadyForPickUp(BuildContext context, WidgetRef ref,
@@ -1158,7 +1007,7 @@ Future markOrderAsReadyForPickUp(BuildContext context, WidgetRef ref,
     await FirebaseFirestore.instance
         .collection(Collections.orders)
         .doc(orderID)
-        .update({OrderFields.purchaseStatus: OrderStatuses.forPickUp});
+        .update({OrderFields.orderStatus: OrderStatuses.forPickUp});
     ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
     scaffoldMessenger.showSnackBar(SnackBar(
         content: Text('Successfully marked order as ready for pick up.')));
@@ -1180,7 +1029,7 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
         .collection(Collections.orders)
         .doc(orderID)
         .update({
-      OrderFields.purchaseStatus: OrderStatuses.pickedUp,
+      OrderFields.orderStatus: OrderStatuses.pickedUp,
       OrderFields.datePickedUp: DateTime.now()
     });
     ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
@@ -1211,14 +1060,19 @@ Future uploadQuotationPDF(BuildContext context, WidgetRef ref,
     final taskSnapshot = await uploadTask;
     final downloadURL = await taskSnapshot.ref.getDownloadURL();
 
+    final order = await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .get();
+    final orderData = order.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
+    quotation[QuotationFields.quotationURL] = downloadURL;
+    quotation[QuotationFields.laborPrice] = laborPrice;
+
     await FirebaseFirestore.instance
         .collection(Collections.orders)
         .doc(orderID)
-        .update({
-      OrderFields.quotationURL: downloadURL,
-      OrderFields.laborPrice: laborPrice,
-      OrderFields.purchaseStatus: OrderStatuses.pending
-    });
+        .update({OrderFields.quotation: quotation});
     ref.read(loadingProvider).toggleLoading(false);
     goRouter.goNamed(GoRoutes.orders);
   } catch (error) {
@@ -1485,32 +1339,43 @@ Future deleteGalleryDoc(BuildContext context, WidgetRef ref,
 //==============================================================================
 //==CART========================================================================
 //==============================================================================
+Future<List<DocumentSnapshot>> getCartEntries(BuildContext context) async {
+  final cartProducts = await FirebaseFirestore.instance
+      .collection(Collections.cart)
+      .where(CartFields.clientID,
+          isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+      .get();
+  return cartProducts.docs.map((doc) => doc as DocumentSnapshot).toList();
+}
+
+Future<DocumentSnapshot> getThisCartEntry(String cartID) async {
+  return await FirebaseFirestore.instance
+      .collection(Collections.cart)
+      .doc(cartID)
+      .get();
+}
 
 Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
     {required String itemID,
     required String itemType,
-    required num width,
-    required num height,
+    required double width,
+    required double height,
     required List<dynamic> mandatoryWindowFields,
-    required List<Map<dynamic, dynamic>> optionalWindowFields,
-    required num totalGlassPrice}) async {
+    required List<Map<dynamic, dynamic>> optionalWindowFields}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
   if (!hasLoggedInUser()) {
     scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Please log-in to your account first.')));
     return;
   }
   try {
-    if (ref.read(cartProvider).cartContainsThisItem(itemID)) {
-      scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('This item is already in your cart.')));
-      return;
-    }
-
+    ref.read(loadingProvider).toggleLoading(true);
     List<Map<dynamic, dynamic>> mandatoryMap = [];
     mandatoryMap.add({
       OrderBreakdownMap.field: 'Glass',
-      OrderBreakdownMap.breakdownPrice: totalGlassPrice
+      OrderBreakdownMap.breakdownPrice: calculateGlassPrice(ref,
+          width: width.toDouble(), height: height.toDouble())
     });
     for (var windowSubField in mandatoryWindowFields) {
       if (windowSubField[WindowSubfields.priceBasis] == 'HEIGHT') {
@@ -1606,18 +1471,101 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
       }
     }
 
+    await FirebaseFirestore.instance.collection(Collections.cart).add({
+      CartFields.itemID: itemID,
+      CartFields.clientID: FirebaseAuth.instance.currentUser!.uid,
+      CartFields.quantity: 1,
+      CartFields.itemType: itemType,
+      CartFields.quotation: {
+        QuotationFields.width: width,
+        QuotationFields.height: height,
+        QuotationFields.glassType: ref.read(cartProvider).selectedGlassType,
+        QuotationFields.color: ref.read(cartProvider).selectedColor,
+        QuotationFields.mandatoryMap: mandatoryMap,
+        QuotationFields.optionalMap: optionalMap,
+        QuotationFields.itemOverallPrice:
+            calculateGlassPrice(ref, width: width, height: height) +
+                calculateTotalMandatoryPayment(ref,
+                    width: width,
+                    height: height,
+                    mandatoryWindowFields: mandatoryWindowFields) +
+                calculateOptionalPrice(optionalWindowFields),
+        QuotationFields.laborPrice: 0,
+        QuotationFields.quotationURL: ''
+      }
+    });
+
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text('Successfully added this item to your cart.')));
+    ref.read(loadingProvider).toggleLoading(false);
+    goRouter.goNamed(GoRoutes.shop);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error adding product to cart: $error')));
+  }
+}
+
+Future addRawMaterialToCart(BuildContext context, WidgetRef ref,
+    {required String itemID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    if (ref.read(cartProvider).cartContainsThisItem(itemID)) {
+      scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('This item is already in your cart.')));
+      return;
+    }
     final cartDocReference =
         await FirebaseFirestore.instance.collection(Collections.cart).add({
       CartFields.itemID: itemID,
       CartFields.clientID: FirebaseAuth.instance.currentUser!.uid,
       CartFields.quantity: 1,
-      CartFields.quotationID: {}
+      CartFields.itemType: ItemTypes.rawMaterial
     });
     ref.read(cartProvider.notifier).addCartItem(await cartDocReference.get());
-    scaffoldMessenger.showSnackBar(const SnackBar(
-        content: Text('Successfully added this item to your cart.')));
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully added raw material to cart.')));
   } catch (error) {
     scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Error adding product to cart: $error')));
+        SnackBar(content: Text('Error adding raw material to cart: $error')));
+  }
+}
+
+void removeCartItem(BuildContext context, WidgetRef ref,
+    {required DocumentSnapshot cartDoc}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    await cartDoc.reference.delete();
+
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text('Successfully removed this item from your cart.')));
+    ref.read(cartProvider).removeCartItem(cartDoc);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error removing cart item: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future changeCartItemQuantity(BuildContext context, WidgetRef ref,
+    {required DocumentSnapshot cartEntryDoc,
+    required bool isIncreasing}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    final cartEntryData = cartEntryDoc.data() as Map<dynamic, dynamic>;
+    int quantity = cartEntryData[CartFields.quantity];
+    if (isIncreasing) {
+      quantity++;
+    } else {
+      quantity--;
+    }
+    await FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .doc(cartEntryDoc.id)
+        .update({CartFields.quantity: quantity});
+    ref.read(cartProvider).setCartItems(await getCartEntries(context));
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error changing item quantity: $error')));
   }
 }

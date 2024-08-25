@@ -1,11 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/transactions_provider.dart';
 import 'package:imeasure/utils/url_util.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
+import 'package:intl/intl.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
@@ -76,7 +77,7 @@ class _ViewTransactionsScreenState
   }
 
   Widget _ordersContainer() {
-    return horizontal5Percent(
+    return all5Percent(
       context,
       child: viewContentContainer(
         context,
@@ -97,6 +98,8 @@ class _ViewTransactionsScreenState
     return viewContentLabelRow(context, children: [
       viewFlexLabelTextCell('Buyer', 3),
       viewFlexLabelTextCell('Amount Paid', 2),
+      viewFlexLabelTextCell('Dater Created', 2),
+      viewFlexLabelTextCell('Dater Settled', 2),
       viewFlexLabelTextCell('Payment', 2),
       viewFlexLabelTextCell('Actions', 2)
     ]);
@@ -113,12 +116,19 @@ class _ViewTransactionsScreenState
                 .read(transactionsProvider)
                 .transactionDocs[index]
                 .data() as Map<dynamic, dynamic>;
+            bool paymentVerified =
+                paymentData[TransactionFields.paymentVerified];
             String clientID = paymentData[TransactionFields.clientID];
             num totalAmount = paymentData[TransactionFields.paidAmount];
-            //String paymentMethod = paymentData[TransactionFields.paymentMethod];
+            DateTime dateCreated =
+                (paymentData[TransactionFields.dateCreated] as Timestamp)
+                    .toDate();
+            DateTime dateApproved =
+                (paymentData[TransactionFields.dateApproved] as Timestamp)
+                    .toDate();
             String proofOfPayment =
                 paymentData[TransactionFields.proofOfPayment];
-
+            List<dynamic> orderIDs = paymentData[TransactionFields.orderIDs];
             return FutureBuilder(
                 future: getThisUserDoc(clientID),
                 builder: (context, snapshot) {
@@ -145,6 +155,18 @@ class _ViewTransactionsScreenState
                           flex: 2,
                           backgroundColor: backgroundColor,
                           textColor: entryColor),
+                      viewFlexTextCell(
+                          DateFormat('MMM dd, yyyy').format(dateCreated),
+                          flex: 2,
+                          backgroundColor: backgroundColor,
+                          textColor: entryColor),
+                      viewFlexTextCell(
+                          paymentVerified
+                              ? DateFormat('MMM dd, yyyy').format(dateApproved)
+                              : 'N/A',
+                          flex: 2,
+                          backgroundColor: backgroundColor,
+                          textColor: entryColor),
                       viewFlexActionsCell([
                         Container(
                           decoration: BoxDecoration(
@@ -156,18 +178,18 @@ class _ViewTransactionsScreenState
                         )
                       ], flex: 2, backgroundColor: backgroundColor),
                       viewFlexActionsCell([
-                        if (paymentData[TransactionFields.paymentVerified])
-                          quicksandWhiteBold('VERIFIED'),
-                        if (!paymentData[TransactionFields.paymentVerified])
+                        if (paymentVerified) quicksandWhiteBold('VERIFIED'),
+                        if (!paymentVerified)
                           TextButton(
                               onPressed: () => approveThisPayment(context, ref,
                                   paymentID: ref
                                       .read(transactionsProvider)
                                       .transactionDocs[index]
-                                      .id),
+                                      .id,
+                                  orderIDs: orderIDs),
                               child: Icon(Icons.check,
                                   color: CustomColors.lavenderMist)),
-                        if (!paymentData[TransactionFields.paymentVerified])
+                        if (!paymentVerified)
                           TextButton(
                               onPressed: () => displayDeleteEntryDialog(context,
                                   message:
@@ -178,7 +200,8 @@ class _ViewTransactionsScreenState
                                       paymentID: ref
                                           .read(transactionsProvider)
                                           .transactionDocs[index]
-                                          .id)),
+                                          .id,
+                                      orderIDs: orderIDs)),
                               child: Icon(Icons.block,
                                   color: CustomColors.coralRed))
                       ], flex: 2, backgroundColor: backgroundColor)
@@ -187,38 +210,5 @@ class _ViewTransactionsScreenState
                 });
           }),
     );
-  }
-
-  void showProofOfPaymentDialog(
-      {required String paymentMethod, required String proofOfPayment}) {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  quicksandBlackBold('Payment Method: $paymentMethod',
-                      fontSize: 30),
-                  const Gap(10),
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.25,
-                    height: MediaQuery.of(context).size.height * 0.5,
-                    decoration: BoxDecoration(
-                        color: Colors.black,
-                        image: DecorationImage(
-                            image: NetworkImage(proofOfPayment))),
-                  ),
-                  const Gap(30),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.1,
-                    height: 30,
-                    child: TextButton(
-                        onPressed: () => GoRouter.of(context).pop(),
-                        child: quicksandBlackBold('CLOSE')),
-                  )
-                ],
-              ),
-            ));
   }
 }

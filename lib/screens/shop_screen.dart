@@ -47,10 +47,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         }
         ref.read(loadingProvider).toggleLoading(true);
         itemDocs = await getAllItemDocs();
-        print('item docs: ${itemDocs.length}');
         filterDocsByItemType();
 
-        print(currentItemType);
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);
@@ -61,13 +59,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   }
 
   void filterDocsByItemType() {
-    print('current item type: $currentItemType');
     setState(() {
       filteredDocs = itemDocs.where((itemDoc) {
         final itemData = itemDoc.data() as Map<dynamic, dynamic>;
         return itemData[ItemFields.itemType] == currentItemType;
       }).toList();
-      print('filtered docs: ${filteredDocs.length}');
     });
   }
 
@@ -183,6 +179,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 } else if (itemType == ItemTypes.door) {
                   GoRouter.of(context).goNamed(GoRoutes.selectedDoor,
                       pathParameters: {PathParameters.itemID: itemDoc.id});
+                } else if (itemType == ItemTypes.rawMaterial) {
+                  addRawMaterialToCart(context, ref, itemID: itemDoc.id);
                 }
               },
               child: quicksandWhiteRegular('ADD TO CART'))

@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
+import 'package:intl/intl.dart';
 
 import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
@@ -15,26 +17,23 @@ import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 
-class ViewSelectedDoorScreen extends ConsumerStatefulWidget {
+class ViewSelectedRawMaterialScreen extends ConsumerStatefulWidget {
   final String itemID;
-  const ViewSelectedDoorScreen({super.key, required this.itemID});
+  const ViewSelectedRawMaterialScreen({super.key, required this.itemID});
 
   @override
-  ConsumerState<ViewSelectedDoorScreen> createState() =>
-      _SelectedDoorScreenState();
+  ConsumerState<ViewSelectedRawMaterialScreen> createState() =>
+      _SelectedRawMaterialScreenState();
 }
 
-class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
+class _SelectedRawMaterialScreenState
+    extends ConsumerState<ViewSelectedRawMaterialScreen> {
   //  PRODUCT VARIABLES
   String name = '';
   String description = '';
   bool isAvailable = false;
-  num minWidth = 0;
-  num maxWidth = 0;
-  num minLength = 0;
-  num maxLength = 0;
+
   String imageURL = '';
-  int currentImageIndex = 0;
   List<DocumentSnapshot> orderDocs = [];
 
   @override
@@ -49,6 +48,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
           goRouter.goNamed(GoRoutes.home);
           return;
         }
+        ref.read(loadingProvider.notifier).toggleLoading(true);
 
         //  GET PRODUCT DATA
         final item = await getThisItemDoc(widget.itemID);
@@ -57,10 +57,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
         description = itemData[ItemFields.description];
         isAvailable = itemData[ItemFields.isAvailable];
         imageURL = itemData[ItemFields.imageURL];
-        minLength = itemData[ItemFields.minHeight];
-        maxLength = itemData[ItemFields.maxHeight];
-        minWidth = itemData[ItemFields.minWidth];
-        maxWidth = itemData[ItemFields.maxWidth];
+
         orderDocs = await getAllWindowOrderDocs(widget.itemID);
 
         ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -91,7 +88,10 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                       horizontal5Percent(context,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [_windowDetails(), orderHistory()],
+                            children: [
+                              _windowDetails(),
+                              orderHistory(),
+                            ],
                           )),
                     ],
                   ),
@@ -105,8 +105,12 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   Widget _backButton() {
     return all10Pix(
         child: Row(children: [
-      backButton(context,
-          onPress: () => GoRouter.of(context).goNamed(GoRoutes.windows))
+      backButton(context, onPress: () {
+        if (ref.read(userDataProvider).userType == UserTypes.admin)
+          GoRouter.of(context).goNamed(GoRoutes.rawMaterial);
+        else if (ref.read(userDataProvider).userType == UserTypes.client)
+          GoRouter.of(context).goNamed(GoRoutes.shop);
+      })
     ]));
   }
 
@@ -122,24 +126,6 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
           fit: BoxFit.cover,
         ),
         quicksandWhiteBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
-        Gap(20),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          quicksandWhiteBold('Minimum Width: ${minWidth.toString()}ft',
-              fontSize: 16),
-          Gap(40),
-          quicksandWhiteBold('Minimum Length: ${minLength.toString()}ft',
-              fontSize: 16),
-        ]),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            quicksandWhiteBold('Maximum Width: ${maxWidth.toString()}ft',
-                fontSize: 16),
-            Gap(40),
-            quicksandWhiteBold('Maximum Length: ${maxLength.toString()}ft',
-                fontSize: 16)
-          ],
-        ),
         Divider(color: CustomColors.lavenderMist)
       ]),
     );
@@ -156,13 +142,16 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
               quicksandWhiteBold(name, fontSize: 36, textAlign: TextAlign.left)
             ]),
             orderDocs.isNotEmpty
-                ? Wrap(
-                    children: orderDocs
-                        .map((order) => _orderHistoryEntry(order))
-                        .toList())
+                ? SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: Wrap(
+                        children: orderDocs
+                            .map((order) => _orderHistoryEntry(order))
+                            .toList()),
+                  )
                 : all20Pix(
                     child: quicksandWhiteBold(
-                        'THIS WINDOW HAS NOT BEEN ORDERED YET.',
+                        'THIS RAW MATERIAL HAS NOT BEEN ORDERED YET.',
                         fontSize: 20)),
           ],
         ),
@@ -174,12 +163,10 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
     final orderData = orderDoc.data() as Map<dynamic, dynamic>;
     String status = orderData[OrderFields.orderStatus];
     String clientID = orderData[OrderFields.clientID];
-    String glassType =
-        orderData[OrderFields.quotation][QuotationFields.glassType];
-    String color = orderData[OrderFields.quotation][QuotationFields.color];
-    double price = orderData[OrderFields.quotation]
-            [QuotationFields.laborPrice] +
+    double price =
         orderData[OrderFields.quotation][QuotationFields.itemOverallPrice];
+    DateTime dateCreated =
+        (orderData[OrderFields.dateCreated] as Timestamp).toDate();
 
     return FutureBuilder(
       future: getThisUserDoc(clientID),
@@ -196,33 +183,30 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
 
         return all10Pix(
             child: Container(
-          width: 350,
-          height: 350,
+          width: 320,
+          height: 220,
           decoration: BoxDecoration(border: Border.all(color: Colors.white)),
           padding: EdgeInsets.all(10),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              buildProfileImage(profileImageURL: profileImageURL),
-              Gap(10),
-              quicksandWhiteBold('$firstName $lastName', fontSize: 20),
-              Row(
+              Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
-                    width: 320,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        quicksandWhiteRegular('Glass Type: $glassType',
-                            fontSize: 18, textAlign: TextAlign.left),
-                        quicksandWhiteRegular('Color: $color', fontSize: 12),
-                        quicksandWhiteRegular('Status: $status', fontSize: 12),
-                        Gap(10),
-                        quicksandWhiteBold('PHP ${formatPrice(price)}'),
-                      ],
-                    ),
-                  ),
+                  buildProfileImage(
+                      profileImageURL: profileImageURL, radius: 35),
+                  Gap(10),
+                  quicksandWhiteBold('$firstName $lastName', fontSize: 20),
+                  all4Pix(
+                      child: Column(children: [
+                    quicksandWhiteRegular(
+                        'Date Ordered: ${DateFormat('MMM dd, yyyy').format(dateCreated)}',
+                        fontSize: 12),
+                    quicksandWhiteRegular('Status: $status', fontSize: 12)
+                  ])),
                 ],
               ),
+              quicksandWhiteBold('PHP ${formatPrice(price)}'),
             ],
           ),
         ));

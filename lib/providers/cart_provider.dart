@@ -6,16 +6,16 @@ import '../utils/string_util.dart';
 
 class CartNotifier extends ChangeNotifier {
   List<DocumentSnapshot> _cartItems = [];
-  List<DocumentSnapshot> _itemDocs = [];
+  //List<DocumentSnapshot> _itemDocs = [];
   String _selectedPaymentMethod = '';
-  String _selectedCartItem = '';
+  List<String> _selectedCartItemIDs = [];
   String _selectedGlassType = '';
   String _selectedColor = '';
 
   List<DocumentSnapshot> get cartItems => _cartItems;
-  List<DocumentSnapshot> get itemDocs => _itemDocs;
+  //List<DocumentSnapshot> get itemDocs => _itemDocs;
   String get selectedPaymentMethod => _selectedPaymentMethod;
-  String get selectedCartItem => _selectedCartItem;
+  List<String> get selectedCartItemIDs => _selectedCartItemIDs;
   String get selectedGlassType => _selectedGlassType;
   String get selectedColor => _selectedColor;
 
@@ -24,10 +24,10 @@ class CartNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setItemDocs(List<DocumentSnapshot> items) {
+  /*void setItemDocs(List<DocumentSnapshot> items) {
     _itemDocs = items;
     notifyListeners();
-  }
+  }*/
 
   void addCartItem(dynamic item) {
     _cartItems.add(item);
@@ -36,9 +36,6 @@ class CartNotifier extends ChangeNotifier {
 
   void removeCartItem(DocumentSnapshot item) {
     _cartItems.remove(item);
-    if (item.id == _selectedCartItem) {
-      setSelectedCartItem('');
-    }
     notifyListeners();
   }
 
@@ -59,20 +56,26 @@ class CartNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSelectedCartItem(String cartID) {
-    _selectedCartItem = cartID;
+  void selectCartItem(String item) {
+    if (selectedCartItemIDs.contains(item)) return;
+    _selectedCartItemIDs.add(item);
+    notifyListeners();
+  }
+
+  void deselectCartItem(String item) {
+    if (!selectedCartItemIDs.contains(item)) return;
+    _selectedCartItemIDs.remove(item);
+    notifyListeners();
+  }
+
+  void resetSelectedCartItems() {
+    _selectedCartItemIDs.clear();
     notifyListeners();
   }
 
   void setGlassType(String glass) {
     _selectedGlassType = glass;
     notifyListeners();
-  }
-
-  DocumentSnapshot? getSelectedCartDoc() {
-    return _cartItems
-        .where((element) => element.id == _selectedCartItem)
-        .firstOrNull;
   }
 }
 

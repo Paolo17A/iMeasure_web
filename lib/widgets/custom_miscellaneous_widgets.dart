@@ -163,20 +163,21 @@ Widget analyticReportWidget(BuildContext context,
   );
 }
 
-Widget buildProfileImage({required String profileImageURL}) {
+Widget buildProfileImage(
+    {required String profileImageURL, double radius = 70}) {
   return profileImageURL.isNotEmpty
       ? CircleAvatar(
-          radius: 70,
+          radius: radius,
           backgroundColor: CustomColors.lavenderMist,
           backgroundImage: NetworkImage(profileImageURL),
         )
-      : const CircleAvatar(
-          radius: 70,
+      : CircleAvatar(
+          radius: radius,
           backgroundColor: CustomColors.lavenderMist,
           child: Icon(
             Icons.person,
             color: CustomColors.forestGreen,
-            size: 80,
+            size: radius + 10,
           ));
 }
 
