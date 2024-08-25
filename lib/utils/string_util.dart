@@ -31,6 +31,7 @@ class Collections {
   static const String orders = 'orders';
   static const String galleries = 'galleries';
   static const String items = 'items';
+  static const String cart = 'cart';
 }
 
 class UserFields {

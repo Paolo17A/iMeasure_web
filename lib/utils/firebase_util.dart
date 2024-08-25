@@ -19,6 +19,7 @@ import 'package:imeasure/providers/uploaded_image_provider.dart';
 import 'package:imeasure/providers/windows_provider.dart';
 
 import '../models/window_models.dart';
+import '../providers/cart_provider.dart';
 import '../providers/loading_provider.dart';
 import 'go_router_util.dart';
 import 'string_util.dart';
@@ -1478,5 +1479,145 @@ Future deleteGalleryDoc(BuildContext context, WidgetRef ref,
     ref.read(loadingProvider).toggleLoading(false);
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Error deleting gallery entry: $error')));
+  }
+}
+
+//==============================================================================
+//==CART========================================================================
+//==============================================================================
+
+Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
+    {required String itemID,
+    required String itemType,
+    required num width,
+    required num height,
+    required List<dynamic> mandatoryWindowFields,
+    required List<Map<dynamic, dynamic>> optionalWindowFields,
+    required num totalGlassPrice}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  if (!hasLoggedInUser()) {
+    scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Please log-in to your account first.')));
+    return;
+  }
+  try {
+    if (ref.read(cartProvider).cartContainsThisItem(itemID)) {
+      scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('This item is already in your cart.')));
+      return;
+    }
+
+    List<Map<dynamic, dynamic>> mandatoryMap = [];
+    mandatoryMap.add({
+      OrderBreakdownMap.field: 'Glass',
+      OrderBreakdownMap.breakdownPrice: totalGlassPrice
+    });
+    for (var windowSubField in mandatoryWindowFields) {
+      if (windowSubField[WindowSubfields.priceBasis] == 'HEIGHT') {
+        switch (ref.read(cartProvider).selectedColor) {
+          case WindowColors.brown:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.brownPrice] / 21) * height
+            });
+            break;
+          case WindowColors.white:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.whitePrice] / 21) * height
+            });
+            break;
+          case WindowColors.mattBlack:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.mattBlackPrice] / 21) * height
+            });
+            break;
+          case WindowColors.mattGray:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.mattGrayPrice] / 21) * height
+            });
+            break;
+          case WindowColors.woodFinish:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
+                      height
+            });
+            break;
+        }
+      } else if (windowSubField[WindowSubfields.priceBasis] == 'WIDTH') {
+        switch (ref.read(cartProvider).selectedColor) {
+          case WindowColors.brown:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.brownPrice] / 21) * width
+            });
+            break;
+          case WindowColors.white:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.whitePrice] / 21) * width
+            });
+            break;
+          case WindowColors.mattBlack:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.mattBlackPrice] / 21) * width
+            });
+            break;
+          case WindowColors.mattGray:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.mattGrayPrice] / 21) * width
+            });
+            break;
+          case WindowColors.woodFinish:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.woodFinishPrice] / 21) * width
+            });
+            break;
+        }
+      }
+    }
+
+    List<Map<dynamic, dynamic>> optionalMap = [];
+    for (var windowSubField in optionalWindowFields) {
+      if (windowSubField[OptionalWindowFields.isSelected]) {
+        optionalMap.add({
+          OrderBreakdownMap.field:
+              windowSubField[OptionalWindowFields.optionalFields]
+                  [WindowFields.name],
+          OrderBreakdownMap.breakdownPrice:
+              windowSubField[OptionalWindowFields.price]
+        });
+      }
+    }
+
+    final cartDocReference =
+        await FirebaseFirestore.instance.collection(Collections.cart).add({
+      CartFields.itemID: itemID,
+      CartFields.clientID: FirebaseAuth.instance.currentUser!.uid,
+      CartFields.quantity: 1,
+      CartFields.quotationID: {}
+    });
+    ref.read(cartProvider.notifier).addCartItem(await cartDocReference.get());
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text('Successfully added this item to your cart.')));
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error adding product to cart: $error')));
   }
 }

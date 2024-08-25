@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
@@ -8,7 +9,9 @@ import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/dropdown_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
+import '../providers/cart_provider.dart';
 import '../utils/color_util.dart';
+import '../utils/string_util.dart';
 
 Widget stackedLoadingContainer(
     BuildContext context, bool isLoading, Widget child) {
@@ -470,5 +473,58 @@ Widget windowAccessoryWidget(BuildContext context,
         ],
       ),
     ),
+  );
+}
+
+Widget mandatoryWindowSubfield(WidgetRef ref,
+    {required Map<dynamic, dynamic> windowSubField,
+    required double height,
+    required double width}) {
+  num price = 0;
+  if (windowSubField[WindowSubfields.priceBasis] == 'HEIGHT') {
+    switch (ref.read(cartProvider).selectedColor) {
+      case WindowColors.brown:
+        price = (windowSubField[WindowSubfields.brownPrice] / 21) * height;
+        break;
+      case WindowColors.white:
+        price = (windowSubField[WindowSubfields.whitePrice] / 21) * height;
+        break;
+      case WindowColors.mattBlack:
+        price = (windowSubField[WindowSubfields.mattBlackPrice] / 21) * height;
+        break;
+      case WindowColors.mattGray:
+        price = (windowSubField[WindowSubfields.mattGrayPrice] / 21) * height;
+        break;
+      case WindowColors.woodFinish:
+        price = (windowSubField[WindowSubfields.woodFinishPrice] / 21) * height;
+        break;
+    }
+  } else if (windowSubField[WindowSubfields.priceBasis] == 'WIDTH') {
+    switch (ref.read(cartProvider).selectedColor) {
+      case WindowColors.brown:
+        price = (windowSubField[WindowSubfields.brownPrice] / 21) * width;
+        break;
+      case WindowColors.white:
+        price = (windowSubField[WindowSubfields.whitePrice] / 21) * width;
+        break;
+      case WindowColors.mattBlack:
+        price = (windowSubField[WindowSubfields.mattBlackPrice] / 21) * width;
+        break;
+      case WindowColors.mattGray:
+        price = (windowSubField[WindowSubfields.mattGrayPrice] / 21) * width;
+        break;
+      case WindowColors.woodFinish:
+        price = (windowSubField[WindowSubfields.woodFinishPrice] / 21) * width;
+        break;
+    }
+  }
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      quicksandBlackRegular('${windowSubField[WindowSubfields.name]}: ',
+          fontSize: 14),
+      quicksandBlackRegular(' PHP ${formatPrice(price.toDouble())}',
+          fontSize: 14),
+    ],
   );
 }

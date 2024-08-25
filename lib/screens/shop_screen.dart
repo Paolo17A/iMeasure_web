@@ -167,6 +167,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final itemData = itemDoc.data() as Map<dynamic, dynamic>;
     String imageURL = itemData[ItemFields.imageURL];
     String name = itemData[ItemFields.name];
+    String itemType = itemData[ItemFields.itemType];
     return Container(
       decoration: BoxDecoration(border: Border.all(color: Colors.white)),
       padding: EdgeInsets.all(12),
@@ -175,7 +176,16 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           square300NetworkImage(imageURL),
           vertical10Pix(child: quicksandWhiteBold(name)),
           ElevatedButton(
-              onPressed: () {}, child: quicksandWhiteRegular('ADD TO CART'))
+              onPressed: () {
+                if (itemType == ItemTypes.window) {
+                  GoRouter.of(context).goNamed(GoRoutes.selectedWindow,
+                      pathParameters: {PathParameters.itemID: itemDoc.id});
+                } else if (itemType == ItemTypes.door) {
+                  GoRouter.of(context).goNamed(GoRoutes.selectedDoor,
+                      pathParameters: {PathParameters.itemID: itemDoc.id});
+                }
+              },
+              child: quicksandWhiteRegular('ADD TO CART'))
         ],
       ),
     );
