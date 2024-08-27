@@ -9,6 +9,7 @@ import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:intl/intl.dart';
 
 import '../providers/loading_provider.dart';
+import '../providers/user_data_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
@@ -32,6 +33,16 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
       final goRouter = GoRouter.of(context);
       try {
         if (!hasLoggedInUser()) {
+          ref.read(loadingProvider).toggleLoading(false);
+          goRouter.goNamed(GoRoutes.home);
+          return;
+        }
+        final userDoc = await getCurrentUserDoc();
+        final userData = userDoc.data() as Map<dynamic, dynamic>;
+        String userType = userData[UserFields.userType];
+        ref.read(userDataProvider).setUserType(userType);
+        if (ref.read(userDataProvider).userType == UserTypes.client) {
+          ref.read(loadingProvider).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }

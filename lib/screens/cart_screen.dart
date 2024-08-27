@@ -120,7 +120,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     int quantity = cartData[CartFields.quantity];
     Map<dynamic, dynamic> quotation = {};
     num price = 0;
-
+    num laborPrice = 0;
     DocumentSnapshot? associatedItemDoc =
         associatedItemDocs.where((productDoc) {
       return productDoc.id == cartData[CartFields.itemID].toString();
@@ -135,6 +135,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       } else {
         quotation = cartData[CartFields.quotation];
         price = quotation[QuotationFields.itemOverallPrice];
+        laborPrice = quotation[QuotationFields.laborPrice];
       }
       //num price = associatedItemDoc[ItemFields.price];
       return all10Pix(
@@ -150,28 +151,31 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               .read(cartProvider)
                               .selectedCartItemIDs
                               .contains(cartDoc.id),
-                          onChanged: (newVal) {
-                            if (newVal == null) return;
-                            setState(() {
-                              if (newVal) {
-                                ref
-                                    .read(cartProvider)
-                                    .selectCartItem(cartDoc.id);
-                              } else {
-                                ref
-                                    .read(cartProvider)
-                                    .deselectCartItem(cartDoc.id);
-                              }
-                            });
-                          })),
+                          onChanged: (itemType == ItemTypes.rawMaterial ||
+                                  laborPrice > 0)
+                              ? (newVal) {
+                                  if (newVal == null) return;
+                                  setState(() {
+                                    if (newVal) {
+                                      ref
+                                          .read(cartProvider)
+                                          .selectCartItem(cartDoc.id);
+                                    } else {
+                                      ref
+                                          .read(cartProvider)
+                                          .deselectCartItem(cartDoc.id);
+                                    }
+                                  });
+                                }
+                              : null)),
                   Flexible(
                     flex: 8,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 90,
-                          height: 90,
+                          width: 100,
+                          height: 100,
                           decoration: BoxDecoration(
                               border: Border.all(color: Colors.white),
                               borderRadius: BorderRadius.circular(10),
@@ -184,9 +188,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             quicksandWhiteBold(name),
-                            quicksandWhiteRegular(
-                                'PHP ${formatPrice(price.toDouble())}',
-                                fontSize: 16),
+                            Row(
+                              children: [
+                                quicksandWhiteRegular(
+                                    'PHP ${formatPrice(price.toDouble())}',
+                                    fontSize: 16),
+                              ],
+                            ),
+                            if (itemType != ItemTypes.rawMaterial ||
+                                laborPrice > 0)
+                              quicksandWhiteRegular(
+                                  'Labor Price: PHP ${laborPrice > 0 ? laborPrice : 'TBA'}',
+                                  fontSize: 14),
                             if (itemType != ItemTypes.rawMaterial)
                               all4Pix(
                                   child: Column(
@@ -333,7 +346,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         totalAmount += quantity * price;
       } else {
         Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
-        totalAmount += quantity * quotation[QuotationFields.itemOverallPrice];
+        totalAmount +=
+            (quantity * quotation[QuotationFields.itemOverallPrice]) +
+                quotation[QuotationFields.laborPrice];
       }
     }
     paidAmount = totalAmount;

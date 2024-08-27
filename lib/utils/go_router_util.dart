@@ -25,6 +25,7 @@ import 'package:imeasure/screens/view_doors_screen.dart';
 import 'package:imeasure/screens/view_gallery_screen.dart';
 import 'package:imeasure/screens/view_generated_order_screen.dart';
 import 'package:imeasure/screens/view_orders_screen.dart';
+import 'package:imeasure/screens/view_pending_labor_screen.dart';
 import 'package:imeasure/screens/view_portfolio_screen.dart';
 import 'package:imeasure/screens/view_raw_materials_screen.dart';
 import 'package:imeasure/screens/view_selected_door_screen.dart';
@@ -86,6 +87,7 @@ class GoRoutes {
   static const portfolio = 'portfolio';
   static const addPortfolio = 'addPortfolio';
   static const editPortfolio = 'editPortfolio';
+  static const pendingLabor = 'pendingLabor';
 }
 
 final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
@@ -336,6 +338,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 EditPortfolioScreen(
                     galleryID:
                         state.pathParameters[PathParameters.galleryID]!))),
+        GoRoute(
+            name: GoRoutes.pendingLabor,
+            path: GoRoutes.pendingLabor,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const ViewPendingLaborScreen())),
       ])
 ]);
 

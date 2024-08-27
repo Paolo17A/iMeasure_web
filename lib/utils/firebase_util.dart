@@ -1569,3 +1569,61 @@ Future changeCartItemQuantity(BuildContext context, WidgetRef ref,
         SnackBar(content: Text('Error changing item quantity: $error')));
   }
 }
+
+Future setCartItemLaborPrice(BuildContext context, WidgetRef ref,
+    {required String cartID,
+    required TextEditingController laborPriceController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    if (laborPriceController.text.isEmpty ||
+        double.tryParse(laborPriceController.text) == null ||
+        double.parse(laborPriceController.text) <= 0) {
+      scaffoldMessenger.showSnackBar(SnackBar(
+          content:
+              Text('Pleas input a valid labor price higher than PHP 0.00')));
+      return;
+    }
+    goRouter.pop();
+    ref.read(loadingProvider).toggleLoading(true);
+    final cart = await FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .doc(cartID)
+        .get();
+    final cartData = cart.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+    print('OLD: $quotation');
+    quotation[QuotationFields.laborPrice] =
+        double.parse(laborPriceController.text);
+    print('NEW: ${quotation}');
+    await FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .doc(cartID)
+        .update({CartFields.quotation: quotation});
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully set item labor price.')));
+    ref
+        .read(cartProvider)
+        .setCartItems(await getAllCartItemsWithNoLaborPrice());
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    print(error);
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error setting item labor price: $error')));
+  }
+}
+
+Future<List<DocumentSnapshot>> getAllCartItemsWithNoLaborPrice() async {
+  final cart = await FirebaseFirestore.instance
+      .collection(Collections.cart)
+      .where(CartFields.itemType,
+          whereIn: [ItemTypes.window, ItemTypes.door]).get();
+  final filteredCartItems = cart.docs.where((cartDoc) {
+    final cartData = cartDoc.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+    return quotation.containsKey(QuotationFields.laborPrice) &&
+        quotation[QuotationFields.laborPrice] <= 0;
+  }).toList();
+  return filteredCartItems;
+}
