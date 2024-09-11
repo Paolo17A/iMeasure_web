@@ -22,7 +22,7 @@ class iMeasure extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'iMeasure Admin Dashboard',
+      title: 'iMeasure',
       theme: themeData,
       routerConfig: goRoutes,
     );

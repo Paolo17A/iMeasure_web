@@ -106,8 +106,8 @@ class _ViewPendingLaborScreenState
     return viewContentLabelRow(context, children: [
       viewFlexLabelTextCell('Buyer', 2),
       viewFlexLabelTextCell('Item', 2),
-      viewFlexLabelTextCell('Quantity', 2),
       viewFlexLabelTextCell('Cost', 2),
+      viewFlexLabelTextCell('Quantity', 2),
       viewFlexLabelTextCell('Status', 2)
     ]);
   }
@@ -164,8 +164,7 @@ class _ViewPendingLaborScreenState
                             flex: 2,
                             backgroundColor: backgroundColor,
                             textColor: entryColor),
-                        viewFlexTextCell(
-                            'PHP ${formatPrice(quantity.toDouble())}',
+                        viewFlexTextCell(quantity.toString(),
                             flex: 2,
                             backgroundColor: backgroundColor,
                             textColor: entryColor),

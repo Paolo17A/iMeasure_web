@@ -64,6 +64,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           final orders = await getAllOrderDocs();
           ordersCount = orders.length;
+          for (var order in orders) {
+            final orderData = order.data() as Map<dynamic, dynamic>;
+            totalSales += orderData[OrderFields.quotation]
+                [QuotationFields.itemOverallPrice];
+            if (DateTime.now().month ==
+                (orderData[OrderFields.dateCreated] as Timestamp)
+                    .toDate()
+                    .month) {
+              monthlySales += orderData[OrderFields.quotation]
+                  [QuotationFields.itemOverallPrice];
+            }
+          }
         } else if (ref.read(userDataProvider).userType == UserTypes.client) {
           serviceDocs = await getAllServiceGalleryDocs();
           serviceDocs.shuffle();
@@ -146,6 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _platformDataEntry(
                     label: 'Total Income',
                     count: 'PHP ${formatPrice(totalSales)}',
+                    countFontSize: 24,
                     color: CustomColors.forestGreen),
                 _platformDataEntry(
                     label: 'Orders',
@@ -160,7 +173,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _platformDataEntry(
-      {required String label, required String count, required Color color}) {
+      {required String label,
+      required String count,
+      required Color color,
+      double countFontSize = 28}) {
     return Container(
         width: 260,
         height: 180,
@@ -170,7 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
           Padding(
               padding: const EdgeInsets.all(40),
-              child: quicksandWhiteBold(count, fontSize: 28)),
+              child: quicksandWhiteBold(count, fontSize: countFontSize)),
           Row(children: [quicksandWhiteRegular(label, fontSize: 16)])
         ]));
   }
