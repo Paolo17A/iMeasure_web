@@ -187,7 +187,7 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
 
   Widget _editWindowHeaderWidget() {
     return quicksandWhiteBold(
-      'EDIT WINDOW',
+      'EDIT DOOR',
       textAlign: TextAlign.center,
       fontSize: 38,
     );
@@ -195,9 +195,9 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
 
   Widget _windowNameWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      vertical10Pix(child: quicksandWhiteBold('Window Name', fontSize: 24)),
+      vertical10Pix(child: quicksandWhiteBold('Door Name', fontSize: 24)),
       CustomTextField(
-          text: 'Window Name',
+          text: 'Door Name',
           height: 40,
           controller: nameController,
           textInputType: TextInputType.text,
@@ -209,9 +209,9 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
   Widget _windowDescriptionWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       vertical10Pix(
-          child: quicksandWhiteBold('Window Description', fontSize: 24)),
+          child: quicksandWhiteBold('Door Description', fontSize: 24)),
       CustomTextField(
-          text: 'Window Description',
+          text: 'Door Description',
           height: 40,
           controller: descriptionController,
           textInputType: TextInputType.multiline,
@@ -305,7 +305,7 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
         children: [
           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [quicksandWhiteBold('WINDOW FIELDS', fontSize: 24)]),
+              children: [quicksandWhiteBold('DOOR FIELDS', fontSize: 24)]),
           if (windowFieldModels.isNotEmpty)
             ListView.builder(
                 shrinkWrap: true,
@@ -352,7 +352,7 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
                   windowFieldModels.add(WindowFieldModel());
                 });
               },
-              child: quicksandBlackBold('ADD WINDOW FIELD', fontSize: 15))
+              child: quicksandBlackBold('ADD DOOR FIELD', fontSize: 15))
         ],
       ),
     );

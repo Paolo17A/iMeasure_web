@@ -10,14 +10,12 @@ import '../widgets/custom_padding_widgets.dart';
 import '../widgets/text_widgets.dart';
 import 'string_util.dart';
 
-void showQuotationDialog(
-  BuildContext context,
-  WidgetRef ref, {
-  required TextEditingController widthController,
-  required TextEditingController heightController,
-  required List<dynamic> mandatoryWindowFields,
-  required List<Map<dynamic, dynamic>> optionalWindowFields,
-}) {
+void showQuotationDialog(BuildContext context, WidgetRef ref,
+    {required TextEditingController widthController,
+    required TextEditingController heightController,
+    required List<dynamic> mandatoryWindowFields,
+    required List<Map<dynamic, dynamic>> optionalWindowFields,
+    required String itemType}) {
   num totalMandatoryPayment = 0;
   num totalGlassPrice = 0;
   num optionalPrice = 0;
@@ -38,17 +36,20 @@ void showQuotationDialog(
       mandatoryWindowFields: mandatoryWindowFields);
 
   //  Calculate glass payment
-  totalGlassPrice = calculateGlassPrice(ref,
-      width: double.parse(widthController.text),
-      height: double.parse(heightController.text));
-  totalOverallPayment = totalMandatoryPayment + totalGlassPrice + optionalPrice;
-  List<Map<dynamic, dynamic>> selectedOptionalFields =
-      _pricedOptionalWindowFields
-          .where((window) => window[OptionalWindowFields.isSelected])
-          .toList();
-  for (var selectedOption in selectedOptionalFields) {
-    print(selectedOption);
+  List<Map<dynamic, dynamic>> selectedOptionalFields = [];
+  if (itemType == ItemTypes.window) {
+    totalGlassPrice = calculateGlassPrice(ref,
+        width: double.parse(widthController.text),
+        height: double.parse(heightController.text));
+    selectedOptionalFields = _pricedOptionalWindowFields
+        .where((window) => window[OptionalWindowFields.isSelected])
+        .toList();
+    for (var selectedOption in selectedOptionalFields) {
+      print(selectedOption);
+    }
   }
+  totalOverallPayment = totalMandatoryPayment + totalGlassPrice + optionalPrice;
+
   showDialog(
       context: context,
       barrierDismissible: false,
@@ -87,16 +88,18 @@ void showQuotationDialog(
                                     .toList()),
 
                             //  Glass
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                quicksandBlackRegular('Glass: ', fontSize: 14),
-                                quicksandBlackRegular(
-                                    'PHP ${formatPrice(totalGlassPrice.toDouble())}',
-                                    fontSize: 14),
-                              ],
-                            ), //  Accessories
-
+                            if (itemType == ItemTypes.window)
+                              Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    quicksandBlackRegular('Glass: ',
+                                        fontSize: 14),
+                                    quicksandBlackRegular(
+                                        'PHP ${formatPrice(totalGlassPrice.toDouble())}',
+                                        fontSize: 14)
+                                  ]),
+                            //  Accessories
                             Gap(12),
                             Column(
                               children: selectedOptionalFields

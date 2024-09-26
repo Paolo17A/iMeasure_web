@@ -174,7 +174,7 @@ class _ViewDoorsScreenState extends ConsumerState<ViewDoorsScreen> {
                       iconColor: CustomColors.lavenderMist,
                       onPress: () => displayDeleteEntryDialog(context,
                           message:
-                              'Are you sure you wish to archive this window? ',
+                              'Are you sure you wish to archive this door? ',
                           deleteWord: 'Archive',
                           deleteEntry: () => toggleItemAvailability(
                               context, ref,
@@ -197,9 +197,14 @@ class _ViewDoorsScreenState extends ConsumerState<ViewDoorsScreen> {
               ),
             all4Pix(
               child: editEntryButton(context,
-                  iconColor: CustomColors.lavenderMist, onPress: () {}),
+                  iconColor: CustomColors.lavenderMist,
+                  onPress: () => GoRouter.of(context).goNamed(GoRoutes.editDoor,
+                      pathParameters: {PathParameters.itemID: itemDoc.id})),
             ),
-            viewEntryButton(context, onPress: () {})
+            viewEntryButton(context,
+                onPress: () => GoRouter.of(context).goNamed(
+                    GoRoutes.selectedDoor,
+                    pathParameters: {PathParameters.itemID: itemDoc.id}))
           ])
         ],
       ),

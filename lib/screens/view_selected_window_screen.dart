@@ -503,7 +503,8 @@ class _SelectedWindowScreenState
                 widthController: widthController,
                 heightController: heightController,
                 mandatoryWindowFields: mandatoryWindowFields,
-                optionalWindowFields: optionalWindowFields);
+                optionalWindowFields: optionalWindowFields,
+                itemType: ItemTypes.window);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content:
