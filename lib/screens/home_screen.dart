@@ -154,6 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _platformDataEntry(
                     label: 'Monthly Sales',
                     count: 'PHP ${formatPrice(monthlySales)}',
+                    countFontSize: 24,
                     color: CustomColors.forestGreen),
                 _platformDataEntry(
                     label: 'Total Income',
