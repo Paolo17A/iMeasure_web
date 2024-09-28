@@ -60,6 +60,11 @@ class _ViewSelectedUserScreenState
             '${selectedUserData[UserFields.firstName]} ${selectedUserData[UserFields.lastName]}';
         profileImageURL = selectedUserData[UserFields.profileImageURL];
         orderDocs = await getAllClientOrderDocs(widget.userID);
+        orderDocs.sort((a, b) {
+          DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
+          DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
+          return bTime.compareTo(aTime);
+        });
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(SnackBar(
