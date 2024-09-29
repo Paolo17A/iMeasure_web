@@ -95,21 +95,24 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.75,
       height: MediaQuery.of(context).size.height - 160,
-      child: all10Pix(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            quicksandWhiteBold('CART ITEMS', fontSize: 40),
-            ref.read(cartProvider).cartItems.isNotEmpty
-                ? ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: ref.read(cartProvider).cartItems.length,
-                    itemBuilder: (context, index) {
-                      return _cartEntry(
-                          ref.read(cartProvider).cartItems[index]);
-                    })
-                : quicksandWhiteBold('YOU DO NOT HAVE ANY ITEMS IN YOUR CART')
-          ],
+      child: SingleChildScrollView(
+        child: all10Pix(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              quicksandWhiteBold('CART ITEMS', fontSize: 40),
+              ref.read(cartProvider).cartItems.isNotEmpty
+                  ? ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: ref.read(cartProvider).cartItems.length,
+                      itemBuilder: (context, index) {
+                        return _cartEntry(
+                            ref.read(cartProvider).cartItems[index]);
+                      })
+                  : quicksandWhiteBold('YOU DO NOT HAVE ANY ITEMS IN YOUR CART')
+            ],
+          ),
         ),
       ),
     );

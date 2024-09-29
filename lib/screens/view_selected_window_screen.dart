@@ -129,27 +129,31 @@ class _SelectedWindowScreenState
     return Scaffold(
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              leftNavigator(context, path: GoRoutes.windows),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _backButton(),
-                      horizontal5Percent(context,
-                          child: ref.read(userDataProvider).userType ==
-                                  UserTypes.admin
-                              ? _adminWidgets()
-                              : _userWidgets()),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          )),
+          ref.read(userDataProvider).userType == UserTypes.admin
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    leftNavigator(context, path: GoRoutes.windows),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _backButton(),
+                            horizontal5Percent(context, child: _adminWidgets()),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _backButton(),
+                    horizontal5Percent(context, child: _userWidgets()),
+                  ],
+                )),
     );
   }
 
@@ -380,13 +384,13 @@ class _SelectedWindowScreenState
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.2,
+                          width: MediaQuery.of(context).size.width * 0.25,
                           child: CustomTextField(
                               text: 'Insert Height',
                               controller: heightController,
                               textInputType: TextInputType.number)),
                       Container(
-                        width: MediaQuery.of(context).size.width * 0.2,
+                        width: MediaQuery.of(context).size.width * 0.25,
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5)),
@@ -406,13 +410,13 @@ class _SelectedWindowScreenState
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.2,
+                        width: MediaQuery.of(context).size.width * 0.25,
                         child: CustomTextField(
                             text: 'Insert Width',
                             controller: widthController,
                             textInputType: TextInputType.number)),
                     Container(
-                      width: MediaQuery.of(context).size.width * 0.2,
+                      width: MediaQuery.of(context).size.width * 0.25,
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5)),
@@ -474,62 +478,82 @@ class _SelectedWindowScreenState
   }
 
   Widget _userButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ElevatedButton(
-            onPressed: () {
-              if (mayProceedToInitialQuotationScreen()) {
-                addFurnitureItemToCart(context, ref,
-                    itemID: widget.itemID,
-                    itemType: ItemTypes.window,
-                    width: double.parse(widthController.text),
-                    height: double.parse(heightController.text),
-                    mandatoryWindowFields: mandatoryWindowFields,
-                    optionalWindowFields: pricedOptionalWindowFields(ref,
-                        width: double.parse(widthController.text),
-                        height: double.parse(heightController.text),
-                        oldOptionalWindowFields: optionalWindowFields));
-              } else {
-                if (double.tryParse(widthController.text) == null ||
-                    double.tryParse(heightController.text) == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Please input valid numbers only')));
-                } else if (double.parse(widthController.text.trim()) <
-                        minWidth ||
-                    double.parse(widthController.text.trim()) > maxWidth) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Inputted width must be $minWidth = ${maxWidth} ft only.')));
-                } else if (double.parse(heightController.text.trim()) <
-                        minHeight ||
-                    double.parse(heightController.text.trim()) > maxHeight) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Inputted height must be $minHeight = ${maxHeight} ft only.')));
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ElevatedButton(
+              onPressed: () {
+                if (mayProceedToInitialQuotationScreen()) {
+                  addFurnitureItemToCart(context, ref,
+                      itemID: widget.itemID,
+                      itemType: ItemTypes.window,
+                      width: double.parse(widthController.text),
+                      height: double.parse(heightController.text),
+                      mandatoryWindowFields: mandatoryWindowFields,
+                      optionalWindowFields: pricedOptionalWindowFields(ref,
+                          width: double.parse(widthController.text),
+                          height: double.parse(heightController.text),
+                          oldOptionalWindowFields: optionalWindowFields));
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Please fill up all the required fields first.')));
+                  if (double.tryParse(widthController.text) == null ||
+                      double.tryParse(heightController.text) == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Please input valid numbers only')));
+                  } else if (double.parse(widthController.text.trim()) <
+                          minWidth ||
+                      double.parse(widthController.text.trim()) > maxWidth) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            'Inputted width must be $minWidth = ${maxWidth} ft only.')));
+                  } else if (double.parse(heightController.text.trim()) <
+                          minHeight ||
+                      double.parse(heightController.text.trim()) > maxHeight) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            'Inputted height must be $minHeight = ${maxHeight} ft only.')));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            'Please fill up all the required fields first.')));
+                  }
                 }
+              },
+              child: quicksandWhiteBold('ADD TO CART')),
+          submitButton(context, label: 'VIEW ESTIMATED QUOTE', onPress: () {
+            if (mayProceedToInitialQuotationScreen()) {
+              showQuotationDialog(context, ref,
+                  widthController: widthController,
+                  heightController: heightController,
+                  mandatoryWindowFields: mandatoryWindowFields,
+                  optionalWindowFields: optionalWindowFields,
+                  itemType: ItemTypes.window);
+            } else {
+              if (double.tryParse(widthController.text) == null ||
+                  double.tryParse(heightController.text) == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please input valid numbers only')));
+              } else if (double.parse(widthController.text.trim()) < minWidth ||
+                  double.parse(widthController.text.trim()) > maxWidth) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        'Inputted width must be $minWidth = ${maxWidth} ft only.')));
+              } else if (double.parse(heightController.text.trim()) <
+                      minHeight ||
+                  double.parse(heightController.text.trim()) > maxHeight) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        'Inputted height must be $minHeight - ${maxHeight} ft only.')));
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content:
+                        Text('Please fill up all the required fields first.')));
               }
-            },
-            child: quicksandWhiteBold('ADD TO CART')),
-        submitButton(context, label: 'VIEW ESTIMATED QUOTE', onPress: () {
-          if (mayProceedToInitialQuotationScreen()) {
-            showQuotationDialog(context, ref,
-                widthController: widthController,
-                heightController: heightController,
-                mandatoryWindowFields: mandatoryWindowFields,
-                optionalWindowFields: optionalWindowFields,
-                itemType: ItemTypes.window);
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content:
-                    Text('Please fill up all the required fields first.')));
-          }
-        })
-      ],
+            }
+          })
+        ],
+      ),
     );
   }
 }

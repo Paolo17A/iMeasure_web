@@ -119,27 +119,31 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
     return Scaffold(
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              leftNavigator(context, path: GoRoutes.windows),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _backButton(),
-                      horizontal5Percent(context,
-                          child: ref.read(userDataProvider).userType ==
-                                  UserTypes.admin
-                              ? _adminWidgets()
-                              : _userWidgets()),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          )),
+          ref.read(userDataProvider).userType == UserTypes.admin
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    leftNavigator(context, path: GoRoutes.windows),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _backButton(),
+                            horizontal5Percent(context, child: _adminWidgets()),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _backButton(),
+                    horizontal5Percent(context, child: _userWidgets()),
+                  ],
+                )),
     );
   }
 

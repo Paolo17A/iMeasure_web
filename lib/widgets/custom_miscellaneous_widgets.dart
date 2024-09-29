@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -527,5 +529,36 @@ Widget mandatoryWindowSubfield(WidgetRef ref,
       quicksandBlackRegular(' PHP ${formatPrice(price.toDouble())}',
           fontSize: 14),
     ],
+  );
+}
+
+StreamBuilder pendingPickUpOrdersStreamBuilder() {
+  return StreamBuilder(
+    stream: FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .where(OrderFields.clientID,
+            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where(OrderFields.orderStatus, isEqualTo: OrderStatuses.forPickUp)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting ||
+          !snapshot.hasData ||
+          snapshot.hasError) return Container();
+      int availableCollectionCount = snapshot.data!.docs.length;
+      if (availableCollectionCount > 0)
+        return Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+              shape: BoxShape.circle, color: CustomColors.coralRed),
+          child: Center(
+            child: quicksandWhiteRegular(availableCollectionCount.toString(),
+                fontSize: 12),
+          ),
+        );
+      else {
+        return Container();
+      }
+    },
   );
 }

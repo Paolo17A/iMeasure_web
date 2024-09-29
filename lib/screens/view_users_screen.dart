@@ -121,6 +121,7 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
 
   Widget _usersLabelRow() {
     return viewContentLabelRow(context, children: [
+      viewFlexLabelTextCell('', 1),
       viewFlexLabelTextCell('Name', 3),
       viewFlexLabelTextCell('Address', 2),
       viewFlexLabelTextCell('Actions', 2)
@@ -143,10 +144,14 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
     String formattedName =
         '${userData[UserFields.firstName]} ${userData[UserFields.lastName]}';
     String address = userData[UserFields.address];
+    String profileImageURL = userData[UserFields.profileImageURL];
 
     Color entryColor = Colors.white;
     Color backgroundColor = Colors.transparent;
     return viewContentEntryRow(context, children: [
+      viewFlexActionsCell(
+          [buildProfileImage(profileImageURL: profileImageURL, radius: 16)],
+          flex: 1, backgroundColor: backgroundColor),
       viewFlexTextCell(formattedName,
           flex: 3, backgroundColor: backgroundColor, textColor: entryColor),
       viewFlexTextCell(address,

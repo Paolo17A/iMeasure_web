@@ -351,8 +351,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               runSpacing: 40,
               children: itemDocs.take(6).map((itemDoc) {
                 final itemData = itemDoc.data() as Map<dynamic, dynamic>;
+                String itemType = itemData[ItemFields.itemType];
                 return GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      if (itemType == ItemTypes.window) {
+                        GoRouter.of(context).goNamed(GoRoutes.selectedWindow,
+                            pathParameters: {
+                              PathParameters.itemID: itemDoc.id
+                            });
+                      } else if (itemType == ItemTypes.door) {
+                        GoRouter.of(context).goNamed(GoRoutes.selectedDoor,
+                            pathParameters: {
+                              PathParameters.itemID: itemDoc.id
+                            });
+                      } else if (itemType == ItemTypes.rawMaterial) {
+                        addRawMaterialToCart(context, ref, itemID: itemDoc.id);
+                      }
+                    },
                     child:
                         square300NetworkImage(itemData[ItemFields.imageURL]));
               }).toList())

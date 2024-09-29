@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/utils/string_util.dart';
+import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
 import '../utils/go_router_util.dart';
@@ -95,10 +96,16 @@ PreferredSizeWidget topUserNavigator(BuildContext context,
                       label: 'CART',
                       thisPath: GoRoutes.cart,
                       currentPath: path),
-                  topNavigatorButton(context,
-                      label: 'ACCOUNT',
-                      thisPath: GoRoutes.profile,
-                      currentPath: path),
+                  Stack(
+                    children: [
+                      topNavigatorButton(context,
+                          label: 'ACCOUNT',
+                          thisPath: GoRoutes.profile,
+                          currentPath: path),
+                      Positioned(
+                          right: 20, child: pendingPickUpOrdersStreamBuilder())
+                    ],
+                  )
                 ])
               ],
             ),

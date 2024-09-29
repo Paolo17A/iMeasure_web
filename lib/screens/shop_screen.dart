@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/providers/cart_provider.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/utils/string_util.dart';
@@ -48,7 +49,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         ref.read(loadingProvider).toggleLoading(true);
         itemDocs = await getAllItemDocs();
         filterDocsByItemType();
-
+        ref.read(cartProvider).setCartItems(await getCartEntries(context));
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);
