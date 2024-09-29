@@ -16,6 +16,7 @@ import '../utils/color_util.dart';
 import '../utils/delete_entry_dialog_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
+import '../utils/quotation_dialog_util.dart';
 import '../utils/string_util.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/dropdown_widget.dart';
@@ -145,6 +146,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               padding: EdgeInsets.all(10),
               child: Row(
                 children: [
+                  //  Checkbox
                   Flexible(
                       child: Checkbox(
                           value: ref
@@ -168,56 +170,69 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   });
                                 }
                               : null)),
+                  // Order Data
                   Flexible(
                     flex: 8,
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white),
-                              borderRadius: BorderRadius.circular(10),
-                              image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: NetworkImage(imageURL))),
-                        ),
-                        Gap(20),
-                        Column(
+                        Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            quicksandWhiteBold(name),
-                            Row(
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.white),
+                                  borderRadius: BorderRadius.circular(10),
+                                  image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: NetworkImage(imageURL))),
+                            ),
+                            Gap(20),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                quicksandWhiteRegular(
-                                    'PHP ${formatPrice(price.toDouble())}',
-                                    fontSize: 16),
+                                quicksandWhiteBold(name),
+                                Row(
+                                  children: [
+                                    quicksandWhiteRegular(
+                                        'PHP ${formatPrice(price.toDouble())}',
+                                        fontSize: 16),
+                                  ],
+                                ),
+                                if (itemType != ItemTypes.rawMaterial ||
+                                    laborPrice > 0)
+                                  quicksandWhiteRegular(
+                                      'Labor Price: PHP ${laborPrice > 0 ? laborPrice : 'TBA'}',
+                                      fontSize: 14),
+                                if (itemType != ItemTypes.rawMaterial)
+                                  all4Pix(
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                        quicksandWhiteRegular(
+                                            'Width: ${quotation[QuotationFields.width]}ft',
+                                            fontSize: 12),
+                                        quicksandWhiteRegular(
+                                            'Height: ${quotation[QuotationFields.height]}ft',
+                                            fontSize: 12)
+                                      ]))
                               ],
                             ),
-                            if (itemType != ItemTypes.rawMaterial ||
-                                laborPrice > 0)
-                              quicksandWhiteRegular(
-                                  'Labor Price: PHP ${laborPrice > 0 ? laborPrice : 'TBA'}',
-                                  fontSize: 14),
-                            if (itemType != ItemTypes.rawMaterial)
-                              all4Pix(
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                    quicksandWhiteRegular(
-                                        'Width: ${quotation[QuotationFields.width]}ft',
-                                        fontSize: 12),
-                                    quicksandWhiteRegular(
-                                        'Height: ${quotation[QuotationFields.height]}ft',
-                                        fontSize: 12)
-                                  ]))
                           ],
-                        )
+                        ),
+                        itemType != ItemTypes.rawMaterial
+                            ? all20Pix(
+                                child: _showQuotationButton(
+                                    itemType, cartData[CartFields.quotation]))
+                            : Container()
                       ],
                     ),
                   ),
+
                   Flexible(
                     flex: 4,
                     child: Row(
@@ -276,6 +291,20 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ],
               )));
     }
+  }
+
+  Widget _showQuotationButton(
+      String itemType, Map<dynamic, dynamic> quotation) {
+    final mandatoryWindowFields = quotation[QuotationFields.mandatoryMap];
+    final optionalWindowFields =
+        quotation[QuotationFields.optionalMap] as List<dynamic>;
+    return ElevatedButton(
+        onPressed: () => showCartQuotationDialog(context, ref,
+            laborPrice: quotation[QuotationFields.laborPrice],
+            totalOverallPayment: quotation[QuotationFields.itemOverallPrice],
+            mandatoryWindowFields: mandatoryWindowFields,
+            optionalWindowFields: optionalWindowFields),
+        child: quicksandWhiteRegular('VIEW\nQUOTATION', fontSize: 16));
   }
 
   Widget _checkoutContainer() {

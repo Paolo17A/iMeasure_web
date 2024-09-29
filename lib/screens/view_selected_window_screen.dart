@@ -491,9 +491,27 @@ class _SelectedWindowScreenState
                         height: double.parse(heightController.text),
                         oldOptionalWindowFields: optionalWindowFields));
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content:
-                        Text('Please fill up all the required fields first.')));
+                if (double.tryParse(widthController.text) == null ||
+                    double.tryParse(heightController.text) == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Please input valid numbers only')));
+                } else if (double.parse(widthController.text.trim()) <
+                        minWidth ||
+                    double.parse(widthController.text.trim()) > maxWidth) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                          'Inputted width must be $minWidth = ${maxWidth} ft only.')));
+                } else if (double.parse(heightController.text.trim()) <
+                        minHeight ||
+                    double.parse(heightController.text.trim()) > maxHeight) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                          'Inputted height must be $minHeight = ${maxHeight} ft only.')));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                          'Please fill up all the required fields first.')));
+                }
               }
             },
             child: quicksandWhiteBold('ADD TO CART')),

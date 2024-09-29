@@ -143,6 +143,117 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
           ));
 }
 
+void showCartQuotationDialog(
+  BuildContext context,
+  WidgetRef ref, {
+  required num totalOverallPayment,
+  required num laborPrice,
+  required List<dynamic> mandatoryWindowFields,
+  required List<dynamic> optionalWindowFields,
+}) {
+  showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.85,
+            child: SingleChildScrollView(
+              child: all20Pix(
+                child: Column(children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    TextButton(
+                        onPressed: () => GoRouter.of(context).pop(),
+                        child: quicksandBlackBold('X'))
+                  ]),
+                  quicksandBlackBold('ESTIMATED QUOTATION', fontSize: 16),
+                  //  Mandatory Window Fields
+                  Container(
+                    decoration: BoxDecoration(border: Border.all()),
+                    padding: EdgeInsets.all(10),
+                    child: Column(
+                      children: [
+                        Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: mandatoryWindowFields
+                                .toList()
+                                .map((windowFieldModel) => Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Flexible(
+                                            child: quicksandBlackRegular(
+                                                '${windowFieldModel[OrderBreakdownMap.field]}: ',
+                                                textAlign: TextAlign.left,
+                                                fontSize: 14),
+                                          ),
+                                          Flexible(
+                                            child: quicksandBlackRegular(
+                                                ' PHP ${formatPrice((windowFieldModel[OrderBreakdownMap.breakdownPrice]).toDouble())}',
+                                                textAlign: TextAlign.left,
+                                                fontSize: 14),
+                                          ),
+                                        ]))
+                                .toList()),
+                        Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: optionalWindowFields
+                                .toList()
+                                .map((windowFieldModel) => Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Flexible(
+                                            child: quicksandBlackRegular(
+                                                '${windowFieldModel[OrderBreakdownMap.field]}: ',
+                                                textAlign: TextAlign.left,
+                                                fontSize: 14),
+                                          ),
+                                          Flexible(
+                                            child: quicksandBlackRegular(
+                                                ' PHP ${formatPrice((windowFieldModel[OrderBreakdownMap.breakdownPrice]).toDouble())}',
+                                                textAlign: TextAlign.left,
+                                                fontSize: 14),
+                                          ),
+                                        ]))
+                                .toList()),
+                        if (laborPrice > 0)
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                quicksandBlackRegular('Labor Cost',
+                                    fontSize: 14),
+                                quicksandBlackRegular(
+                                    'PHP ${formatPrice(laborPrice.toDouble())}',
+                                    fontSize: 14)
+                              ]),
+                        //  TOTAL
+
+                        Gap(12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            quicksandBlackBold('Total Quotation: ',
+                                fontSize: 14),
+                            quicksandBlackBold(
+                                'PHP ${formatPrice(totalOverallPayment.toDouble())}',
+                                fontSize: 14),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+          )));
+}
+
 num calculateGlassPrice(WidgetRef ref,
     {required double width, required double height}) {
   return getProperGlass(ref.read(cartProvider).selectedGlassType) != null
