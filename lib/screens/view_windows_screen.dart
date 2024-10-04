@@ -42,6 +42,16 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
         String userType = userData[UserFields.userType];
         ref.read(userDataProvider).setUserType(userType);
         ref.read(itemsProvider).setItemDocs(await getAllWindowDocs());
+        for (var window in ref.read(itemsProvider).itemDocs) {
+          final windowData = window.data() as Map<dynamic, dynamic>;
+          if (windowData[ItemFields.itemType] == ItemTypes.window &&
+              !windowData.containsKey(ItemFields.correspondingModel)) {
+            await FirebaseFirestore.instance
+                .collection(Collections.items)
+                .doc(window.id)
+                .update({ItemFields.correspondingModel: ''});
+          }
+        }
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(

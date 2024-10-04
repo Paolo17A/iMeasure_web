@@ -341,7 +341,8 @@ Future addFurnitureItemEntry(BuildContext context, WidgetRef ref,
     required TextEditingController minWidthController,
     required TextEditingController maxWidthController,
     required List<WindowFieldModel> windowFieldModels,
-    required List<WindowAccessoryModel> windowAccesoryModels}) async {
+    required List<WindowAccessoryModel> windowAccesoryModels,
+    required String correspondingModel}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (nameController.text.isEmpty ||
@@ -445,7 +446,9 @@ Future addFurnitureItemEntry(BuildContext context, WidgetRef ref,
       ItemFields.maxHeight: double.parse(maxHeightController.text),
       ItemFields.isAvailable: true,
       ItemFields.windowFields: windowFields,
-      ItemFields.accessoryFields: accessoryFields
+      ItemFields.accessoryFields: accessoryFields,
+      ItemFields.correspondingModel:
+          correspondingModel == 'N/A' ? '' : correspondingModel
     });
 
     //  Upload Item Images to Firebase Storage
@@ -488,7 +491,8 @@ Future editFurnitureItemEntry(BuildContext context, WidgetRef ref,
     required TextEditingController minWidthController,
     required TextEditingController maxWidthController,
     required List<WindowFieldModel> windowFieldModels,
-    required List<WindowAccessoryModel> windowAccesoryModels}) async {
+    required List<WindowAccessoryModel> windowAccesoryModels,
+    required String correspondingModel}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (nameController.text.isEmpty ||
@@ -585,7 +589,9 @@ Future editFurnitureItemEntry(BuildContext context, WidgetRef ref,
       ItemFields.minHeight: double.parse(minHeightController.text),
       ItemFields.maxHeight: double.parse(maxHeightController.text),
       ItemFields.windowFields: windowFields,
-      ItemFields.accessoryFields: accessoryFields
+      ItemFields.accessoryFields: accessoryFields,
+      ItemFields.correspondingModel:
+          correspondingModel == 'N/A' ? '' : correspondingModel
     });
 
     //  Upload Item Images to Firebase Storage

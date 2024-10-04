@@ -16,6 +16,7 @@ import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
+import '../widgets/dropdown_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class EditWindowScreen extends ConsumerStatefulWidget {
@@ -34,6 +35,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
   String imageURL = '';
+  String correspondingModel = '';
 
   List<WindowFieldModel> windowFieldModels = [];
   List<WindowAccessoryModel> windowAccessoryModels = [];
@@ -67,6 +69,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
         minWidthController.text = itemData[ItemFields.minWidth].toString();
         maxWidthController.text = itemData[ItemFields.maxWidth].toString();
         imageURL = itemData[ItemFields.imageURL];
+        correspondingModel = itemData[ItemFields.correspondingModel];
 
         List<dynamic> windowFields = itemData[ItemFields.windowFields];
         List<dynamic> accessoryFields = itemData[ItemFields.accessoryFields];
@@ -159,7 +162,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
                                 ]),
                           ),
                           _windowDescriptionWidget(),
-                          Gap(20),
+                          _correspondingModelWidget(),
                           Divider(color: CustomColors.lavenderMist),
                           _windowFields(),
                           _accessoryFields(),
@@ -212,11 +215,36 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
           child: quicksandWhiteBold('Window Description', fontSize: 24)),
       CustomTextField(
           text: 'Window Description',
-          height: 40,
           controller: descriptionController,
           textInputType: TextInputType.multiline,
           displayPrefixIcon: null),
     ]);
+  }
+
+  Widget _correspondingModelWidget() {
+    return vertical10Pix(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          quicksandWhiteBold('Correspoding 3D Model'),
+          Container(
+            width: MediaQuery.of(context).size.width * 0.7,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            child: dropdownWidget(correspondingModel, (newVal) {
+              setState(() {
+                correspondingModel = newVal!;
+              });
+            }, [
+              'N/A',
+              AvailableModels.series38,
+              AvailableModels.series798,
+              AvailableModels.series900
+            ], '', false),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _minHeightWidget() {
@@ -441,7 +469,8 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
             minWidthController: minWidthController,
             maxWidthController: maxWidthController,
             windowFieldModels: windowFieldModels,
-            windowAccesoryModels: windowAccessoryModels),
+            windowAccesoryModels: windowAccessoryModels,
+            correspondingModel: correspondingModel),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

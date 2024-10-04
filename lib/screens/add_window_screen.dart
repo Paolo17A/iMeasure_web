@@ -16,6 +16,7 @@ import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
+import '../widgets/dropdown_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class AddWindowScreen extends ConsumerStatefulWidget {
@@ -33,6 +34,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
   final priceController = TextEditingController();
+  String correspondingModel = '';
 
   List<WindowFieldModel> windowFieldModels = [WindowFieldModel()];
   List<WindowAccessoryModel> windowAccessoryModels = [];
@@ -115,6 +117,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
                                 ]),
                           ),
                           _windowDescriptionWidget(),
+                          _correspondingModelWidget(),
                           Divider(color: CustomColors.lavenderMist),
                           _windowFields(),
                           _accessoryFields(),
@@ -248,6 +251,32 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
               controller: maxWidthController,
               textInputType: TextInputType.number,
               displayPrefixIcon: null),
+        ],
+      ),
+    );
+  }
+
+  Widget _correspondingModelWidget() {
+    return vertical10Pix(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          quicksandWhiteBold('Correspoding 3D Model'),
+          Container(
+            width: MediaQuery.of(context).size.width * 0.7,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            child: dropdownWidget(correspondingModel, (newVal) {
+              setState(() {
+                correspondingModel = newVal!;
+              });
+            }, [
+              'N/A',
+              AvailableModels.series38,
+              AvailableModels.series798,
+              AvailableModels.series900
+            ], 'Select a corresponding 3D model', false),
+          ),
         ],
       ),
     );
@@ -393,7 +422,8 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
             minWidthController: minWidthController,
             maxWidthController: maxWidthController,
             windowFieldModels: windowFieldModels,
-            windowAccesoryModels: windowAccessoryModels),
+            windowAccesoryModels: windowAccessoryModels,
+            correspondingModel: correspondingModel),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

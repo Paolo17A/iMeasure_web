@@ -441,7 +441,8 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
             minWidthController: minWidthController,
             maxWidthController: maxWidthController,
             windowFieldModels: windowFieldModels,
-            windowAccesoryModels: windowAccessoryModels),
+            windowAccesoryModels: windowAccessoryModels,
+            correspondingModel: ''),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

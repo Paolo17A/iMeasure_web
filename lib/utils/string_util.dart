@@ -62,6 +62,13 @@ class ItemFields {
   static const String isAvailable = 'isAvailable';
   static const String windowFields = 'windowFields';
   static const String accessoryFields = 'accessoryFields';
+  static const String correspondingModel = 'correspondingModel';
+}
+
+class AvailableModels {
+  static const String series798 = '798 Series';
+  static const String series900 = '900 Series';
+  static const String series38 = '38 Series';
 }
 
 class ItemTypes {

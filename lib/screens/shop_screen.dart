@@ -49,7 +49,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         ref.read(loadingProvider).toggleLoading(true);
         itemDocs = await getAllItemDocs();
         filterDocsByItemType();
-        ref.read(cartProvider).setCartItems(await getCartEntries(context));
+        if (hasLoggedInUser()) {
+          ref.read(cartProvider).setCartItems(await getCartEntries(context));
+        }
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);
