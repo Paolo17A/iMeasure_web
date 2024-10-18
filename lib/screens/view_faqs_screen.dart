@@ -6,7 +6,6 @@ import 'package:imeasure/utils/firebase_util.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 import '../providers/loading_provider.dart';
-import '../utils/color_util.dart';
 import '../utils/delete_entry_dialog_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/string_util.dart';
@@ -88,25 +87,22 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        quicksandBlackBold('FREQUENTLY ASKED QUESTIONS', fontSize: 40),
+        quicksandWhiteBold('FREQUENTLY ASKED QUESTIONS', fontSize: 40),
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addFAQ),
-            child: quicksandBlackBold('ADD FAQ'))
+            child: quicksandWhiteBold('ADD FAQ'))
       ]),
     );
   }
 
   Widget _faqContainer() {
-    return viewContentContainer(
-      context,
-      child: Column(
-        children: [
-          _faqLabelRow(),
-          allFAQDocs.isNotEmpty
-              ? _faqEntries()
-              : viewContentUnavailable(context, text: 'NO AVAILABLE FAQs'),
-        ],
-      ),
+    return Column(
+      children: [
+        _faqLabelRow(),
+        allFAQDocs.isNotEmpty
+            ? _faqEntries()
+            : viewContentUnavailable(context, text: 'NO AVAILABLE FAQs'),
+      ],
     );
   }
 
@@ -123,6 +119,7 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
         height: MediaQuery.of(context).size.height * 0.65,
         child: ListView.builder(
             shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             itemCount: allFAQDocs.length,
             itemBuilder: (context, index) {
               return _faqEntry(allFAQDocs[index], index);
@@ -133,19 +130,13 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
     final faqData = faqDoc.data() as Map<dynamic, dynamic>;
     String question = faqData[FAQFields.question];
     String answer = faqData[FAQFields.answer];
-    Color entryColor = Colors.black;
-    Color backgroundColor = CustomColors.lavenderMist;
+    Color entryColor = Colors.white;
+    Color backgroundColor = Colors.transparent;
     return viewContentEntryRow(context, children: [
       viewFlexTextCell(question,
-          flex: 2,
-          backgroundColor: backgroundColor,
-          textColor: entryColor,
-          customBorder: Border.symmetric(horizontal: BorderSide())),
+          flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
       viewFlexTextCell(answer,
-          flex: 4,
-          backgroundColor: backgroundColor,
-          textColor: entryColor,
-          customBorder: Border.symmetric(horizontal: BorderSide())),
+          flex: 4, backgroundColor: backgroundColor, textColor: entryColor),
       viewFlexActionsCell([
         editEntryButton(context,
             onPress: () => GoRouter.of(context).goNamed(GoRoutes.editFAQ,
@@ -155,10 +146,7 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
                 message: 'Are you sure you wish to remove this FAQ?',
                 deleteEntry: () =>
                     deleteFAQEntry(context, ref, faqID: faqDoc.id)))
-      ],
-          flex: 2,
-          backgroundColor: backgroundColor,
-          customBorder: Border.symmetric(horizontal: BorderSide()))
+      ], flex: 2, backgroundColor: backgroundColor)
     ]);
   }
 }

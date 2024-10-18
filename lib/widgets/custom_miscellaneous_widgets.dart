@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -561,4 +562,26 @@ StreamBuilder pendingPickUpOrdersStreamBuilder() {
       }
     },
   );
+}
+
+Widget starRating(double rating,
+    {required Function(double) onUpdate,
+    double starSize = 20,
+    bool mayMove = true}) {
+  return RatingBar(
+      minRating: 1,
+      maxRating: 5,
+      itemCount: 5,
+      initialRating: rating,
+      updateOnDrag: mayMove,
+      allowHalfRating: false,
+      ignoreGestures: !mayMove,
+      itemSize: starSize,
+      ratingWidget: RatingWidget(
+          full:
+              const Icon(Icons.star, color: Color.fromARGB(255, 236, 217, 49)),
+          half:
+              const Icon(Icons.star, color: Color.fromARGB(255, 236, 217, 49)),
+          empty: const Icon(Icons.star, color: Colors.grey)),
+      onRatingUpdate: (val) => onUpdate(val));
 }

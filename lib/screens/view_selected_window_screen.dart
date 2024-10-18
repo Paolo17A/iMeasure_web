@@ -224,13 +224,10 @@ class _SelectedWindowScreenState
               quicksandWhiteBold(name, fontSize: 36, textAlign: TextAlign.left)
             ]),
             orderDocs.isNotEmpty
-                ? SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: Wrap(
-                        children: orderDocs
-                            .map((order) => _orderHistoryEntry(order))
-                            .toList()),
-                  )
+                ? Wrap(
+                    children: orderDocs
+                        .map((order) => _orderHistoryEntry(order))
+                        .toList())
                 : all20Pix(
                     child: quicksandWhiteBold(
                         'THIS WINDOW HAS NOT BEEN ORDERED YET.',
@@ -254,6 +251,8 @@ class _SelectedWindowScreenState
     num quantity = orderData[OrderFields.quantity];
     DateTime dateCreated =
         (orderData[OrderFields.dateCreated] as Timestamp).toDate();
+    Map<dynamic, dynamic> review = orderData[OrderFields.review];
+
     return FutureBuilder(
       future: getThisUserDoc(clientID),
       builder: (context, snapshot) {
@@ -270,7 +269,7 @@ class _SelectedWindowScreenState
         return all10Pix(
             child: Container(
           width: 350,
-          height: 260,
+          height: 300,
           decoration: BoxDecoration(border: Border.all(color: Colors.white)),
           padding: EdgeInsets.all(10),
           child: Column(
@@ -303,6 +302,15 @@ class _SelectedWindowScreenState
                                 textAlign: TextAlign.left),
                             quicksandWhiteRegular('Status: $status',
                                 fontSize: 12, textAlign: TextAlign.left),
+                            if (status == OrderStatuses.pickedUp &&
+                                review.isNotEmpty)
+                              Row(children: [
+                                quicksandWhiteBold('Rating: ', fontSize: 14),
+                                starRating(review[ReviewFields.rating],
+                                    onUpdate: (newVal) {}, mayMove: false)
+                              ])
+                            else if (status == OrderStatuses.pickedUp)
+                              quicksandWhiteBold('Not Yet Rated', fontSize: 14),
                           ],
                         ),
                       ),

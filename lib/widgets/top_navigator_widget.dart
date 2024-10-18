@@ -50,6 +50,10 @@ PreferredSizeWidget topGuestNavigator(BuildContext context,
                       label: 'SHOP',
                       thisPath: GoRoutes.shop,
                       currentPath: path),
+                  topNavigatorButton(context,
+                      label: 'HELP',
+                      thisPath: GoRoutes.help,
+                      currentPath: path),
                 ])
               ],
             ),
@@ -105,7 +109,11 @@ PreferredSizeWidget topUserNavigator(BuildContext context,
                       Positioned(
                           right: 20, child: pendingPickUpOrdersStreamBuilder())
                     ],
-                  )
+                  ),
+                  topNavigatorButton(context,
+                      label: 'HELP',
+                      thisPath: GoRoutes.help,
+                      currentPath: path),
                 ])
               ],
             ),

@@ -41,7 +41,11 @@ Widget leftNavigator(BuildContext context, {required String path}) {
                 thisPath: GoRoutes.pendingLabor,
                 currentPath: path),
             listTile(context,
-                label: 'Gallery', thisPath: GoRoutes.gallery, currentPath: path)
+                label: 'Gallery',
+                thisPath: GoRoutes.gallery,
+                currentPath: path),
+            listTile(context,
+                label: 'FAQ', thisPath: GoRoutes.viewFAQs, currentPath: path)
           ],
         )),
         ListTile(

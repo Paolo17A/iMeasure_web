@@ -5,9 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/loading_provider.dart';
+import 'package:imeasure/providers/orders_provider.dart';
+import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/utils/go_router_util.dart';
 import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
+import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 import 'package:imeasure/widgets/top_navigator_widget.dart';
 import 'package:intl/intl.dart';
@@ -25,7 +28,8 @@ class OrderHistoryScreen extends ConsumerStatefulWidget {
 }
 
 class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
-  List<DocumentSnapshot> orderDocs = [];
+  double initialRating = 5;
+  final feedbackController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -48,9 +52,10 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
           goRouter.goNamed(GoRoutes.home);
           return;
         }
-        orderDocs =
-            await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid);
-        orderDocs.sort((a, b) {
+        ref.read(ordersProvider).setOrderDocs(await getAllClientOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
+
+        ref.read(ordersProvider).orderDocs.sort((a, b) {
           DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
           DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
           return bTime.compareTo(aTime);
@@ -67,6 +72,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
+    ref.watch(ordersProvider);
     return Scaffold(
       appBar: topUserNavigator(context, path: GoRoutes.profile),
       body: switchedLoadingContainer(
@@ -91,14 +97,16 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
     return horizontal5Percent(context,
         child: Column(children: [
           quicksandWhiteBold('ORDER HISTORY', fontSize: 40),
-          orderDocs.isNotEmpty
+          ref.read(ordersProvider).orderDocs.isNotEmpty
               ? vertical10Pix(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: Wrap(
                       spacing: 40,
                       runSpacing: 40,
-                      children: orderDocs
+                      children: ref
+                          .read(ordersProvider)
+                          .orderDocs
                           .map((orderDoc) => _orderEntry(orderDoc))
                           .toList(),
                     ),
@@ -118,6 +126,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
     DateTime dateCreated =
         (orderData[OrderFields.dateCreated] as Timestamp).toDate();
     Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
+    Map<dynamic, dynamic> review = orderData[OrderFields.review];
     num itemOverallPrice = quotation[QuotationFields.itemOverallPrice];
     return FutureBuilder(
         future: getThisItemDoc(itemID),
@@ -160,7 +169,21 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                             'Date Ordered: ${DateFormat('MMM dd, yyyy').format(dateCreated)}',
                             fontSize: 14),
                         quicksandWhiteRegular('Status: $orderStatus',
-                            fontSize: 14)
+                            fontSize: 14),
+                        if (orderStatus == OrderStatuses.pickedUp &&
+                            review.isNotEmpty)
+                          Row(children: [
+                            quicksandWhiteBold('Rating: ', fontSize: 14),
+                            starRating(review[ReviewFields.rating],
+                                onUpdate: (newVal) {}, mayMove: false)
+                          ])
+                        else if (orderStatus == OrderStatuses.pickedUp)
+                          vertical10Pix(
+                            child: ElevatedButton(
+                                onPressed: () => showRatingDialog(orderDoc),
+                                child: quicksandWhiteRegular('LEAVE REVIEW',
+                                    fontSize: 12)),
+                          )
                       ],
                     ),
                     quicksandWhiteBold(
@@ -171,5 +194,68 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
             ),
           );
         });
+  }
+
+  void showRatingDialog(DocumentSnapshot orderDoc) {
+    initialRating = 0;
+    feedbackController.clear();
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => StatefulBuilder(
+              builder: (context, setState) => AlertDialog(
+                  content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                //height: MediaQuery.of(context).size.width * 0.3,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                        TextButton(
+                            onPressed: () => GoRouter.of(context).pop(),
+                            child: quicksandBlackBold('X'))
+                      ]),
+                      quicksandBlackBold('LEAVE YOUR RATING', fontSize: 40),
+                      Gap(40),
+                      Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: CustomColors.deepCharcoal, width: 2)),
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            starRating(initialRating, onUpdate: (newVal) {
+                              setState(() {
+                                initialRating = newVal;
+                              });
+                            }, starSize: 40),
+                            all20Pix(
+                              child: CustomTextField(
+                                  text: 'Leave additional feedback (optional)',
+                                  controller: feedbackController,
+                                  textInputType: TextInputType.multiline,
+                                  displayPrefixIcon: null),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Gap(40),
+                      ElevatedButton(
+                          onPressed: () {
+                            reviewThisOrder(context, ref,
+                                orderID: orderDoc.id,
+                                rating: initialRating.toInt(),
+                                reviewController: feedbackController);
+                          },
+                          child: all20Pix(
+                            child: quicksandWhiteBold('SUBMIT RATING',
+                                fontSize: 18),
+                          ))
+                    ],
+                  ),
+                ),
+              )),
+            ));
   }
 }

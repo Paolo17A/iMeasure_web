@@ -248,9 +248,9 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
 
         final clientData = snapshot.data!.data() as Map<dynamic, dynamic>;
         String profileImageURL = clientData[UserFields.profileImageURL];
-        print(profileImageURL);
         String firstName = clientData[UserFields.firstName];
         String lastName = clientData[UserFields.lastName];
+        Map<dynamic, dynamic> review = orderData[OrderFields.review];
 
         return all10Pix(
             child: Container(
@@ -274,6 +274,15 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                             fontSize: 18, textAlign: TextAlign.left),
                         quicksandWhiteRegular('Color: $color', fontSize: 12),
                         quicksandWhiteRegular('Status: $status', fontSize: 12),
+                        if (status == OrderStatuses.pickedUp &&
+                            review.isNotEmpty)
+                          Row(children: [
+                            quicksandWhiteBold('Rating: ', fontSize: 14),
+                            starRating(review[ReviewFields.rating],
+                                onUpdate: (newVal) {}, mayMove: false)
+                          ])
+                        else if (status == OrderStatuses.pickedUp)
+                          quicksandWhiteBold('Not Yet Rated', fontSize: 14),
                         Gap(10),
                         quicksandWhiteBold('PHP ${formatPrice(price)}'),
                       ],

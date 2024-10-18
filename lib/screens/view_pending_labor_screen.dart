@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/cart_provider.dart';
 import 'package:imeasure/providers/loading_provider.dart';
+import 'package:imeasure/utils/quotation_dialog_util.dart';
 import 'package:imeasure/utils/string_util.dart';
 import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
@@ -108,7 +109,8 @@ class _ViewPendingLaborScreenState
       viewFlexLabelTextCell('Item', 2),
       viewFlexLabelTextCell('Cost', 2),
       viewFlexLabelTextCell('Quantity', 2),
-      viewFlexLabelTextCell('Status', 2)
+      viewFlexLabelTextCell('Status', 2),
+      viewFlexLabelTextCell('Quotation', 2),
     ]);
   }
 
@@ -124,6 +126,8 @@ class _ViewPendingLaborScreenState
           num quantity = cartData[CartFields.quantity];
           num itemOverallPrice =
               cartData[OrderFields.quotation][QuotationFields.itemOverallPrice];
+          dynamic quotation = cartData[CartFields.quotation];
+
           return FutureBuilder(
               future: getThisUserDoc(clientID),
               builder: (context, snapshot) {
@@ -178,6 +182,26 @@ class _ViewPendingLaborScreenState
                                 child: quicksandWhiteBold('SET LABOR COST',
                                     fontSize: 12)),
                           )
+                        ], flex: 2, backgroundColor: backgroundColor),
+                        viewFlexActionsCell([
+                          ElevatedButton(
+                              onPressed: () {
+                                final mandatoryWindowFields =
+                                    quotation[QuotationFields.mandatoryMap];
+                                final optionalWindowFields =
+                                    quotation[QuotationFields.optionalMap]
+                                        as List<dynamic>;
+                                showCartQuotationDialog(context, ref,
+                                    totalOverallPayment: itemOverallPrice,
+                                    laborPrice: 0,
+                                    mandatoryWindowFields:
+                                        mandatoryWindowFields,
+                                    optionalWindowFields: optionalWindowFields,
+                                    width: quotation[QuotationFields.width],
+                                    height: quotation[QuotationFields.height]);
+                              },
+                              child:
+                                  quicksandWhiteRegular('VIEW', fontSize: 12))
                         ], flex: 2, backgroundColor: backgroundColor),
                       ]);
                     });

@@ -146,6 +146,7 @@ class OrderFields {
   static const String quotation = 'quotation';
   static const String dateCreated = 'dateCreated';
   static const String datePickedUp = 'datePickedUp';
+  static const String review = 'review';
   /*static const String width = 'width';
   static const String height = 'height';
   static const String glassType = 'glassType';
@@ -212,6 +213,12 @@ class GalleryTypes {
   static const String service = 'service';
   static const String portfolio = 'portfolio';
   static const String testimonial = 'testimonial';
+}
+
+class ReviewFields {
+  static const String review = 'review';
+  static const String rating = 'rating';
+  static const String imageURL = 'imageURL';
 }
 
 class PathParameters {

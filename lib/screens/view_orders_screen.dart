@@ -12,6 +12,7 @@ import '../providers/loading_provider.dart';
 import '../providers/user_data_provider.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
+import '../utils/quotation_dialog_util.dart';
 import '../utils/string_util.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/text_widgets.dart';
@@ -48,6 +49,20 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
         }
 
         ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+        for (var order in ref.read(ordersProvider).orderDocs) {
+          final orderData = order.data() as Map<dynamic, dynamic>;
+          if (!orderData.containsKey(OrderFields.review)) {
+            await FirebaseFirestore.instance
+                .collection(Collections.orders)
+                .doc(order.id)
+                .update({OrderFields.review: {}});
+          }
+        }
+        ref.read(ordersProvider).orderDocs.sort((a, b) {
+          DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
+          DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
+          return bTime.compareTo(aTime);
+        });
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -115,7 +130,8 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
       viewFlexLabelTextCell('Date Ordered', 2),
       viewFlexLabelTextCell('Item', 2),
       viewFlexLabelTextCell('Cost', 2),
-      viewFlexLabelTextCell('Status', 2)
+      viewFlexLabelTextCell('Status', 2),
+      viewFlexLabelTextCell('Quotation', 2),
     ]);
   }
 
@@ -133,6 +149,10 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
               (orderData[OrderFields.dateCreated] as Timestamp).toDate();
           num itemOverallPrice = orderData[OrderFields.quotation]
               [QuotationFields.itemOverallPrice];
+
+          Map<String, dynamic> quotation =
+              orderData[OrderFields.quotation] ?? [];
+
           return FutureBuilder(
               future: getThisUserDoc(clientID),
               builder: (context, snapshot) {
@@ -155,7 +175,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                       final itemData =
                           snapshot.data!.data() as Map<dynamic, dynamic>;
                       String name = itemData[WindowFields.name];
-
+                      String itemType = itemData[ItemFields.itemType];
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
 
@@ -230,6 +250,33 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                             )
                           else if (status == OrderStatuses.pickedUp)
                             quicksandWhiteBold('COMPLETED')
+                        ], flex: 2, backgroundColor: backgroundColor),
+                        viewFlexActionsCell([
+                          if (itemType == ItemTypes.window ||
+                              itemType == ItemTypes.door)
+                            ElevatedButton(
+                                onPressed: () {
+                                  final mandatoryWindowFields =
+                                      quotation[QuotationFields.mandatoryMap];
+                                  final optionalWindowFields =
+                                      quotation[QuotationFields.optionalMap]
+                                          as List<dynamic>;
+                                  showCartQuotationDialog(context, ref,
+                                      totalOverallPayment: itemOverallPrice,
+                                      laborPrice:
+                                          quotation[QuotationFields.laborPrice],
+                                      mandatoryWindowFields:
+                                          mandatoryWindowFields,
+                                      optionalWindowFields:
+                                          optionalWindowFields,
+                                      width: quotation[QuotationFields.width],
+                                      height:
+                                          quotation[QuotationFields.height]);
+                                },
+                                child:
+                                    quicksandWhiteRegular('VIEW', fontSize: 12))
+                          else
+                            quicksandWhiteBold('N/A')
                         ], flex: 2, backgroundColor: backgroundColor),
                       ]);
                     });

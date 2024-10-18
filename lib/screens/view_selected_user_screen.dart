@@ -172,6 +172,7 @@ class _ViewSelectedUserScreenState
     double price =
         orderData[OrderFields.quotation][QuotationFields.itemOverallPrice];
     num quantity = orderData[OrderFields.quantity];
+    Map<dynamic, dynamic> review = orderData[OrderFields.review];
     return FutureBuilder(
       future: getThisItemDoc(itemID),
       builder: (context, snapshot) {
@@ -185,7 +186,7 @@ class _ViewSelectedUserScreenState
         String name = itemData[ItemFields.name];
         return Container(
           width: 450,
-          height: 220,
+          height: 250,
           decoration: BoxDecoration(border: Border.all(color: Colors.white)),
           padding: EdgeInsets.all(16),
           child: Row(
@@ -218,6 +219,13 @@ class _ViewSelectedUserScreenState
                           quicksandWhiteRegular('Color: $color', fontSize: 12)
                         ],
                         quicksandWhiteRegular('Status: $status', fontSize: 12),
+                        if (status == OrderStatuses.pickedUp &&
+                            review.isNotEmpty)
+                          Row(children: [
+                            quicksandWhiteBold('Rating: ', fontSize: 14),
+                            starRating(review[ReviewFields.rating],
+                                onUpdate: (newVal) {}, mayMove: false)
+                          ])
                       ],
                     ),
                     quicksandWhiteBold('PHP ${formatPrice(price * quantity)}',

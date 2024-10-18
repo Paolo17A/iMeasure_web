@@ -143,14 +143,13 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
           ));
 }
 
-void showCartQuotationDialog(
-  BuildContext context,
-  WidgetRef ref, {
-  required num totalOverallPayment,
-  required num laborPrice,
-  required List<dynamic> mandatoryWindowFields,
-  required List<dynamic> optionalWindowFields,
-}) {
+void showCartQuotationDialog(BuildContext context, WidgetRef ref,
+    {required num totalOverallPayment,
+    required num laborPrice,
+    required List<dynamic> mandatoryWindowFields,
+    required List<dynamic> optionalWindowFields,
+    required num width,
+    required num height}) {
   showDialog(
       context: context,
       barrierDismissible: false,
@@ -174,6 +173,23 @@ void showCartQuotationDialog(
                     padding: EdgeInsets.all(10),
                     child: Column(
                       children: [
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              quicksandBlackBold('Width', fontSize: 14),
+                              quicksandBlackBold('${width.toString()} ft',
+                                  fontSize: 14)
+                            ]),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              quicksandBlackBold('Height', fontSize: 14),
+                              quicksandBlackBold('${height.toString()} ft',
+                                  fontSize: 14)
+                            ]),
+                        Gap(12),
                         Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: mandatoryWindowFields

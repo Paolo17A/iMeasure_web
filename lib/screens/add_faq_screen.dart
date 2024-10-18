@@ -90,13 +90,13 @@ class _AddFAQScreenState extends ConsumerState<AddFAQScreen> {
       child: Row(children: [
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.viewFAQs),
-            child: quicksandBlackBold('BACK'))
+            child: quicksandWhiteBold('BACK'))
       ]),
     );
   }
 
   Widget _newFAQHeaderWidget() {
-    return quicksandBlackBold(
+    return quicksandWhiteBold(
       'NEW FAQ',
       textAlign: TextAlign.center,
       fontSize: 38,
@@ -105,7 +105,7 @@ class _AddFAQScreenState extends ConsumerState<AddFAQScreen> {
 
   Widget _questionWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      vertical10Pix(child: quicksandBlackBold('Question', fontSize: 24)),
+      vertical10Pix(child: quicksandWhiteBold('Question', fontSize: 24)),
       CustomTextField(
           text: 'Question',
           controller: questionController,
@@ -117,7 +117,7 @@ class _AddFAQScreenState extends ConsumerState<AddFAQScreen> {
 
   Widget _answerWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      vertical10Pix(child: quicksandBlackBold('Answer', fontSize: 24)),
+      vertical10Pix(child: quicksandWhiteBold('Answer', fontSize: 24)),
       CustomTextField(
           text: 'Answer',
           controller: answerController,
@@ -135,7 +135,7 @@ class _AddFAQScreenState extends ConsumerState<AddFAQScreen> {
             answerController: answerController),
         child: Padding(
           padding: const EdgeInsets.all(9),
-          child: quicksandBlackBold('SUBMIT'),
+          child: quicksandWhiteBold('SUBMIT'),
         ),
       ),
     );

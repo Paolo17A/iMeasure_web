@@ -15,6 +15,7 @@ import 'package:imeasure/screens/edit_raw_material_screen.dart';
 import 'package:imeasure/screens/edit_testimonial_screen.dart';
 import 'package:imeasure/screens/edit_window_screen.dart';
 import 'package:imeasure/screens/forgot_password_screen.dart';
+import 'package:imeasure/screens/help_screen.dart';
 import 'package:imeasure/screens/items_screen.dart';
 import 'package:imeasure/screens/login_screen.dart';
 import 'package:imeasure/screens/order_history_screen.dart';
@@ -37,8 +38,11 @@ import 'package:imeasure/screens/view_transactions_screen.dart';
 import 'package:imeasure/screens/view_users_screen.dart';
 import 'package:imeasure/screens/view_windows_screen.dart';
 
+import '../screens/add_faq_screen.dart';
+import '../screens/edit_faq_screen.dart';
 import '../screens/edit_service_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/view_faqs_screen.dart';
 import '../screens/view_selected_window_screen.dart';
 import 'string_util.dart';
 
@@ -88,6 +92,7 @@ class GoRoutes {
   static const addPortfolio = 'addPortfolio';
   static const editPortfolio = 'editPortfolio';
   static const pendingLabor = 'pendingLabor';
+  static const help = 'help';
 }
 
 final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
@@ -257,7 +262,7 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 ViewGeneratedOrderScreen(
                     orderID: state.pathParameters[PathParameters.orderID]!))),
         //  FAQs
-        /*GoRoute(
+        GoRoute(
             name: GoRoutes.viewFAQs,
             path: GoRoutes.viewFAQs,
             pageBuilder: (context, state) =>
@@ -274,7 +279,7 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 context,
                 state,
                 EditFAQScreen(
-                    faqID: state.pathParameters[PathParameters.faqID]!))),*/
+                    faqID: state.pathParameters[PathParameters.faqID]!))),
         //  GALLERY
         GoRoute(
             name: GoRoutes.gallery,
@@ -343,6 +348,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.pendingLabor,
             pageBuilder: (context, state) => customTransition(
                 context, state, const ViewPendingLaborScreen())),
+        GoRoute(
+            name: GoRoutes.help,
+            path: GoRoutes.help,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const HelpScreen())),
       ])
 ]);
 

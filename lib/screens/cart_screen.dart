@@ -306,7 +306,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             laborPrice: quotation[QuotationFields.laborPrice],
             totalOverallPayment: quotation[QuotationFields.itemOverallPrice],
             mandatoryWindowFields: mandatoryWindowFields,
-            optionalWindowFields: optionalWindowFields),
+            optionalWindowFields: optionalWindowFields,
+            width: quotation[QuotationFields.width],
+            height: quotation[QuotationFields.height]),
         child: quicksandWhiteRegular('VIEW\nQUOTATION', fontSize: 16));
   }
 

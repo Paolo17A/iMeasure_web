@@ -142,13 +142,10 @@ class _SelectedRawMaterialScreenState
               quicksandWhiteBold(name, fontSize: 36, textAlign: TextAlign.left)
             ]),
             orderDocs.isNotEmpty
-                ? SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: Wrap(
-                        children: orderDocs
-                            .map((order) => _orderHistoryEntry(order))
-                            .toList()),
-                  )
+                ? Wrap(
+                    children: orderDocs
+                        .map((order) => _orderHistoryEntry(order))
+                        .toList())
                 : all20Pix(
                     child: quicksandWhiteBold(
                         'THIS RAW MATERIAL HAS NOT BEEN ORDERED YET.',
@@ -167,6 +164,7 @@ class _SelectedRawMaterialScreenState
         orderData[OrderFields.quotation][QuotationFields.itemOverallPrice];
     DateTime dateCreated =
         (orderData[OrderFields.dateCreated] as Timestamp).toDate();
+    Map<dynamic, dynamic> review = orderData[OrderFields.review];
 
     return FutureBuilder(
       future: getThisUserDoc(clientID),
@@ -184,7 +182,7 @@ class _SelectedRawMaterialScreenState
         return all10Pix(
             child: Container(
           width: 320,
-          height: 220,
+          height: 250,
           decoration: BoxDecoration(border: Border.all(color: Colors.white)),
           padding: EdgeInsets.all(10),
           child: Column(
@@ -204,6 +202,14 @@ class _SelectedRawMaterialScreenState
                         fontSize: 12),
                     quicksandWhiteRegular('Status: $status', fontSize: 12)
                   ])),
+                  if (status == OrderStatuses.pickedUp && review.isNotEmpty)
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      quicksandWhiteBold('Rating: ', fontSize: 14),
+                      starRating(review[ReviewFields.rating],
+                          onUpdate: (newVal) {}, mayMove: false)
+                    ])
+                  else if (status == OrderStatuses.pickedUp)
+                    quicksandWhiteBold('Not Yet Rated', fontSize: 14),
                 ],
               ),
               quicksandWhiteBold('PHP ${formatPrice(price)}'),

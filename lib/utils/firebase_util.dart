@@ -772,36 +772,6 @@ Future toggleItemAvailability(BuildContext context, WidgetRef ref,
 }
 
 //==============================================================================
-//WINDOWS=======================================================================
-//==============================================================================
-/*Future<DocumentSnapshot> getThisWindowDoc(String windowID) async {
-  return await FirebaseFirestore.instance
-      .collection(Collections.windows)
-      .doc(windowID)
-      .get();
-}
-
-Future toggleWindowAvailability(BuildContext context, WidgetRef ref,
-    {required String windowID, required bool isAvailable}) async {
-  try {
-    ref.read(loadingProvider).toggleLoading(true);
-    await FirebaseFirestore.instance
-        .collection(Collections.windows)
-        .doc(windowID)
-        .update({WindowFields.isAvailable: !isAvailable});
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-            'Successfully ${isAvailable ? 'archived' : 'restored'} this window')));
-    ref.read(windowsProvider).setWindowDocs(await getAllWindowDocs());
-    ref.read(loadingProvider).toggleLoading(false);
-  } catch (error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error togging window availability: $error')));
-    ref.read(loadingProvider).toggleLoading(false);
-  }
-}*/
-
-//==============================================================================
 //TRANSACTIONS-=================================================================
 //==============================================================================
 Future<List<DocumentSnapshot>> getAllTransactionDocs() async {
@@ -1086,6 +1056,45 @@ Future uploadQuotationPDF(BuildContext context, WidgetRef ref,
         content: Text(
             'Error setting labor cost and creating quotation document: $error')));
     ref.read(loadingProvider).toggleLoading(false);
+  }
+}
+
+Future reviewThisOrder(BuildContext context, WidgetRef ref,
+    {required String orderID,
+    required int rating,
+    required TextEditingController reviewController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    if (rating <= 0 || rating > 6) {
+      scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Please input a rating between 1 to 5.')));
+      return;
+    }
+    goRouter.pop();
+
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.review: {
+        ReviewFields.rating: rating,
+        ReviewFields.review: reviewController.text.trim()
+      }
+    });
+    ref.read(ordersProvider).setOrderDocs(
+        await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid));
+    ref.read(ordersProvider).orderDocs.sort((a, b) {
+      DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
+      DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
+      return bTime.compareTo(aTime);
+    });
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error adding a review to this order: $error')));
   }
 }
 
@@ -1598,10 +1607,8 @@ Future setCartItemLaborPrice(BuildContext context, WidgetRef ref,
         .get();
     final cartData = cart.data() as Map<dynamic, dynamic>;
     Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
-    print('OLD: $quotation');
     quotation[QuotationFields.laborPrice] =
         double.parse(laborPriceController.text);
-    print('NEW: ${quotation}');
     await FirebaseFirestore.instance
         .collection(Collections.cart)
         .doc(cartID)
