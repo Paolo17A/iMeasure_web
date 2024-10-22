@@ -229,7 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   quicksandBlackBold('('),
                   FutureBuilder(
-                    future: getAllWindowOrderDocs(windowDoc.id),
+                    future: getAllItemOrderDocs(windowDoc.id),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting ||
                           !snapshot.hasData ||

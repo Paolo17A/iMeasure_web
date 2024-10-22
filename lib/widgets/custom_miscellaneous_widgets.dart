@@ -323,8 +323,18 @@ Widget windowParameterWidget(BuildContext context,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(5)),
-                  child: dropdownWidget(priceBasis, onPriceBasisChange,
-                      ['WIDTH', 'HEIGHT'], priceBasis, false),
+                  child: dropdownWidget(
+                      priceBasis,
+                      onPriceBasisChange,
+                      [
+                        'WIDTH',
+                        'HEIGHT',
+                        'PERIMETER',
+                        'PERIMETER DOUBLED',
+                        'STACKED WIDTH'
+                      ],
+                      priceBasis,
+                      false),
                 ),
               ],
             ),

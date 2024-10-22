@@ -80,7 +80,7 @@ class _SelectedWindowScreenState
         maxHeight = itemData[ItemFields.maxHeight];
         minWidth = itemData[ItemFields.minWidth];
         maxWidth = itemData[ItemFields.maxWidth];
-        orderDocs = await getAllWindowOrderDocs(widget.itemID);
+        orderDocs = await getAllItemOrderDocs(widget.itemID);
 
         if (ref.read(userDataProvider).userType == UserTypes.client) {
           List<dynamic> windowFields = itemData[ItemFields.windowFields];
@@ -98,6 +98,11 @@ class _SelectedWindowScreenState
               OptionalWindowFields.price: 0
             });
           }
+          orderDocs = orderDocs.where((orderDoc) {
+            final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+            Map review = orderData[OrderFields.review];
+            return review.isNotEmpty;
+          }).toList();
         }
 
         ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -147,12 +152,14 @@ class _SelectedWindowScreenState
                     ),
                   ],
                 )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _backButton(),
-                    horizontal5Percent(context, child: _userWidgets()),
-                  ],
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _backButton(),
+                      horizontal5Percent(context, child: _userWidgets()),
+                    ],
+                  ),
                 )),
     );
   }
@@ -361,7 +368,8 @@ class _SelectedWindowScreenState
               quicksandWhiteRegular('$minHeight - ${maxHeight}ft')
             ]),
           ],
-        )
+        ),
+        if (orderDocs.isNotEmpty) _userReviews()
       ]),
     );
   }
@@ -444,7 +452,7 @@ class _SelectedWindowScreenState
                 if (optionalWindowFields.isNotEmpty) _optionalWindowFields(),
               ],
             ),
-            _userButtons()
+            _userButtons(),
           ],
         ));
   }
@@ -560,6 +568,78 @@ class _SelectedWindowScreenState
               }
             }
           })
+        ],
+      ),
+    );
+  }
+
+  Widget _userReviews() {
+    return vertical20Pix(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Divider(),
+          quicksandWhiteBold('REVIEWS'),
+          vertical10Pix(
+            child: ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: orderDocs.length,
+                itemBuilder: (context, index) {
+                  final orderData = orderDocs[index];
+                  String clientID = orderData[OrderFields.clientID];
+                  Map<String, dynamic> review = orderData[OrderFields.review];
+                  num rating = review[ReviewFields.rating];
+                  String imageURL = review[ReviewFields.imageURL];
+                  String reviewText = review[ReviewFields.review];
+                  return all4Pix(
+                    child: Container(
+                        //height: 100,
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white)),
+                        padding: EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  FutureBuilder(
+                                      future: getThisUserDoc(clientID),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                                ConnectionState.waiting ||
+                                            !snapshot.hasData ||
+                                            snapshot.hasError)
+                                          return Container();
+                                        final userData = snapshot.data!.data()
+                                            as Map<dynamic, dynamic>;
+                                        String formattedName =
+                                            '${userData[UserFields.firstName]} ${userData[UserFields.lastName]}';
+
+                                        return quicksandWhiteRegular(
+                                            formattedName);
+                                      }),
+                                  starRating(rating.toDouble(),
+                                      onUpdate: (val) {}, mayMove: false),
+                                  quicksandWhiteRegular(reviewText,
+                                      fontSize: 16),
+                                  if (imageURL.isNotEmpty)
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          image: DecorationImage(
+                                              image: NetworkImage(imageURL))),
+                                      child: quicksandWhiteRegular('N/A'),
+                                    )
+                                ]),
+                          ],
+                        )),
+                  );
+                }),
+          ),
         ],
       ),
     );

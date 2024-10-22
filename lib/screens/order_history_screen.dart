@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:imeasure/providers/loading_provider.dart';
 import 'package:imeasure/providers/orders_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
@@ -30,6 +33,8 @@ class OrderHistoryScreen extends ConsumerStatefulWidget {
 class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   double initialRating = 5;
   final feedbackController = TextEditingController();
+  Uint8List? reviewImageBytes;
+
   @override
   void initState() {
     super.initState();
@@ -199,6 +204,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   void showRatingDialog(DocumentSnapshot orderDoc) {
     initialRating = 0;
     feedbackController.clear();
+    reviewImageBytes = null;
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -237,6 +243,22 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                   textInputType: TextInputType.multiline,
                                   displayPrefixIcon: null),
                             ),
+                            if (reviewImageBytes != null)
+                              Image.memory(reviewImageBytes!,
+                                  width: 200, height: 200),
+                            ElevatedButton(
+                                onPressed: () async {
+                                  final pickedFile =
+                                      await ImagePickerWeb.getImageAsBytes();
+                                  if (pickedFile == null) {
+                                    return;
+                                  }
+                                  setState(() {
+                                    reviewImageBytes = pickedFile;
+                                  });
+                                },
+                                child: quicksandWhiteRegular(
+                                    'ADD IMAGE (OPTIONAL)'))
                           ],
                         ),
                       ),
@@ -246,7 +268,8 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                             reviewThisOrder(context, ref,
                                 orderID: orderDoc.id,
                                 rating: initialRating.toInt(),
-                                reviewController: feedbackController);
+                                reviewController: feedbackController,
+                                reviewImageFile: reviewImageBytes);
                           },
                           child: all20Pix(
                             child: quicksandWhiteBold('SUBMIT RATING',

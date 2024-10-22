@@ -58,7 +58,7 @@ class _SelectedRawMaterialScreenState
         isAvailable = itemData[ItemFields.isAvailable];
         imageURL = itemData[ItemFields.imageURL];
 
-        orderDocs = await getAllWindowOrderDocs(widget.itemID);
+        orderDocs = await getAllItemOrderDocs(widget.itemID);
 
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {

@@ -174,6 +174,45 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         children: [
           square300NetworkImage(imageURL),
           vertical10Pix(child: quicksandWhiteBold(name)),
+          //if (itemType == ItemTypes.rawMaterial)
+          vertical10Pix(
+            child: FutureBuilder(
+                future: getAllItemOrderDocs(itemDoc.id),
+                builder: ((context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting ||
+                      !snapshot.hasData ||
+                      snapshot.hasError)
+                    return starRating(0, onUpdate: (n) {}, mayMove: false);
+                  List<DocumentSnapshot> orderDocs = snapshot.data!;
+
+                  orderDocs = orderDocs.where((orderDoc) {
+                    final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+                    return orderData.containsKey(OrderFields.review) &&
+                        (orderData[OrderFields.review] as Map<String, dynamic>)
+                            .isNotEmpty;
+                  }).toList();
+                  if (orderDocs.isEmpty)
+                    return quicksandWhiteRegular('No Ratings Yet',
+                        fontSize: 12);
+                  num sumRating = 0;
+                  for (var order in orderDocs) {
+                    final orderData = order.data() as Map<dynamic, dynamic>;
+                    sumRating +=
+                        orderData[OrderFields.review][ReviewFields.rating];
+                  }
+                  double averageRating = sumRating / orderDocs.length;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      starRating(averageRating,
+                          onUpdate: (val) {}, mayMove: false),
+                      quicksandWhiteRegular('(${orderDocs.length.toString()})',
+                          fontSize: 12)
+                    ],
+                  );
+                })),
+          ),
           ElevatedButton(
               onPressed: () {
                 if (itemType == ItemTypes.window) {

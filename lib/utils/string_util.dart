@@ -3,7 +3,6 @@ import 'dart:math';
 String loremIpsum = '';
 
 class ImagePaths {
-  static const String logo = 'assets/images/RentARide.png';
   static const String heritageBackground =
       'assets/images/heritage_background.jpg';
   static const String heritageIcon = 'assets/images/heritage_icon.png';
@@ -17,6 +16,7 @@ class StorageFields {
   static const String galleries = 'galleries';
   static const String items = 'items';
   static const String payments = 'payments';
+  static const String reviews = 'reviews';
 }
 
 class UserTypes {

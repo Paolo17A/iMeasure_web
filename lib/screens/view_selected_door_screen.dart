@@ -74,7 +74,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
         maxHeight = itemData[ItemFields.maxHeight];
         minWidth = itemData[ItemFields.minWidth];
         maxWidth = itemData[ItemFields.maxWidth];
-        orderDocs = await getAllWindowOrderDocs(widget.itemID);
+        orderDocs = await getAllItemOrderDocs(widget.itemID);
         if (ref.read(userDataProvider).userType == UserTypes.client) {
           List<dynamic> windowFields = itemData[ItemFields.windowFields];
 

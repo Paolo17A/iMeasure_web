@@ -172,7 +172,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
                 image: DecorationImage(
                     image: NetworkImage(imageURL), fit: BoxFit.cover)),
           ),
-          quicksandWhiteRegular(name),
+          quicksandWhiteRegular(name, textOverflow: TextOverflow.ellipsis),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             if (isAvailable)
               Container(

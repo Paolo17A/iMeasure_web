@@ -332,6 +332,89 @@ num calculateTotalMandatoryPayment(WidgetRef ref,
               (windowSubField[WindowSubfields.woodFinishPrice] / 21) * width;
           break;
       }
+    } else if (windowSubField[WindowSubfields.priceBasis] == 'PERIMETER') {
+      num perimeter = (2 * width) + (2 * height);
+      switch (ref.read(cartProvider).selectedColor) {
+        case WindowColors.brown:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.brownPrice] / 21) * perimeter;
+          break;
+        case WindowColors.white:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.whitePrice] / 21) * perimeter;
+          break;
+        case WindowColors.mattBlack:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.mattBlackPrice] / 21) * perimeter;
+          break;
+        case WindowColors.mattGray:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.mattGrayPrice] / 21) * perimeter;
+          break;
+        case WindowColors.woodFinish:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
+                  perimeter;
+          break;
+      }
+    } else if (windowSubField[WindowSubfields.priceBasis] ==
+        'PERIMETER DOUBLED') {
+      num perimeter = (2 * width) + (2 * height);
+      switch (ref.read(cartProvider).selectedColor) {
+        case WindowColors.brown:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.brownPrice] / 21) * perimeter * 2;
+          break;
+        case WindowColors.white:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.whitePrice] / 21) * perimeter * 2;
+          break;
+        case WindowColors.mattBlack:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.mattBlackPrice] / 21) *
+                  perimeter *
+                  2;
+          break;
+        case WindowColors.mattGray:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.mattGrayPrice] / 21) *
+                  perimeter *
+                  2;
+          break;
+        case WindowColors.woodFinish:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
+                  perimeter *
+                  2;
+          break;
+      }
+    } else if (windowSubField[WindowSubfields.priceBasis] == 'STACKED WIDTH') {
+      num stackedValue = (2 * height) + (6 * width);
+      switch (ref.read(cartProvider).selectedColor) {
+        case WindowColors.brown:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.brownPrice] / 21) * stackedValue;
+          break;
+        case WindowColors.white:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.whitePrice] / 21) * stackedValue;
+          break;
+        case WindowColors.mattBlack:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.mattBlackPrice] / 21) *
+                  stackedValue;
+          break;
+        case WindowColors.mattGray:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.mattGrayPrice] / 21) *
+                  stackedValue;
+          break;
+        case WindowColors.woodFinish:
+          totalMandatoryPayment +=
+              (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
+                  stackedValue;
+          break;
+      }
     }
   }
   return totalMandatoryPayment;
@@ -354,7 +437,6 @@ List<Map<dynamic, dynamic>> pricedOptionalWindowFields(WidgetRef ref,
   List<Map<dynamic, dynamic>> optionalWindowFields = oldOptionalWindowFields;
   for (int i = 0; i < oldOptionalWindowFields.length; i++) {
     num price = 0;
-    print('$i: ${optionalWindowFields[i]}');
     if (oldOptionalWindowFields[i][OptionalWindowFields.optionalFields]
             [WindowSubfields.priceBasis] ==
         'HEIGHT') {
@@ -433,6 +515,137 @@ List<Map<dynamic, dynamic>> pricedOptionalWindowFields(WidgetRef ref,
                       [WindowSubfields.woodFinishPrice] /
                   21) *
               width;
+          break;
+      }
+    } else if (oldOptionalWindowFields[i][OptionalWindowFields.optionalFields]
+            [WindowSubfields.priceBasis] ==
+        'PERIMETER') {
+      num perimeter = (2 * width) + (2 * height);
+
+      switch (ref.read(cartProvider).selectedColor) {
+        case WindowColors.brown:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.brownPrice] /
+                  21) *
+              perimeter;
+          break;
+        case WindowColors.white:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.whitePrice] /
+                  21) *
+              perimeter;
+          break;
+        case WindowColors.mattBlack:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.mattBlackPrice] /
+                  21) *
+              perimeter;
+          break;
+        case WindowColors.mattGray:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.mattGrayPrice] /
+                  21) *
+              perimeter;
+          break;
+        case WindowColors.woodFinish:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.woodFinishPrice] /
+                  21) *
+              perimeter;
+          break;
+      }
+    } else if (oldOptionalWindowFields[i][OptionalWindowFields.optionalFields]
+            [WindowSubfields.priceBasis] ==
+        'PERIMETER DOUBLED') {
+      num perimeter = (2 * width) + (2 * height);
+
+      switch (ref.read(cartProvider).selectedColor) {
+        case WindowColors.brown:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.brownPrice] /
+                  21) *
+              perimeter *
+              2;
+          break;
+        case WindowColors.white:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.whitePrice] /
+                  21) *
+              perimeter *
+              2;
+          break;
+        case WindowColors.mattBlack:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.mattBlackPrice] /
+                  21) *
+              perimeter *
+              2;
+          break;
+        case WindowColors.mattGray:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.mattGrayPrice] /
+                  21) *
+              perimeter *
+              2;
+          break;
+        case WindowColors.woodFinish:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.woodFinishPrice] /
+                  21) *
+              perimeter *
+              2;
+          break;
+      }
+    } else if (oldOptionalWindowFields[i][OptionalWindowFields.optionalFields]
+            [WindowSubfields.priceBasis] ==
+        'STACKED WIDTH') {
+      num stackedValue = (2 * height) + (6 * width);
+
+      switch (ref.read(cartProvider).selectedColor) {
+        case WindowColors.brown:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.brownPrice] /
+                  21) *
+              stackedValue;
+          break;
+        case WindowColors.white:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.whitePrice] /
+                  21) *
+              stackedValue;
+          break;
+        case WindowColors.mattBlack:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.mattBlackPrice] /
+                  21) *
+              stackedValue;
+          break;
+        case WindowColors.mattGray:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.mattGrayPrice] /
+                  21) *
+              stackedValue;
+          break;
+        case WindowColors.woodFinish:
+          price = (oldOptionalWindowFields[i]
+                          [OptionalWindowFields.optionalFields]
+                      [WindowSubfields.woodFinishPrice] /
+                  21) *
+              stackedValue;
           break;
       }
     }

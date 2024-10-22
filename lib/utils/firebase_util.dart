@@ -878,10 +878,10 @@ Future<List<DocumentSnapshot>> getAllClientOrderDocs(String clientID) async {
   return orders.docs.map((order) => order as DocumentSnapshot).toList();
 }
 
-Future<List<DocumentSnapshot>> getAllWindowOrderDocs(String windowID) async {
+Future<List<DocumentSnapshot>> getAllItemOrderDocs(String itemID) async {
   final orders = await FirebaseFirestore.instance
       .collection(Collections.orders)
-      .where(OrderFields.itemID, isEqualTo: windowID)
+      .where(OrderFields.itemID, isEqualTo: itemID)
       .get();
   return orders.docs.map((order) => order as DocumentSnapshot).toList();
 }
@@ -918,7 +918,8 @@ Future purchaseSelectedCartItems(BuildContext context, WidgetRef ref,
         OrderFields.quotation:
             cartData[CartFields.itemType] != ItemTypes.rawMaterial
                 ? quotation
-                : {QuotationFields.itemOverallPrice: price}
+                : {QuotationFields.itemOverallPrice: price},
+        OrderFields.review: {}
       });
 
       orderIDs.add(orderReference.id);
@@ -1062,7 +1063,8 @@ Future uploadQuotationPDF(BuildContext context, WidgetRef ref,
 Future reviewThisOrder(BuildContext context, WidgetRef ref,
     {required String orderID,
     required int rating,
-    required TextEditingController reviewController}) async {
+    required TextEditingController reviewController,
+    Uint8List? reviewImageFile}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   try {
@@ -1080,9 +1082,31 @@ Future reviewThisOrder(BuildContext context, WidgetRef ref,
         .update({
       OrderFields.review: {
         ReviewFields.rating: rating,
-        ReviewFields.review: reviewController.text.trim()
+        ReviewFields.review: reviewController.text.trim(),
+        ReviewFields.imageURL: ''
       }
     });
+
+    if (reviewImageFile != null) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child(StorageFields.reviews)
+          .child('${orderID}.png');
+      final uploadTask = storageRef.putData(reviewImageFile);
+      final taskSnapshot = await uploadTask;
+      final downloadURL = await taskSnapshot.ref.getDownloadURL();
+
+      await FirebaseFirestore.instance
+          .collection(Collections.orders)
+          .doc(orderID)
+          .update({
+        OrderFields.review: {
+          ReviewFields.rating: rating,
+          ReviewFields.review: reviewController.text.trim(),
+          ReviewFields.imageURL: downloadURL
+        }
+      });
+    }
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid));
     ref.read(ordersProvider).orderDocs.sort((a, b) {
