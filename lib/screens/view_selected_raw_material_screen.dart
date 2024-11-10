@@ -33,7 +33,7 @@ class _SelectedRawMaterialScreenState
   String description = '';
   bool isAvailable = false;
 
-  String imageURL = '';
+  List<dynamic> imageURLs = [];
   List<DocumentSnapshot> orderDocs = [];
 
   @override
@@ -56,7 +56,7 @@ class _SelectedRawMaterialScreenState
         name = itemData[ItemFields.name];
         description = itemData[ItemFields.description];
         isAvailable = itemData[ItemFields.isAvailable];
-        imageURL = itemData[ItemFields.imageURL];
+        imageURLs = itemData[ItemFields.imageURLs];
 
         orderDocs = await getAllItemOrderDocs(widget.itemID);
 
@@ -120,7 +120,7 @@ class _SelectedRawMaterialScreenState
       padding: const EdgeInsets.all(20),
       child: Column(children: [
         Image.network(
-          imageURL,
+          imageURLs.first,
           width: 150,
           height: 150,
           fit: BoxFit.cover,

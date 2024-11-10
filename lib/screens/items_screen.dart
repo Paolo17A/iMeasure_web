@@ -1,9 +1,6 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/loading_provider.dart';
 import 'package:imeasure/utils/firebase_util.dart';
@@ -72,7 +69,7 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: min(itemDocs.length, 3),
+                itemCount: itemDocs.length,
                 itemBuilder: (context, index) =>
                     _itemEntry(index, itemDocs[index]))
             : vertical20Pix(
@@ -83,30 +80,67 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
     final itemData = itemDoc.data() as Map<dynamic, dynamic>;
     String name = itemData[ItemFields.name];
     String description = itemData[ItemFields.description];
-    String imageURL = itemData[ItemFields.imageURL];
+    List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
     List<Widget> widgets = [
-      Flexible(
+      GestureDetector(
+        onTap: () {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return Dialog(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                  onPressed: () => GoRouter.of(context).pop(),
+                                  child: quicksandBlackBold('X'))
+                            ],
+                          ),
+                          vertical10Pix(
+                            child: Container(
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              height: MediaQuery.of(context).size.width * 0.3,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  border:
+                                      Border.all(width: 5, color: Colors.red),
+                                  image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: NetworkImage(imageURLs.first))),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              });
+        },
         child: Container(
-          width: double.infinity,
-          height: 400,
+          width: MediaQuery.of(context).size.width * 0.5,
+          height: MediaQuery.of(context).size.width * 0.3,
           decoration: BoxDecoration(
               image: DecorationImage(
-                  fit: BoxFit.cover, image: NetworkImage(imageURL))),
+                  fit: BoxFit.cover, image: NetworkImage(imageURLs.first))),
         ),
       ),
-      Gap(MediaQuery.of(context).size.width * 0.05),
       Flexible(
-          flex: 2,
-          child: Column(
-            children: [
-              quicksandWhiteBold(name, fontSize: 28),
-              quicksandWhiteRegular(description)
-            ],
+          flex: 1,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.3,
+            child: Column(
+              children: [
+                quicksandWhiteBold(name, fontSize: 28),
+                quicksandWhiteRegular(description)
+              ],
+            ),
           ))
     ];
-    if (index % 2 == 0) {
-      widgets = widgets.reversed.toList();
-    }
     return all20Pix(
         child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

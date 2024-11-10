@@ -295,41 +295,91 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _gallery() {
-    String serviceURL = '';
     String testimonialURL = '';
+    String testimonialURL2 = '';
     String portfolioURL = '';
-    if (serviceDocs.isNotEmpty) {
-      final serviceData = serviceDocs.first.data() as Map<dynamic, dynamic>;
-      serviceURL = serviceData[GalleryFields.imageURL];
-    }
+    String portfolioURL2 = '';
+
     if (testimonialDocs.isNotEmpty) {
       final testimonialData =
           testimonialDocs.first.data() as Map<dynamic, dynamic>;
       testimonialURL = testimonialData[GalleryFields.imageURL];
+      if (testimonialDocs.length > 1) {
+        final testimonialData =
+            testimonialDocs[1].data() as Map<dynamic, dynamic>;
+        testimonialURL2 = testimonialData[GalleryFields.imageURL];
+      }
     }
     if (portfolioDocs.isNotEmpty) {
       final portfolioData = portfolioDocs.first.data() as Map<dynamic, dynamic>;
       portfolioURL = portfolioData[GalleryFields.imageURL];
+      if (portfolioDocs.length > 1) {
+        final portfolioData = portfolioDocs[1].data() as Map<dynamic, dynamic>;
+        portfolioURL2 = portfolioData[GalleryFields.imageURL];
+      }
     }
     return vertical20Pix(
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-      if (serviceURL.isNotEmpty)
-        Column(children: [
-          quicksandWhiteBold('SERVICES'),
-          Gap(4),
-          square300NetworkImage(serviceURL)
-        ]),
       if (testimonialURL.isNotEmpty)
         Column(children: [
-          quicksandWhiteBold('TESTIMONIALS'),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              square300NetworkImage(testimonialURL),
+              if (testimonialDocs.length > 1)
+                GestureDetector(
+                  onTap: () =>
+                      GoRouter.of(context).goNamed(GoRoutes.testimonials),
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: NetworkImage(testimonialURL2))),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Center(
+                          child:
+                              quicksandWhiteBold('+${testimonialDocs.length}')),
+                    ),
+                  ),
+                )
+            ],
+          ),
           Gap(4),
-          square300NetworkImage(testimonialURL)
+          quicksandWhiteBold('TESTIMONIALS'),
         ]),
       if (portfolioURL.isNotEmpty)
         Column(children: [
-          quicksandWhiteBold('PORTFOLIO'),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              square300NetworkImage(portfolioURL),
+              if (portfolioDocs.length > 1)
+                GestureDetector(
+                  onTap: () => GoRouter.of(context).goNamed(GoRoutes.portfolio),
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: NetworkImage(portfolioURL2))),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Center(
+                        child: quicksandWhiteBold('+${portfolioDocs.length}'),
+                      ),
+                    ),
+                  ),
+                )
+            ],
+          ),
           Gap(4),
-          square300NetworkImage(portfolioURL)
+          quicksandWhiteBold('PORTFOLIO'),
         ]),
     ]));
   }
@@ -368,8 +418,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         addRawMaterialToCart(context, ref, itemID: itemDoc.id);
                       }
                     },
-                    child:
-                        square300NetworkImage(itemData[ItemFields.imageURL]));
+                    child: square300NetworkImage(
+                        (itemData[ItemFields.imageURLs] as List<dynamic>)
+                            .first));
               }).toList())
         ],
       ),
@@ -411,9 +462,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          quicksandWhiteBold('Clean.', fontSize: 36),
-          quicksandWhiteBold('Moisture.', fontSize: 36),
-          quicksandWhiteBold('Care.', fontSize: 36)
+          quicksandWhiteBold('Durable.', fontSize: 36),
+          quicksandWhiteBold('Stylish.', fontSize: 36),
+          quicksandWhiteBold('Timeless.', fontSize: 36)
         ],
       ),
     );
@@ -427,9 +478,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Flexible(
               child: Column(
             children: [
-              quicksandWhiteRegular(
-                  loremIpsum.substring(0, (loremIpsum.length / 2).floor()),
-                  textAlign: TextAlign.justify),
+              quicksandWhiteRegular(home, textAlign: TextAlign.justify),
               submitButton(context,
                   label: 'SHOP NOW',
                   onPress: () => GoRouter.of(context).goNamed(GoRoutes.login))
@@ -443,14 +492,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: itemDocs.take(3).map((item) {
                   final itemData = item.data() as Map<dynamic, dynamic>;
-                  String imageURL = itemData[ItemFields.imageURL];
+                  List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
                   return all10Pix(
                       child: Container(
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
                         image: DecorationImage(
-                            fit: BoxFit.fill, image: NetworkImage(imageURL))),
+                            fit: BoxFit.fill,
+                            image: NetworkImage(imageURLs.first))),
                   ));
                 }).toList(),
               ),

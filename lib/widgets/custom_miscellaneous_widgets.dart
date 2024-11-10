@@ -220,14 +220,22 @@ Widget square300NetworkImage(String url) {
   );
 }
 
-Widget selectedNetworkImageDisplay(String imageSource) {
+Widget selectedNetworkImageDisplay(String imageSource,
+    {bool displayDelete = false, Function? onDelete}) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 40),
     child: Container(
       decoration: BoxDecoration(border: Border.all(color: Colors.white)),
       padding: const EdgeInsets.all(10),
-      child:
+      child: Column(
+        children: [
           SizedBox(width: 150, height: 150, child: Image.network(imageSource)),
+          if (displayDelete)
+            IconButton(
+                onPressed: () => onDelete!(),
+                icon: Icon(Icons.delete_outline, color: Colors.white))
+        ],
+      ),
     ),
   );
 }
@@ -594,4 +602,81 @@ Widget starRating(double rating,
               const Icon(Icons.star, color: Color.fromARGB(255, 236, 217, 49)),
           empty: const Icon(Icons.star, color: Colors.grey)),
       onRatingUpdate: (val) => onUpdate(val));
+}
+
+Widget socialsFooter(BuildContext context) {
+  return vertical20Pix(
+    child: Container(
+      width: MediaQuery.of(context).size.width,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Flexible(
+              child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              all4Pix(
+                child: Icon(Icons.home, color: Colors.white, size: 40),
+              ),
+              Flexible(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      quicksandWhiteBold(
+                          'National Hwy, Los Banos Philippines, 4030',
+                          fontSize: 16,
+                          textAlign: TextAlign.left),
+                      quicksandWhiteRegular('ADDRESS', fontSize: 16)
+                    ]),
+              ),
+            ],
+          )),
+          Flexible(
+              child: Row(
+            children: [
+              all4Pix(child: Icon(Icons.email, color: Colors.white, size: 40)),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                quicksandWhiteBold('heritage.losbanos@gmail.com',
+                    textAlign: TextAlign.left, fontSize: 16),
+                quicksandWhiteRegular('EMAIL', fontSize: 16)
+              ]),
+            ],
+          )),
+          Flexible(
+              child: Row(
+            children: [
+              all4Pix(child: Icon(Icons.phone, color: Colors.white, size: 40)),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                quicksandWhiteBold('09985657446',
+                    textAlign: TextAlign.left, fontSize: 16),
+                quicksandWhiteRegular('MOBILE', fontSize: 16)
+              ]),
+            ],
+          )),
+          Flexible(
+              child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              all4Pix(
+                  child: Icon(Icons.facebook, color: Colors.white, size: 40)),
+              Flexible(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      quicksandWhiteBold(
+                          'Heritage Aluminum Sales Corporation Los Banos',
+                          textAlign: TextAlign.left,
+                          fontSize: 16),
+                      quicksandWhiteRegular('FACEBOOK', fontSize: 16)
+                    ]),
+              ),
+            ],
+          )),
+        ],
+      ),
+    ),
+  );
 }

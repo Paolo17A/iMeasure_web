@@ -164,7 +164,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   Widget _filteredItemEntry(DocumentSnapshot itemDoc) {
     final itemData = itemDoc.data() as Map<dynamic, dynamic>;
-    String imageURL = itemData[ItemFields.imageURL];
+    List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
     String name = itemData[ItemFields.name];
     String itemType = itemData[ItemFields.itemType];
     return Container(
@@ -172,7 +172,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       padding: EdgeInsets.all(12),
       child: Column(
         children: [
-          square300NetworkImage(imageURL),
+          square300NetworkImage(imageURLs.first),
           vertical10Pix(child: quicksandWhiteBold(name)),
           //if (itemType == ItemTypes.rawMaterial)
           vertical10Pix(
@@ -254,7 +254,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       child: Column(
         children: [
           itcBaumansWhiteBold('ONLINE SHOP', fontSize: 60),
-          quicksandWhiteRegular(loremIpsum, textAlign: TextAlign.justify)
+          quicksandWhiteRegular(shop, textAlign: TextAlign.center)
         ],
       ),
     );
@@ -268,7 +268,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               itemBuilder: (context, index, _) {
                 final itemData =
                     itemDocs[index].data() as Map<dynamic, dynamic>;
-                String imageURL = itemData[ItemFields.imageURL];
+                List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
                 String name = itemData[ItemFields.name];
                 return Container(
                   width: 250,
@@ -282,7 +282,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                         height: 250,
                         decoration: BoxDecoration(
                             image: DecorationImage(
-                                image: NetworkImage(imageURL),
+                                image: NetworkImage(imageURLs.first),
                                 fit: BoxFit.fill)),
                       ),
                       vertical20Pix(

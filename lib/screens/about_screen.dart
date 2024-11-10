@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/string_util.dart';
+import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 import 'package:imeasure/widgets/top_navigator_widget.dart';
@@ -33,44 +34,50 @@ class _AboutScreenState extends State<AboutScreen> {
         width: MediaQuery.of(context).size.width,
         child: SingleChildScrollView(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
             children: [
-              Divider(),
-              Gap(40),
-              horizontal5Percent(context,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: Container(
-                          width: double.infinity,
-                          height: 400,
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(ImagePaths.testimony))),
-                        ),
-                      ),
-                      Gap(MediaQuery.of(context).size.width * 0.05),
-                      Flexible(
-                        flex: 2,
-                        child: Column(
-                          children: [
-                            vertical20Pix(
-                              child: itcBaumansWhiteBold(
-                                  'HERITAGE ALUMINUM CORP',
-                                  fontSize: 36),
-                            ),
-                            quicksandWhiteRegular(loremIpsum,
-                                textAlign: TextAlign.justify),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ))
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [Divider(), Gap(40), _aboutContent(), Gap(80)],
+              ),
+              socialsFooter(context)
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _aboutContent() {
+    return horizontal5Percent(context,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
+              child: Container(
+                width: double.infinity,
+                height: 400,
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: AssetImage(ImagePaths.testimony))),
+              ),
+            ),
+            Gap(MediaQuery.of(context).size.width * 0.05),
+            Flexible(
+              flex: 2,
+              child: Column(
+                children: [
+                  vertical20Pix(
+                    child: itcBaumansWhiteBold('HERITAGE ALUMINUM CORP',
+                        fontSize: 36),
+                  ),
+                  quicksandWhiteRegular(about, textAlign: TextAlign.justify),
+                ],
+              ),
+            ),
+          ],
+        ));
   }
 }

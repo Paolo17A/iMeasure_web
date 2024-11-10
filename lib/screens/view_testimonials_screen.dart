@@ -17,6 +17,7 @@ import '../utils/color_util.dart';
 import '../utils/delete_entry_dialog_util.dart';
 import '../utils/string_util.dart';
 import '../widgets/custom_button_widgets.dart';
+import '../widgets/top_navigator_widget.dart';
 
 class ViewTestimonialsScreen extends ConsumerStatefulWidget {
   const ViewTestimonialsScreen({super.key});
@@ -43,11 +44,6 @@ class _ViewTestimonialsScreenState
         }
 
         ref.read(userDataProvider).setUserType(await getCurrentUserType());
-        if (ref.read(userDataProvider).userType == UserTypes.client) {
-          ref.read(loadingProvider.notifier).toggleLoading(false);
-          goRouter.goNamed(GoRoutes.home);
-          return;
-        }
         ref
             .read(galleryProvider)
             .setGalleryDocs(await getAllTestimonialGalleryDocs());
@@ -64,32 +60,60 @@ class _ViewTestimonialsScreenState
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(galleryProvider);
+    ref.watch(userDataProvider);
     return Scaffold(
+      appBar: ref.read(userDataProvider).userType == UserTypes.client
+          ? topUserNavigator(context, path: GoRoutes.testimonials)
+          : null,
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              leftNavigator(context, path: GoRoutes.gallery),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _backButton(),
-                      horizontal5Percent(context,
-                          child: Column(
-                            children: [
-                              _testimonialsHeader(),
-                              _testiomonialEntries()
-                            ],
-                          )),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          )),
+          ref.read(userDataProvider).userType == UserTypes.client
+              ? _userWidgets()
+              : _adminWidgets()),
+    );
+  }
+
+  Widget _userWidgets() {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      child: Column(
+        children: [
+          Divider(color: Colors.white),
+          Gap(40),
+          quicksandWhiteBold('TESTIMONIALS'),
+          horizontal5Percent(context,
+              child: Wrap(
+                children: ref.read(galleryProvider).galleryDocs.map((gallery) {
+                  final galleryData = gallery.data() as Map<dynamic, dynamic>;
+                  String imageURL = galleryData[GalleryFields.imageURL];
+                  return all20Pix(child: square300NetworkImage(imageURL));
+                }).toList(),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _adminWidgets() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        leftNavigator(context, path: GoRoutes.gallery),
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _backButton(),
+                horizontal5Percent(context,
+                    child: Column(
+                      children: [_testimonialsHeader(), _testiomonialEntries()],
+                    )),
+              ],
+            ),
+          ),
+        )
+      ],
     );
   }
 

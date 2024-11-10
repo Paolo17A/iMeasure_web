@@ -152,7 +152,7 @@ class _ViewRawMaterialsScreenState
     final itemData = itemDoc.data() as Map<dynamic, dynamic>;
     String name = itemData[ItemFields.name];
     bool isAvailable = itemData[ItemFields.isAvailable];
-    String imageURL = itemData[ItemFields.imageURL];
+    List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
 
     return SizedBox(
       width: 200,
@@ -163,7 +163,7 @@ class _ViewRawMaterialsScreenState
             height: 200,
             decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: NetworkImage(imageURL), fit: BoxFit.cover)),
+                    image: NetworkImage(imageURLs.first), fit: BoxFit.cover)),
           ),
           quicksandWhiteRegular(name),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

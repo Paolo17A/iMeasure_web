@@ -30,7 +30,7 @@ class _EditRawMaterialScreenState extends ConsumerState<EditRawMaterialScreen> {
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
   final priceController = TextEditingController();
-  String imageURL = '';
+  List<dynamic> imageURLs = [];
 
   @override
   void initState() {
@@ -55,7 +55,7 @@ class _EditRawMaterialScreenState extends ConsumerState<EditRawMaterialScreen> {
         nameController.text = itemData[ItemFields.name];
         descriptionController.text = itemData[ItemFields.description];
         priceController.text = itemData[ItemFields.price].toString();
-        imageURL = itemData[ItemFields.imageURL];
+        imageURLs = itemData[ItemFields.imageURLs];
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -181,14 +181,41 @@ class _EditRawMaterialScreenState extends ConsumerState<EditRawMaterialScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
-                if (ref.read(uploadedImageProvider).uploadedImage != null)
-                  vertical10Pix(
-                      child: selectedMemoryImageDisplay(
-                          ref.read(uploadedImageProvider).uploadedImage, () {
-                    ref.read(uploadedImageProvider).removeImage();
-                  }))
-                else if (imageURL.isNotEmpty)
-                  vertical10Pix(child: selectedNetworkImageDisplay(imageURL))
+                Wrap(children: [
+                  if (!ref.read(loadingProvider).isLoading &&
+                      imageURLs.isNotEmpty)
+                    ...imageURLs
+                        .map((imageURL) => all10Pix(
+                                child: selectedNetworkImageDisplay(imageURL,
+                                    displayDelete: true, onDelete: () {
+                              if (imageURLs.length +
+                                      ref
+                                          .read(uploadedImageProvider)
+                                          .uploadedImages
+                                          .length ==
+                                  1) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(
+                                        'You must have at least one image available for this item ')));
+                                return;
+                              }
+                              setState(() {
+                                imageURLs.remove(imageURL);
+                              });
+                            })))
+                        .toList(),
+                  if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty)
+                    ...ref
+                        .read(uploadedImageProvider)
+                        .uploadedImages
+                        .map((imageByte) => all10Pix(
+                            child: selectedMemoryImageDisplay(
+                                imageByte,
+                                () => ref
+                                    .read(uploadedImageProvider)
+                                    .removeImage())))
+                        .toList()
+                ])
               ],
             ),
           ],
@@ -207,7 +234,8 @@ class _EditRawMaterialScreenState extends ConsumerState<EditRawMaterialScreen> {
             itemID: widget.itemID,
             nameController: nameController,
             descriptionController: descriptionController,
-            priceController: priceController),
+            priceController: priceController,
+            imageURLs: imageURLs),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

@@ -21,7 +21,6 @@ class ViewGalleryScreen extends ConsumerStatefulWidget {
 }
 
 class _ViewGalleryScreenState extends ConsumerState<ViewGalleryScreen> {
-  List<DocumentSnapshot> allServicesDocs = [];
   List<DocumentSnapshot> allTestimonialDocs = [];
   List<DocumentSnapshot> allPortfolioDocs = [];
 
@@ -46,7 +45,6 @@ class _ViewGalleryScreenState extends ConsumerState<ViewGalleryScreen> {
           goRouter.goNamed(GoRoutes.home);
           return;
         }
-        allServicesDocs = await getAllServiceGalleryDocs();
         allTestimonialDocs = await getAllTestimonialGalleryDocs();
         allPortfolioDocs = await getAllPortfolioGalleryDocs();
         ref.read(loadingProvider).toggleLoading(false);
@@ -73,13 +71,6 @@ class _ViewGalleryScreenState extends ConsumerState<ViewGalleryScreen> {
                 child: SingleChildScrollView(
                     child: all5Percent(context,
                         child: Column(children: [
-                          galleryDocsContainer(
-                              label: 'Our Services',
-                              galleryDocs: allServicesDocs,
-                              viewFunction: () => GoRouter.of(context)
-                                  .goNamed(GoRoutes.services),
-                              addFunction: () => GoRouter.of(context)
-                                  .goNamed(GoRoutes.addService)),
                           galleryDocsContainer(
                               label: 'Client Testimonials',
                               galleryDocs: allTestimonialDocs,

@@ -34,7 +34,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
   final maxHeightController = TextEditingController();
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
-  String imageURL = '';
+  List<dynamic> imageURLs = [];
   String correspondingModel = '';
 
   List<WindowFieldModel> windowFieldModels = [];
@@ -68,7 +68,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
         maxHeightController.text = itemData[ItemFields.maxHeight].toString();
         minWidthController.text = itemData[ItemFields.minWidth].toString();
         maxWidthController.text = itemData[ItemFields.maxWidth].toString();
-        imageURL = itemData[ItemFields.imageURL];
+        imageURLs = itemData[ItemFields.imageURLs];
         correspondingModel = itemData[ItemFields.correspondingModel];
 
         List<dynamic> windowFields = itemData[ItemFields.windowFields];
@@ -102,6 +102,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
               accessoryField[WindowAccessorySubfields.price].toString();
           windowAccessoryModels.add(windowAccessoryModel);
         }
+        ref.read(uploadedImageProvider).resetImages();
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -437,14 +438,41 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
-                if (ref.read(uploadedImageProvider).uploadedImage != null)
-                  vertical10Pix(
-                      child: selectedMemoryImageDisplay(
-                          ref.read(uploadedImageProvider).uploadedImage,
-                          () => ref.read(uploadedImageProvider).removeImage()))
-                else if (!ref.read(loadingProvider).isLoading &&
-                    imageURL.isNotEmpty)
-                  vertical10Pix(child: selectedNetworkImageDisplay(imageURL))
+                Wrap(children: [
+                  if (!ref.read(loadingProvider).isLoading &&
+                      imageURLs.isNotEmpty)
+                    ...imageURLs
+                        .map((imageURL) => all10Pix(
+                                child: selectedNetworkImageDisplay(imageURL,
+                                    displayDelete: true, onDelete: () {
+                              if (imageURLs.length +
+                                      ref
+                                          .read(uploadedImageProvider)
+                                          .uploadedImages
+                                          .length ==
+                                  1) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(
+                                        'You must have at least one image available for this item ')));
+                                return;
+                              }
+                              setState(() {
+                                imageURLs.remove(imageURL);
+                              });
+                            })))
+                        .toList(),
+                  if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty)
+                    ...ref
+                        .read(uploadedImageProvider)
+                        .uploadedImages
+                        .map((imageByte) => all10Pix(
+                            child: selectedMemoryImageDisplay(
+                                imageByte,
+                                () => ref
+                                    .read(uploadedImageProvider)
+                                    .removeImage())))
+                        .toList()
+                ])
               ],
             ),
           ],
@@ -470,7 +498,8 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
             maxWidthController: maxWidthController,
             windowFieldModels: windowFieldModels,
             windowAccesoryModels: windowAccessoryModels,
-            correspondingModel: correspondingModel),
+            correspondingModel: correspondingModel,
+            imageURLs: imageURLs),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

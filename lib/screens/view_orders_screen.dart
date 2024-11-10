@@ -216,9 +216,9 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                       fontSize: 12)),
                             ),
                           if (status == OrderStatuses.pending)
-                            quicksandWhiteBold('PENDING PAYMENT')
+                            quicksandWhiteBold('PENDING PAYMENT', fontSize: 16)
                           else if (status == OrderStatuses.denied)
-                            quicksandWhiteBold('PAYMENT DENIED')
+                            quicksandWhiteBold('PAYMENT DENIED', fontSize: 16)
                           else if (status == OrderStatuses.processing)
                             Container(
                               decoration: BoxDecoration(
@@ -235,21 +235,23 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                       fontSize: 12)),
                             )
                           else if (status == OrderStatuses.forPickUp)
+                            quicksandWhiteBold('PENDING PICK UP', fontSize: 16)
+                          else if (status == OrderStatuses.pickedUp)
                             Container(
                               decoration: BoxDecoration(
                                   border: Border.all(color: Colors.white)),
                               child: TextButton(
-                                  onPressed: () => markOrderAsPickedUp(
+                                  onPressed: () => markOrderAsCompleted(
                                       context, ref,
                                       orderID: ref
                                           .read(ordersProvider)
                                           .orderDocs[index]
                                           .id),
-                                  child: quicksandWhiteBold('MARK AS PICKED UP',
+                                  child: quicksandWhiteBold('MARK AS COMPLETED',
                                       fontSize: 12)),
                             )
-                          else if (status == OrderStatuses.pickedUp)
-                            quicksandWhiteBold('COMPLETED')
+                          else if (status == OrderStatuses.completed)
+                            quicksandWhiteBold('COMPLETED', fontSize: 16)
                         ], flex: 2, backgroundColor: backgroundColor),
                         viewFlexActionsCell([
                           if (itemType == ItemTypes.window ||

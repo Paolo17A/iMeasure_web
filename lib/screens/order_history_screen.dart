@@ -142,7 +142,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
 
           final itemData = snapshot.data!.data() as Map<dynamic, dynamic>;
           //String itemType = itemData[ItemFields.itemType];
-          String imageURL = itemData[ItemFields.imageURL];
+          List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
           String name = itemData[ItemFields.name];
           return Container(
             width: 400,
@@ -157,7 +157,8 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                     height: 170,
                     decoration: BoxDecoration(
                         image: DecorationImage(
-                            image: NetworkImage(imageURL), fit: BoxFit.cover))),
+                            image: NetworkImage(imageURLs.first),
+                            fit: BoxFit.cover))),
                 Gap(12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

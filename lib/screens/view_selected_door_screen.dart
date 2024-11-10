@@ -38,7 +38,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   num maxWidth = 0;
   num minHeight = 0;
   num maxHeight = 0;
-  String imageURL = '';
+  List<dynamic> imageURLs = [];
   int currentImageIndex = 0;
   List<DocumentSnapshot> orderDocs = [];
 
@@ -69,7 +69,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
         name = itemData[ItemFields.name];
         description = itemData[ItemFields.description];
         isAvailable = itemData[ItemFields.isAvailable];
-        imageURL = itemData[ItemFields.imageURL];
+        imageURLs = itemData[ItemFields.imageURLs];
         minHeight = itemData[ItemFields.minHeight];
         maxHeight = itemData[ItemFields.maxHeight];
         minWidth = itemData[ItemFields.minWidth];
@@ -174,7 +174,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
       padding: const EdgeInsets.all(20),
       child: Column(children: [
         Image.network(
-          imageURL,
+          imageURLs.first,
           width: 150,
           height: 150,
           fit: BoxFit.cover,
@@ -339,8 +339,8 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
 
   Widget _itemImage() {
     return Flexible(
-        child: imageURL.isNotEmpty
-            ? square300NetworkImage(imageURL)
+        child: imageURLs.isNotEmpty
+            ? square300NetworkImage(imageURLs.first)
             : Container(
                 width: 300,
                 height: 300,

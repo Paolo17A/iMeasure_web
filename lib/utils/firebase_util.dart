@@ -383,9 +383,9 @@ Future addFurnitureItemEntry(BuildContext context, WidgetRef ref,
             'Please input a valid number greater than zero for maximum width.')));
     return;
   }
-  if (ref.read(uploadedImageProvider).uploadedImage == null) {
-    scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Please upload a window image.')));
+  if (ref.read(uploadedImageProvider).uploadedImages.isEmpty) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text('Please upload at least one item image.')));
     return;
   }
   if (WindowFieldModel.hasInvalidField(windowFieldModels)) {
@@ -452,19 +452,31 @@ Future addFurnitureItemEntry(BuildContext context, WidgetRef ref,
     });
 
     //  Upload Item Images to Firebase Storage
-    final storageRef = FirebaseStorage.instance
-        .ref()
-        .child(StorageFields.items)
-        .child('${itemReference.id}.png');
-    final uploadTask =
-        storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
-    final taskSnapshot = await uploadTask;
-    final downloadURL = await taskSnapshot.ref.getDownloadURL();
+    List<String> downloadURLs = [];
+    for (var imageByte in ref.read(uploadedImageProvider).uploadedImages) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child(StorageFields.items)
+          .child(itemReference.id)
+          .child('${generateRandomHexString(6)}.png');
+      final uploadTask = storageRef.putData(imageByte!);
+      final taskSnapshot = await uploadTask;
+      final downloadURL = await taskSnapshot.ref.getDownloadURL();
+      downloadURLs.add(downloadURL);
+    }
+    // final storageRef = FirebaseStorage.instance
+    //     .ref()
+    //     .child(StorageFields.items)
+    //     .child('${itemReference.id}.png');
+    // final uploadTask =
+    //     storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+    // final taskSnapshot = await uploadTask;
+    // final downloadURL = await taskSnapshot.ref.getDownloadURL();
 
     await FirebaseFirestore.instance
         .collection(Collections.items)
         .doc(itemReference.id)
-        .update({ItemFields.imageURL: downloadURL});
+        .update({ItemFields.imageURLs: downloadURLs});
     ref.read(loadingProvider.notifier).toggleLoading(false);
 
     scaffoldMessenger.showSnackBar(
@@ -492,7 +504,8 @@ Future editFurnitureItemEntry(BuildContext context, WidgetRef ref,
     required TextEditingController maxWidthController,
     required List<WindowFieldModel> windowFieldModels,
     required List<WindowAccessoryModel> windowAccesoryModels,
-    required String correspondingModel}) async {
+    required String correspondingModel,
+    required List<dynamic> imageURLs}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (nameController.text.isEmpty ||
@@ -595,21 +608,24 @@ Future editFurnitureItemEntry(BuildContext context, WidgetRef ref,
     });
 
     //  Upload Item Images to Firebase Storage
-    if (ref.read(uploadedImageProvider).uploadedImage != null) {
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child(StorageFields.items)
-          .child('${itemID}.png');
-      final uploadTask =
-          storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
-      final taskSnapshot = await uploadTask;
-      final downloadURL = await taskSnapshot.ref.getDownloadURL();
-
-      await FirebaseFirestore.instance
-          .collection(Collections.items)
-          .doc(itemID)
-          .update({ItemFields.imageURL: downloadURL});
+    List<dynamic> downloadURLs = imageURLs;
+    if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty) {
+      for (var itemByte in ref.read(uploadedImageProvider).uploadedImages) {
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child(StorageFields.items)
+            .child(itemID)
+            .child('${generateRandomHexString(6)}.png');
+        final uploadTask = storageRef.putData(itemByte!);
+        final taskSnapshot = await uploadTask;
+        final downloadURL = await taskSnapshot.ref.getDownloadURL();
+        downloadURLs.add(downloadURL);
+      }
     }
+    await FirebaseFirestore.instance
+        .collection(Collections.items)
+        .doc(itemID)
+        .update({ItemFields.imageURLs: downloadURLs});
 
     ref.read(loadingProvider.notifier).toggleLoading(false);
 
@@ -663,18 +679,23 @@ Future addRawMaterialEntry(BuildContext context, WidgetRef ref,
     });
 
     //  Upload Item Images to Firebase Storage
-    final storageRef = FirebaseStorage.instance
-        .ref()
-        .child(StorageFields.items)
-        .child('${itemReference.id}.png');
-    final uploadTask =
-        storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
-    final taskSnapshot = await uploadTask;
-    final downloadURL = await taskSnapshot.ref.getDownloadURL();
+    List<dynamic> downloadURLs = [];
+    for (var bytes in ref.read(uploadedImageProvider).uploadedImages) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child(StorageFields.items)
+          .child(itemReference.id)
+          .child('${generateRandomHexString(6)}.png');
+      final uploadTask = storageRef.putData(bytes!);
+      final taskSnapshot = await uploadTask;
+      final downloadURL = await taskSnapshot.ref.getDownloadURL();
+      downloadURLs.add(downloadURL);
+    }
+
     await FirebaseFirestore.instance
         .collection(Collections.items)
         .doc(itemReference.id)
-        .update({ItemFields.imageURL: downloadURL});
+        .update({ItemFields.imageURLs: downloadURLs});
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully added new raw material.')));
     ref.read(loadingProvider).toggleLoading(false);
@@ -690,7 +711,8 @@ Future editRawMaterialEntry(BuildContext context, WidgetRef ref,
     {required String itemID,
     required TextEditingController nameController,
     required TextEditingController descriptionController,
-    required TextEditingController priceController}) async {
+    required TextEditingController priceController,
+    required List<dynamic> imageURLs}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (nameController.text.isEmpty ||
@@ -716,21 +738,23 @@ Future editRawMaterialEntry(BuildContext context, WidgetRef ref,
       ItemFields.description: descriptionController.text.trim(),
       ItemFields.price: double.parse(priceController.text.trim()),
     });
-    if (ref.read(uploadedImageProvider).uploadedImage != null) {
-//  Upload Item Images to Firebase Storage
+
+    List<dynamic> downloadURLs = imageURLs;
+    for (var bytes in ref.read(uploadedImageProvider).uploadedImages) {
       final storageRef = FirebaseStorage.instance
           .ref()
           .child(StorageFields.items)
-          .child('${itemID}.png');
-      final uploadTask =
-          storageRef.putData(ref.read(uploadedImageProvider).uploadedImage!);
+          .child(itemID)
+          .child('${generateRandomHexString(6)}.png');
+      final uploadTask = storageRef.putData(bytes!);
       final taskSnapshot = await uploadTask;
       final downloadURL = await taskSnapshot.ref.getDownloadURL();
-      await FirebaseFirestore.instance
-          .collection(Collections.items)
-          .doc(itemID)
-          .update({ItemFields.imageURL: downloadURL});
+      downloadURLs.add(downloadURL);
     }
+    await FirebaseFirestore.instance
+        .collection(Collections.items)
+        .doc(itemID)
+        .update({ItemFields.imageURLs: downloadURLs});
 
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully edited this raw material.')));
@@ -986,6 +1010,11 @@ Future markOrderAsReadyForPickUp(BuildContext context, WidgetRef ref,
         .doc(orderID)
         .update({OrderFields.orderStatus: OrderStatuses.forPickUp});
     ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+    ref.read(ordersProvider).orderDocs.sort((a, b) {
+      DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
+      DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
+      return bTime.compareTo(aTime);
+    });
     scaffoldMessenger.showSnackBar(SnackBar(
         content: Text('Successfully marked order as ready for pick up.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1010,8 +1039,39 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
       OrderFields.datePickedUp: DateTime.now()
     });
     ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+    ref.read(ordersProvider).orderDocs.sort((a, b) {
+      DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
+      DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
+      return bTime.compareTo(aTime);
+    });
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as picked up')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error marking order as picked up: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future markOrderAsCompleted(BuildContext context, WidgetRef ref,
+    {required String orderID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({OrderFields.orderStatus: OrderStatuses.completed});
+    ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+    ref.read(ordersProvider).orderDocs.sort((a, b) {
+      DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
+      DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
+      return bTime.compareTo(aTime);
+    });
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully marked order as completed.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
   } catch (error) {
     scaffoldMessenger.showSnackBar(

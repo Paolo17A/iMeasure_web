@@ -133,7 +133,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       return Container();
     else {
       String name = associatedItemDoc[ItemFields.name];
-      String imageURL = associatedItemDoc[ItemFields.imageURL];
+      List<dynamic> imageURLs = associatedItemDoc[ItemFields.imageURLs];
       if (itemType == ItemTypes.rawMaterial) {
         price = associatedItemDoc[ItemFields.price];
       } else {
@@ -143,7 +143,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       }
       //num price = associatedItemDoc[ItemFields.price];
       return all10Pix(
-          child: Container(
+          child: Stack(
+        children: [
+          Container(
               decoration: BoxDecoration(
                   border: Border.all(color: CustomColors.lavenderMist)),
               padding: EdgeInsets.all(10),
@@ -191,7 +193,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                   image: DecorationImage(
                                       fit: BoxFit.cover,
-                                      image: NetworkImage(imageURL))),
+                                      image: NetworkImage(imageURLs.first))),
                             ),
                             Gap(20),
                             Column(
@@ -292,7 +294,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         icon: Icon(Icons.delete, color: CustomColors.coralRed)),
                   )
                 ],
-              )));
+              )),
+          if (laborPrice > 0)
+            Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration:
+                      BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+                ))
+        ],
+      ));
     }
   }
 

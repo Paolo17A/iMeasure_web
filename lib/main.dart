@@ -11,7 +11,10 @@ import 'utils/string_util.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  loremIpsum = await rootBundle.loadString('assets/documents/lorem_ipsum.txt');
+  home = await rootBundle.loadString('assets/documents/home.txt');
+  about = await rootBundle.loadString('assets/documents/about.txt');
+  shop = await rootBundle.loadString('assets/documents/shop.txt');
+
   runApp(const ProviderScope(child: iMeasure()));
 }
 

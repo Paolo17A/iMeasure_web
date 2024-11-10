@@ -182,7 +182,7 @@ class _ViewSelectedUserScreenState
 
         final itemData = snapshot.data!.data() as Map<dynamic, dynamic>;
         String itemType = itemData[ItemFields.itemType];
-        String imageURL = itemData[ItemFields.imageURL];
+        List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
         String name = itemData[ItemFields.name];
         return Container(
           width: 450,
@@ -193,7 +193,7 @@ class _ViewSelectedUserScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.network(
-                imageURL,
+                imageURLs.first,
                 width: 180,
                 height: 180,
                 fit: BoxFit.cover,
