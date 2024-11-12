@@ -16,6 +16,7 @@ import 'package:imeasure/screens/edit_testimonial_screen.dart';
 import 'package:imeasure/screens/edit_window_screen.dart';
 import 'package:imeasure/screens/forgot_password_screen.dart';
 import 'package:imeasure/screens/help_screen.dart';
+import 'package:imeasure/screens/history_screen.dart';
 import 'package:imeasure/screens/items_screen.dart';
 import 'package:imeasure/screens/login_screen.dart';
 import 'package:imeasure/screens/order_history_screen.dart';
@@ -93,6 +94,7 @@ class GoRoutes {
   static const editPortfolio = 'editPortfolio';
   static const pendingLabor = 'pendingLabor';
   static const help = 'help';
+  static const history = 'history';
 }
 
 final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
@@ -353,6 +355,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.help,
             pageBuilder: (context, state) =>
                 customTransition(context, state, const HelpScreen())),
+        GoRoute(
+            name: GoRoutes.history,
+            path: GoRoutes.history,
+            pageBuilder: (context, state) =>
+                customTransition(context, state, const HistoryScreen())),
       ])
 ]);
 

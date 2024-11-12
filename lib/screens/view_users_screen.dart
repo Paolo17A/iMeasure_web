@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
+import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
@@ -24,9 +25,29 @@ class ViewUsersScreen extends ConsumerStatefulWidget {
 }
 
 class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
+  final searchController = TextEditingController();
+  List<DocumentSnapshot> filteredUserDocs = [];
+
   @override
   void initState() {
     super.initState();
+    searchController.addListener(() {
+      String searchInput = searchController.text.trim().toLowerCase();
+      List<DocumentSnapshot> userDocs = ref.read(usersProvider).userDocs;
+      setState(() {
+        filteredUserDocs = userDocs.where((user) {
+          final userData = user.data() as Map<dynamic, dynamic>;
+          String firstName =
+              userData[UserFields.firstName].toString().toLowerCase().trim();
+          String lastName =
+              userData[UserFields.lastName].toString().toLowerCase().trim();
+          return searchInput.contains(firstName) ||
+              searchInput.contains(lastName) ||
+              lastName.contains(searchInput) ||
+              firstName.contains(searchInput);
+        }).toList();
+      });
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       final goRouter = GoRouter.of(context);
@@ -64,6 +85,7 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
                 .update({UserFields.address: 'n/a'});
           }
         }
+        filteredUserDocs = ref.read(usersProvider).userDocs;
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -95,7 +117,7 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
                   children: [
                     _usersHeader(),
                     _usersLabelRow(),
-                    ref.read(usersProvider).userDocs.isNotEmpty
+                    filteredUserDocs.isNotEmpty
                         ? _userEntries()
                         : viewContentUnavailable(context,
                             text: 'NO AVAILABLE USERS'),
@@ -111,12 +133,29 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
 
   Widget _usersHeader() {
     return vertical20Pix(
-        child: Row(children: [
-      quicksandWhiteBold('Users: ', fontSize: 28),
-      Gap(4),
-      quicksandCoralRedBold(ref.read(usersProvider).userDocs.length.toString(),
-          fontSize: 28)
-    ]));
+        child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          quicksandWhiteBold('Users: ', fontSize: 28),
+          Gap(4),
+          quicksandCoralRedBold(filteredUserDocs.length.toString(),
+              fontSize: 28)
+        ]),
+        Container(
+          width: MediaQuery.of(context).size.width * 0.4,
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.white),
+              borderRadius: BorderRadius.circular(10)),
+          child: CustomTextField(
+              text: 'Search...',
+              controller: searchController,
+              fillColor: Colors.transparent,
+              textColor: Colors.white,
+              textInputType: TextInputType.text),
+        )
+      ],
+    ));
   }
 
   Widget _usersLabelRow() {
@@ -133,9 +172,9 @@ class _ViewUsersScreenState extends ConsumerState<ViewUsersScreen> {
         height: MediaQuery.of(context).size.height * 0.65,
         child: ListView.builder(
             shrinkWrap: true,
-            itemCount: ref.read(usersProvider).userDocs.length,
+            itemCount: filteredUserDocs.length,
             itemBuilder: (context, index) {
-              return _userEntry(ref.read(usersProvider).userDocs[index], index);
+              return _userEntry(filteredUserDocs[index], index);
             }));
   }
 

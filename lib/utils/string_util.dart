@@ -47,6 +47,7 @@ class UserFields {
   static const String mobileNumber = 'mobileNumber';
   static const String address = 'address';
   static const String bookmarks = 'bookmarks';
+  static const String lastActive = 'lastActive';
 }
 
 class ItemFields {
@@ -222,7 +223,7 @@ class GalleryTypes {
 class ReviewFields {
   static const String review = 'review';
   static const String rating = 'rating';
-  static const String imageURL = 'imageURL';
+  static const String imageURLs = 'imageURLs';
 }
 
 class PathParameters {

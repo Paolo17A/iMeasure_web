@@ -149,7 +149,9 @@ void showCartQuotationDialog(BuildContext context, WidgetRef ref,
     required List<dynamic> mandatoryWindowFields,
     required List<dynamic> optionalWindowFields,
     required num width,
-    required num height}) {
+    required num height,
+    required List<dynamic> imageURLs,
+    required String itemName}) {
   showDialog(
       context: context,
       barrierDismissible: false,
@@ -166,6 +168,27 @@ void showCartQuotationDialog(BuildContext context, WidgetRef ref,
                         onPressed: () => GoRouter.of(context).pop(),
                         child: quicksandBlackBold('X'))
                   ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.network(
+                          imageURLs.first,
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                        Column(children: [
+                          Image.asset(ImagePaths.heritageIcon, scale: 2),
+                          quicksandBlackBold('iMeasure', fontSize: 24),
+                          quicksandBlackBold('• LOS BAÑOS •', fontSize: 12),
+                        ]),
+                        Gap(200)
+                      ]),
+                  all10Pix(
+                    child: Row(children: [
+                      quicksandBlackBold(itemName, textAlign: TextAlign.left)
+                    ]),
+                  ),
                   quicksandBlackBold('ESTIMATED QUOTATION', fontSize: 16),
                   //  Mandatory Window Fields
                   Container(

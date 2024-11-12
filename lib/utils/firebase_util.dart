@@ -91,7 +91,8 @@ Future registerNewUser(BuildContext context, WidgetRef ref,
       UserFields.address: addressController.text.trim(),
       UserFields.userType: UserTypes.client,
       UserFields.profileImageURL: '',
-      UserFields.bookmarks: []
+      UserFields.bookmarks: [],
+      UserFields.lastActive: DateTime.now()
     });
     scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Successfully registered new user')));
@@ -128,6 +129,12 @@ Future logInUser(BuildContext context, WidgetRef ref,
           .collection(Collections.users)
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .update({UserFields.password: passwordController.text});
+    }
+    if (userData[UserFields.userType] == UserTypes.client) {
+      await FirebaseFirestore.instance
+          .collection(Collections.users)
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({UserFields.lastActive: DateTime.now()});
     }
     ref.read(loadingProvider.notifier).toggleLoading(false);
     GoRouter.of(context).goNamed(GoRoutes.home);
@@ -807,6 +814,26 @@ Future<List<DocumentSnapshot>> getAllTransactionDocs() async {
       .toList();
 }
 
+Future<List<DocumentSnapshot>> getAllVerifiedTransactionDocs() async {
+  final transactions = await FirebaseFirestore.instance
+      .collection(Collections.transactions)
+      .where(TransactionFields.paymentVerified, isEqualTo: true)
+      .get();
+  return transactions.docs
+      .map((transaction) => transaction as DocumentSnapshot)
+      .toList();
+}
+
+Future<List<DocumentSnapshot>> getAllUnverifiedTransactionDocs() async {
+  final transactions = await FirebaseFirestore.instance
+      .collection(Collections.transactions)
+      .where(TransactionFields.paymentVerified, isEqualTo: false)
+      .get();
+  return transactions.docs
+      .map((transaction) => transaction as DocumentSnapshot)
+      .toList();
+}
+
 Future approveThisPayment(BuildContext context, WidgetRef ref,
     {required String paymentID, required List<dynamic> orderIDs}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -831,7 +858,7 @@ Future approveThisPayment(BuildContext context, WidgetRef ref,
 
     ref
         .read(transactionsProvider)
-        .setTransactionDocs(await getAllTransactionDocs());
+        .setTransactionDocs(await getAllUnverifiedTransactionDocs());
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully approved this payment')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -865,7 +892,7 @@ Future denyThisPayment(BuildContext context, WidgetRef ref,
 
     ref
         .read(transactionsProvider)
-        .setTransactionDocs(await getAllTransactionDocs());
+        .setTransactionDocs(await getAllUnverifiedTransactionDocs());
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully denied this payment')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -880,8 +907,30 @@ Future denyThisPayment(BuildContext context, WidgetRef ref,
 //ORDERS-=======================================================================
 //==============================================================================
 Future<List<DocumentSnapshot>> getAllOrderDocs() async {
-  final orders =
-      await FirebaseFirestore.instance.collection(Collections.orders).get();
+  final orders = await FirebaseFirestore.instance
+      .collection(Collections.orders)
+      .where(OrderFields.orderStatus)
+      .get();
+  return orders.docs.reversed
+      .map((order) => order as DocumentSnapshot)
+      .toList();
+}
+
+Future<List<DocumentSnapshot>> getAllUncompletedOrderDocs() async {
+  final orders = await FirebaseFirestore.instance
+      .collection(Collections.orders)
+      .where(OrderFields.orderStatus, isNotEqualTo: OrderStatuses.completed)
+      .get();
+  return orders.docs.reversed
+      .map((order) => order as DocumentSnapshot)
+      .toList();
+}
+
+Future<List<DocumentSnapshot>> getAllCompletedOrderDocs() async {
+  final orders = await FirebaseFirestore.instance
+      .collection(Collections.orders)
+      .where(OrderFields.orderStatus, isEqualTo: OrderStatuses.completed)
+      .get();
   return orders.docs.reversed
       .map((order) => order as DocumentSnapshot)
       .toList();
@@ -1009,7 +1058,7 @@ Future markOrderAsReadyForPickUp(BuildContext context, WidgetRef ref,
         .collection(Collections.orders)
         .doc(orderID)
         .update({OrderFields.orderStatus: OrderStatuses.forPickUp});
-    ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+    ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
     ref.read(ordersProvider).orderDocs.sort((a, b) {
       DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
       DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
@@ -1038,7 +1087,8 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
       OrderFields.orderStatus: OrderStatuses.pickedUp,
       OrderFields.datePickedUp: DateTime.now()
     });
-    ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+    ref.read(ordersProvider).setOrderDocs(
+        await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid));
     ref.read(ordersProvider).orderDocs.sort((a, b) {
       DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
       DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
@@ -1064,7 +1114,7 @@ Future markOrderAsCompleted(BuildContext context, WidgetRef ref,
         .collection(Collections.orders)
         .doc(orderID)
         .update({OrderFields.orderStatus: OrderStatuses.completed});
-    ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
+    ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
     ref.read(ordersProvider).orderDocs.sort((a, b) {
       DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
       DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
@@ -1124,7 +1174,7 @@ Future reviewThisOrder(BuildContext context, WidgetRef ref,
     {required String orderID,
     required int rating,
     required TextEditingController reviewController,
-    Uint8List? reviewImageFile}) async {
+    required List<Uint8List> reviewImageBytesList}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   try {
@@ -1143,30 +1193,31 @@ Future reviewThisOrder(BuildContext context, WidgetRef ref,
       OrderFields.review: {
         ReviewFields.rating: rating,
         ReviewFields.review: reviewController.text.trim(),
-        ReviewFields.imageURL: ''
+        ReviewFields.imageURLs: []
       }
     });
-
-    if (reviewImageFile != null) {
+    List<dynamic> downloadURLs = [];
+    for (var imageByte in reviewImageBytesList) {
       final storageRef = FirebaseStorage.instance
           .ref()
           .child(StorageFields.reviews)
-          .child('${orderID}.png');
-      final uploadTask = storageRef.putData(reviewImageFile);
+          .child(orderID)
+          .child('${generateRandomHexString(6)}.png');
+      final uploadTask = storageRef.putData(imageByte);
       final taskSnapshot = await uploadTask;
       final downloadURL = await taskSnapshot.ref.getDownloadURL();
-
-      await FirebaseFirestore.instance
-          .collection(Collections.orders)
-          .doc(orderID)
-          .update({
-        OrderFields.review: {
-          ReviewFields.rating: rating,
-          ReviewFields.review: reviewController.text.trim(),
-          ReviewFields.imageURL: downloadURL
-        }
-      });
+      downloadURLs.add(downloadURL);
     }
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.review: {
+        ReviewFields.rating: rating,
+        ReviewFields.review: reviewController.text.trim(),
+        ReviewFields.imageURLs: downloadURLs
+      }
+    });
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid));
     ref.read(ordersProvider).orderDocs.sort((a, b) {

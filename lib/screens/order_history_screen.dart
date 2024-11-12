@@ -33,7 +33,7 @@ class OrderHistoryScreen extends ConsumerStatefulWidget {
 class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   double initialRating = 5;
   final feedbackController = TextEditingController();
-  Uint8List? reviewImageBytes;
+  List<Uint8List>? reviewImageBytesList = [];
 
   @override
   void initState() {
@@ -176,19 +176,33 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                             fontSize: 14),
                         quicksandWhiteRegular('Status: $orderStatus',
                             fontSize: 14),
-                        if (orderStatus == OrderStatuses.pickedUp &&
+                        if (orderStatus == OrderStatuses.completed &&
                             review.isNotEmpty)
                           Row(children: [
                             quicksandWhiteBold('Rating: ', fontSize: 14),
                             starRating(review[ReviewFields.rating],
                                 onUpdate: (newVal) {}, mayMove: false)
                           ])
-                        else if (orderStatus == OrderStatuses.pickedUp)
+                        else if (orderStatus == OrderStatuses.completed)
                           vertical10Pix(
                             child: ElevatedButton(
                                 onPressed: () => showRatingDialog(orderDoc),
                                 child: quicksandWhiteRegular('LEAVE REVIEW',
                                     fontSize: 12)),
+                          )
+                        else if (orderStatus == OrderStatuses.forPickUp)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              vertical10Pix(
+                                child: ElevatedButton(
+                                    onPressed: () => markOrderAsPickedUp(
+                                        context, ref, orderID: orderDoc.id),
+                                    child: quicksandWhiteRegular(
+                                        'MARK AS PICKED UP',
+                                        fontSize: 12)),
+                              ),
+                            ],
                           )
                       ],
                     ),
@@ -205,7 +219,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   void showRatingDialog(DocumentSnapshot orderDoc) {
     initialRating = 0;
     feedbackController.clear();
-    reviewImageBytes = null;
+    if (reviewImageBytesList != null) reviewImageBytesList!.clear();
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -213,7 +227,6 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
               builder: (context, setState) => AlertDialog(
                   content: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.5,
-                //height: MediaQuery.of(context).size.width * 0.3,
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
@@ -244,42 +257,74 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                   textInputType: TextInputType.multiline,
                                   displayPrefixIcon: null),
                             ),
-                            if (reviewImageBytes != null)
-                              Image.memory(reviewImageBytes!,
-                                  width: 200, height: 200),
+                            if (reviewImageBytesList != null &&
+                                reviewImageBytesList!.isNotEmpty)
+                              _selectedReviewImagesContainer(),
                             ElevatedButton(
                                 onPressed: () async {
-                                  final pickedFile =
-                                      await ImagePickerWeb.getImageAsBytes();
-                                  if (pickedFile == null) {
+                                  List<Uint8List>? pickedFiles =
+                                      await ImagePickerWeb
+                                          .getMultiImagesAsBytes();
+                                  if (pickedFiles == null) {
+                                    return;
+                                  }
+                                  if (reviewImageBytesList!.length +
+                                          pickedFiles.length >
+                                      3) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'You may only have up to three images.')));
                                     return;
                                   }
                                   setState(() {
-                                    reviewImageBytes = pickedFile;
+                                    reviewImageBytesList!.addAll(pickedFiles);
                                   });
                                 },
                                 child: quicksandWhiteRegular(
-                                    'ADD IMAGE (OPTIONAL)'))
+                                    'ADD IMAGES (OPTIONAL)'))
                           ],
                         ),
                       ),
                       const Gap(40),
-                      ElevatedButton(
-                          onPressed: () {
-                            reviewThisOrder(context, ref,
-                                orderID: orderDoc.id,
-                                rating: initialRating.toInt(),
-                                reviewController: feedbackController,
-                                reviewImageFile: reviewImageBytes);
-                          },
-                          child: all20Pix(
-                            child: quicksandWhiteBold('SUBMIT RATING',
-                                fontSize: 18),
-                          ))
+                      _submitReviewButton(orderDoc.id)
                     ],
                   ),
                 ),
               )),
             ));
+  }
+
+  Widget _selectedReviewImagesContainer() {
+    return Container(
+      color: CustomColors.emeraldGreen.withOpacity(0.4),
+      padding: EdgeInsets.all(12),
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: reviewImageBytesList!
+              .map(
+                (imageBytes) => selectedMemoryImageDisplay(imageBytes, () {
+                  setState(() {
+                    reviewImageBytesList!.remove(imageBytes);
+                  });
+                }),
+              )
+              .toList()),
+    );
+  }
+
+  Widget _submitReviewButton(String orderID) {
+    return ElevatedButton(
+        onPressed: () {
+          reviewThisOrder(context, ref,
+              orderID: orderID,
+              rating: initialRating.toInt(),
+              reviewController: feedbackController,
+              reviewImageBytesList: reviewImageBytesList!);
+        },
+        child: all20Pix(
+          child: quicksandWhiteBold('SUBMIT RATING', fontSize: 18),
+        ));
   }
 }

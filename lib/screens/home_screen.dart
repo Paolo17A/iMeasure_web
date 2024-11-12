@@ -1,18 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/string_util.dart';
+import 'package:imeasure/widgets/active_clients_widget.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 import 'package:imeasure/widgets/top_navigator_widget.dart';
+import 'package:intl/intl.dart';
+import 'package:pie_chart/pie_chart.dart' as pie;
 
 import '../providers/loading_provider.dart';
 import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
+import '../utils/quotation_dialog_util.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
@@ -26,14 +32,13 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   //  ADMIN
-  List<DocumentSnapshot> windowDocs = [];
+  List<DocumentSnapshot> itemDocs = [];
+  List<DocumentSnapshot> orderDocs = [];
   int usersCount = 0;
   int ordersCount = 0;
   double totalSales = 0;
   double monthlySales = 0;
-
-  //  GUEST
-  List<DocumentSnapshot> itemDocs = [];
+  Map<String, double> itemNameAndOrderMap = {};
 
   //  USER
   List<DocumentSnapshot> serviceDocs = [];
@@ -58,13 +63,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         String userType = userData[UserFields.userType];
         ref.read(userDataProvider).setUserType(userType);
         if (ref.read(userDataProvider).userType == UserTypes.admin) {
-          windowDocs = await getAllWindowDocs();
+          itemDocs = await getAllItemDocs();
           final users = await getAllClientDocs();
           usersCount = users.length;
 
-          final orders = await getAllOrderDocs();
-          ordersCount = orders.length;
-          for (var order in orders) {
+          orderDocs = await getAllOrderDocs();
+          ordersCount = orderDocs.length;
+          for (var order in orderDocs) {
             final orderData = order.data() as Map<dynamic, dynamic>;
             totalSales += orderData[OrderFields.quotation]
                 [QuotationFields.itemOverallPrice];
@@ -75,7 +80,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               monthlySales += orderData[OrderFields.quotation]
                   [QuotationFields.itemOverallPrice];
             }
+            String itemID = orderData[OrderFields.itemID];
+            DocumentSnapshot? itemDoc =
+                itemDocs.where((item) => item.id == itemID).firstOrNull;
+            if (itemDoc == null) continue;
+            final itemData = itemDoc.data() as Map<dynamic, dynamic>;
+            String name = itemData[ItemFields.name];
+            if (itemNameAndOrderMap.containsKey(name)) {
+              itemNameAndOrderMap[name] = itemNameAndOrderMap[name]! + 1;
+            } else {
+              itemNameAndOrderMap[name] = 1;
+            }
           }
+          // Calculate the total count
+          double total =
+              itemNameAndOrderMap.values.fold(0, (sum, value) => sum + value);
+
+          // Convert each count to a percentage
+          itemNameAndOrderMap.updateAll((key, value) => (value / total) * 100);
         } else if (ref.read(userDataProvider).userType == UserTypes.client) {
           serviceDocs = await getAllServiceGalleryDocs();
           serviceDocs.shuffle();
@@ -133,6 +155,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 _platformSummary(),
                 //windowsSummary(),
+                Gap(40),
+                horizontal5Percent(context,
+                    child: Column(children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _orderBreakdownPieChart(),
+                          _monthlyIncomeBarChart(),
+                        ],
+                      ),
+                      Gap(40),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _ordersContainer(),
+                          ActiveClientsWidget(),
+                        ],
+                      )
+                    ]))
               ],
             ),
           ),
@@ -188,72 +231,242 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Padding(
               padding: const EdgeInsets.all(40),
               child: quicksandWhiteBold(count, fontSize: countFontSize)),
-          Row(children: [quicksandWhiteRegular(label, fontSize: 16)])
+          Row(children: [quicksandWhiteRegular(label, fontSize: 16)]),
         ]));
   }
 
-  Widget windowsSummary() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-          border: Border.symmetric(horizontal: BorderSide(width: 3))),
-      child: windowDocs.isNotEmpty
-          ? all20Pix(
-              child: Wrap(
-                spacing: 60,
-                runSpacing: 60,
-                children:
-                    windowDocs.map((window) => _windowEntry(window)).toList(),
-              ),
-            )
-          : Center(
-              child: quicksandBlackBold('NO WINDOWS AVAILABLE'),
-            ),
+  Widget _orderBreakdownPieChart() {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.45,
+      child: Column(
+        children: [
+          quicksandWhiteBold('Sales', fontSize: 20),
+          if (itemNameAndOrderMap.isNotEmpty)
+            pie.PieChart(
+                dataMap: itemNameAndOrderMap,
+                chartRadius: 300,
+                animationDuration: Duration.zero,
+                legendOptions: pie.LegendOptions(
+                    legendPosition: pie.LegendPosition.right,
+                    legendTextStyle:
+                        GoogleFonts.quicksand(color: Colors.white)),
+                chartValuesOptions: const pie.ChartValuesOptions(
+                    decimalPlaces: 2, showChartValuesInPercentage: true))
+          else
+            quicksandWhiteBold('NO ORDERS HAVE BEEN MADE YET')
+        ],
+      ),
     );
   }
 
-  Widget _windowEntry(DocumentSnapshot windowDoc) {
-    final windowData = windowDoc.data() as Map<dynamic, dynamic>;
-    String name = windowData[WindowFields.name];
-    String imageURL = windowData[WindowFields.imageURL];
-    return SizedBox(
-      width: 250,
+  Widget _monthlyIncomeBarChart() {
+    Map<int, double> orderSpots = {};
+    for (int i = 1; i < 13; i++) {
+      orderSpots[i] = 0;
+    }
+    for (var orderDoc in orderDocs) {
+      final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+      DateTime dateCreated =
+          (orderData[OrderFields.dateCreated] as Timestamp).toDate();
+      int month = dateCreated.month;
+      orderSpots[month] = orderSpots[month]! + 1;
+    }
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.2,
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              quicksandBlackBold('$name total sales: '),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  quicksandBlackBold('('),
-                  FutureBuilder(
-                    future: getAllItemOrderDocs(windowDoc.id),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting ||
-                          !snapshot.hasData ||
-                          snapshot.hasError) return snapshotHandler(snapshot);
-                      final windowCount = snapshot.data!.length;
-                      return quicksandRedBold(windowCount.toString());
-                    },
-                  ),
-                  quicksandBlackBold(')'),
-                ],
-              ),
-            ],
-          ),
-          Gap(4),
+          quicksandWhiteBold('Monthly Sales'),
+          Gap(20),
           Container(
-            width: 250,
-            height: 250,
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: NetworkImage(imageURL), fit: BoxFit.cover)),
+            height: 275,
+            child: LineChart(
+                LineChartData(
+                    lineBarsData: [
+                      LineChartBarData(
+                          spots: orderSpots.entries
+                              .map((e) =>
+                                  FlSpot(e.key.toDouble(), e.value.toDouble()))
+                              .toList(),
+                          color: CustomColors.emeraldGreen),
+                    ],
+                    gridData: const FlGridData(
+                        show: true, verticalInterval: 1, horizontalInterval: 1),
+                    titlesData: const FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 32,
+                          interval: 3,
+                          getTitlesWidget: bottomTitleWidgets,
+                        ),
+                      ),
+                      rightTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          getTitlesWidget: leftTitleWidgets,
+                          showTitles: true,
+                          interval: 1,
+                          reservedSize: 22,
+                        ),
+                      ),
+                    ),
+                    borderData: FlBorderData(
+                        show: true,
+                        border: const Border(
+                            bottom:
+                                BorderSide(color: Colors.blueGrey, width: 4))),
+                    minX: 1,
+                    maxX: DateTime.now().month + 1,
+                    minY: 0,
+                    maxY: 20),
+                duration: Duration.zero),
           ),
         ],
       ),
     );
+  }
+
+  Widget _ordersContainer() {
+    List<DocumentSnapshot> recentOrders = orderDocs.where((order) {
+      final orderData = order.data() as Map<dynamic, dynamic>;
+      DateTime dateOrdered =
+          (orderData[OrderFields.dateCreated] as Timestamp).toDate();
+      Duration difference = DateTime.now().difference(dateOrdered);
+      return difference.inDays.abs() < 7;
+    }).toList();
+    recentOrders = recentOrders.take(6).toList();
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.45,
+      decoration: BoxDecoration(border: Border.all(color: Colors.white)),
+      child: Column(
+        children: [
+          quicksandWhiteBold('RECENT ORDERS'),
+          _ordersLabelRow(),
+          recentOrders.isNotEmpty
+              ? _orderEntries(recentOrders)
+              : viewContentUnavailable(context, text: 'NO RECENT ORDERS'),
+        ],
+      ),
+    );
+  }
+
+  Widget _ordersLabelRow() {
+    return viewContentLabelRow(context, children: [
+      viewFlexLabelTextCell('Buyer', 2),
+      viewFlexLabelTextCell('Date Ordered', 2),
+      viewFlexLabelTextCell('Item', 2),
+      viewFlexLabelTextCell('Cost', 2),
+      viewFlexLabelTextCell('Status', 2),
+      viewFlexLabelTextCell('Quotation', 2),
+    ]);
+  }
+
+  Widget _orderEntries(List<DocumentSnapshot> recentOrders) {
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: recentOrders.length,
+        itemBuilder: (context, index) {
+          final orderData = recentOrders[index].data() as Map<dynamic, dynamic>;
+          String clientID = orderData[OrderFields.clientID];
+          String windowID = orderData[OrderFields.itemID];
+          String status = orderData[OrderFields.orderStatus];
+          DateTime dateCreated =
+              (orderData[OrderFields.dateCreated] as Timestamp).toDate();
+          num itemOverallPrice = orderData[OrderFields.quotation]
+              [QuotationFields.itemOverallPrice];
+
+          Map<String, dynamic> quotation =
+              orderData[OrderFields.quotation] ?? [];
+
+          return FutureBuilder(
+              future: getThisUserDoc(clientID),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting ||
+                    !snapshot.hasData ||
+                    snapshot.hasError) return Container();
+
+                final clientData =
+                    snapshot.data!.data() as Map<dynamic, dynamic>;
+                String formattedName =
+                    '${clientData[UserFields.firstName]} ${clientData[UserFields.lastName]}';
+
+                return FutureBuilder(
+                    future: getThisItemDoc(windowID),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting ||
+                          !snapshot.hasData ||
+                          snapshot.hasError) return Container();
+
+                      final itemData =
+                          snapshot.data!.data() as Map<dynamic, dynamic>;
+                      String name = itemData[WindowFields.name];
+                      String itemType = itemData[ItemFields.itemType];
+                      Color entryColor = Colors.white;
+                      Color backgroundColor = Colors.transparent;
+                      List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
+                      return viewContentEntryRow(context, children: [
+                        viewFlexTextCell(formattedName,
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
+                        viewFlexTextCell(
+                            DateFormat('MMM dd, yyyy').format(dateCreated),
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
+                        viewFlexTextCell(name,
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
+                        viewFlexTextCell(
+                            'PHP ${formatPrice(itemOverallPrice.toDouble())}',
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
+                        viewFlexTextCell(status,
+                            flex: 2,
+                            backgroundColor: backgroundColor,
+                            textColor: entryColor),
+                        viewFlexActionsCell([
+                          if (itemType == ItemTypes.window ||
+                              itemType == ItemTypes.door)
+                            ElevatedButton(
+                                onPressed: () {
+                                  final mandatoryWindowFields =
+                                      quotation[QuotationFields.mandatoryMap];
+                                  final optionalWindowFields =
+                                      quotation[QuotationFields.optionalMap]
+                                          as List<dynamic>;
+                                  showCartQuotationDialog(context, ref,
+                                      totalOverallPayment: itemOverallPrice,
+                                      laborPrice:
+                                          quotation[QuotationFields.laborPrice],
+                                      mandatoryWindowFields:
+                                          mandatoryWindowFields,
+                                      optionalWindowFields:
+                                          optionalWindowFields,
+                                      width: quotation[QuotationFields.width],
+                                      height: quotation[QuotationFields.height],
+                                      imageURLs: imageURLs,
+                                      itemName: name);
+                                },
+                                child:
+                                    quicksandWhiteRegular('VIEW', fontSize: 12))
+                          else
+                            quicksandWhiteBold('N/A')
+                        ], flex: 2, backgroundColor: backgroundColor),
+                      ]);
+                    });
+                //  Item Variables
+              });
+          //  Client Variables
+        });
   }
 
   //============================================================================

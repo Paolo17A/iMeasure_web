@@ -28,7 +28,10 @@ class ViewSelectedUserScreen extends ConsumerStatefulWidget {
 class _ViewSelectedUserScreenState
     extends ConsumerState<ViewSelectedUserScreen> {
   String formattedName = '';
+  String mobileNumber = '';
+  String address = '';
   String profileImageURL = '';
+  String email = '';
 
   List<DocumentSnapshot> orderDocs = [];
 
@@ -59,6 +62,9 @@ class _ViewSelectedUserScreenState
         formattedName =
             '${selectedUserData[UserFields.firstName]} ${selectedUserData[UserFields.lastName]}';
         profileImageURL = selectedUserData[UserFields.profileImageURL];
+        mobileNumber = selectedUserData[UserFields.mobileNumber];
+        address = selectedUserData[UserFields.address];
+        email = selectedUserData[UserFields.email];
         orderDocs = await getAllClientOrderDocs(widget.userID);
         orderDocs.sort((a, b) {
           DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
@@ -96,7 +102,11 @@ class _ViewSelectedUserScreenState
                         context,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [_userDetails(), orderHistory()],
+                          children: [
+                            _userDetails(),
+                            Divider(color: CustomColors.lavenderMist),
+                            orderHistory()
+                          ],
                         ),
                       ),
                     ],
@@ -123,11 +133,22 @@ class _ViewSelectedUserScreenState
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      child: Column(children: [
-        buildProfileImage(profileImageURL: profileImageURL),
-        quicksandWhiteBold(formattedName, fontSize: 40),
-        Divider(color: CustomColors.lavenderMist)
-      ]),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildProfileImage(profileImageURL: profileImageURL, radius: 80),
+          Gap(28),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            quicksandWhiteBold(formattedName, fontSize: 32),
+            Gap(12),
+            quicksandWhiteRegular('Number: $mobileNumber', fontSize: 16),
+            vertical10Pix(
+                child:
+                    quicksandWhiteRegular('Address: $address', fontSize: 16)),
+            quicksandWhiteRegular('Email: $email', fontSize: 16),
+          ]),
+        ],
+      ),
     );
   }
 

@@ -232,7 +232,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         itemType != ItemTypes.rawMaterial
                             ? all20Pix(
                                 child: _showQuotationButton(
-                                    itemType, cartData[CartFields.quotation]))
+                                    itemType,
+                                    cartData[CartFields.quotation],
+                                    name,
+                                    imageURLs))
                             : Container()
                       ],
                     ),
@@ -310,8 +313,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     }
   }
 
-  Widget _showQuotationButton(
-      String itemType, Map<dynamic, dynamic> quotation) {
+  Widget _showQuotationButton(String itemType, Map<dynamic, dynamic> quotation,
+      String itemName, List<dynamic> imageURLs) {
     final mandatoryWindowFields = quotation[QuotationFields.mandatoryMap];
     final optionalWindowFields =
         quotation[QuotationFields.optionalMap] as List<dynamic>;
@@ -322,7 +325,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             mandatoryWindowFields: mandatoryWindowFields,
             optionalWindowFields: optionalWindowFields,
             width: quotation[QuotationFields.width],
-            height: quotation[QuotationFields.height]),
+            height: quotation[QuotationFields.height],
+            itemName: itemName,
+            imageURLs: imageURLs),
         child: quicksandWhiteRegular('VIEW\nQUOTATION', fontSize: 16));
   }
 

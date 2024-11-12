@@ -150,7 +150,7 @@ class _ViewPendingLaborScreenState
                       final itemData =
                           snapshot.data!.data() as Map<dynamic, dynamic>;
                       String name = itemData[WindowFields.name];
-
+                      List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
 
@@ -198,7 +198,9 @@ class _ViewPendingLaborScreenState
                                         mandatoryWindowFields,
                                     optionalWindowFields: optionalWindowFields,
                                     width: quotation[QuotationFields.width],
-                                    height: quotation[QuotationFields.height]);
+                                    height: quotation[QuotationFields.height],
+                                    itemName: name,
+                                    imageURLs: imageURLs);
                               },
                               child:
                                   quicksandWhiteRegular('VIEW', fontSize: 12))

@@ -63,6 +63,7 @@ class _SelectedWindowScreenState
       final goRouter = GoRouter.of(context);
       try {
         if (!hasLoggedInUser()) {
+          ref.read(loadingProvider).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }
@@ -190,12 +191,13 @@ class _SelectedWindowScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       child: Column(children: [
-        Image.network(
-          imageURLs.first,
-          width: 150,
-          height: 150,
-          fit: BoxFit.cover,
-        ),
+        if (imageURLs.isNotEmpty)
+          Image.network(
+            imageURLs.first,
+            width: 150,
+            height: 150,
+            fit: BoxFit.cover,
+          ),
         quicksandWhiteBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
         Gap(20),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -309,7 +311,7 @@ class _SelectedWindowScreenState
                                 textAlign: TextAlign.left),
                             quicksandWhiteRegular('Status: $status',
                                 fontSize: 12, textAlign: TextAlign.left),
-                            if (status == OrderStatuses.pickedUp &&
+                            if (status == OrderStatuses.completed &&
                                 review.isNotEmpty)
                               Row(children: [
                                 quicksandWhiteBold('Rating: ', fontSize: 14),
@@ -590,7 +592,7 @@ class _SelectedWindowScreenState
                   String clientID = orderData[OrderFields.clientID];
                   Map<String, dynamic> review = orderData[OrderFields.review];
                   num rating = review[ReviewFields.rating];
-                  String imageURL = review[ReviewFields.imageURL];
+                  List<dynamic> imageURLs = review[ReviewFields.imageURLs];
                   String reviewText = review[ReviewFields.review];
                   return all4Pix(
                     child: Container(
@@ -599,42 +601,57 @@ class _SelectedWindowScreenState
                             border: Border.all(color: Colors.white)),
                         padding: EdgeInsets.all(10),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  FutureBuilder(
-                                      future: getThisUserDoc(clientID),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState ==
-                                                ConnectionState.waiting ||
-                                            !snapshot.hasData ||
-                                            snapshot.hasError)
-                                          return Container();
-                                        final userData = snapshot.data!.data()
-                                            as Map<dynamic, dynamic>;
-                                        String formattedName =
-                                            '${userData[UserFields.firstName]} ${userData[UserFields.lastName]}';
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      FutureBuilder(
+                                          future: getThisUserDoc(clientID),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState ==
+                                                    ConnectionState.waiting ||
+                                                !snapshot.hasData ||
+                                                snapshot.hasError)
+                                              return Container();
+                                            final userData =
+                                                snapshot.data!.data()
+                                                    as Map<dynamic, dynamic>;
+                                            String formattedName =
+                                                '${userData[UserFields.firstName]} ${userData[UserFields.lastName]}';
 
-                                        return quicksandWhiteRegular(
-                                            formattedName);
-                                      }),
-                                  starRating(rating.toDouble(),
-                                      onUpdate: (val) {}, mayMove: false),
-                                  quicksandWhiteRegular(reviewText,
-                                      fontSize: 16),
-                                  if (imageURL.isNotEmpty)
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          image: DecorationImage(
-                                              image: NetworkImage(imageURL))),
-                                      child: quicksandWhiteRegular('N/A'),
-                                    )
-                                ]),
+                                            return quicksandWhiteRegular(
+                                                formattedName);
+                                          }),
+                                      starRating(rating.toDouble(),
+                                          onUpdate: (val) {}, mayMove: false),
+                                      quicksandWhiteRegular(reviewText,
+                                          fontSize: 16),
+                                    ]),
+                              ],
+                            ),
+                            if (imageURLs.isNotEmpty)
+                              Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: imageURLs
+                                      .map((imageURL) => all4Pix(
+                                            child: Container(
+                                                width: 80,
+                                                height: 80,
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                    image: DecorationImage(
+                                                        fit: BoxFit.cover,
+                                                        image: NetworkImage(
+                                                            imageURL)))),
+                                          ))
+                                      .toList())
                           ],
                         )),
                   );

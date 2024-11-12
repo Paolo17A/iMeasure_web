@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -679,4 +680,66 @@ Widget socialsFooter(BuildContext context) {
       ),
     ),
   );
+}
+
+Widget bottomTitleWidgets(double value, TitleMeta meta) {
+  const style = TextStyle(fontSize: 16, color: Colors.white);
+  Widget text;
+  switch (value.toInt()) {
+    case 1:
+      text = const Text('JAN', style: style);
+      break;
+    case 2:
+      text = const Text('FEB', style: style);
+      break;
+    case 3:
+      text = const Text('MARCH', style: style);
+      break;
+    case 4:
+      text = const Text('APRIL', style: style);
+      break;
+    case 5:
+      text = const Text('MAY', style: style);
+      break;
+    case 6:
+      text = const Text('JUNE', style: style);
+      break;
+    case 7:
+      text = const Text('JULY', style: style);
+      break;
+    case 8:
+      text = const Text('AUG', style: style);
+      break;
+    case 9:
+      text = const Text('SEPT', style: style);
+      break;
+    case 10:
+      text = const Text('OCT', style: style);
+      break;
+    case 11:
+      text = const Text('NOW', style: style);
+      break;
+    case 12:
+      text = const Text('DEC', style: style);
+      break;
+    default:
+      text = const Text('');
+      break;
+  }
+
+  return SideTitleWidget(
+    axisSide: meta.axisSide,
+    space: 10,
+    child: text,
+  );
+}
+
+Widget leftTitleWidgets(double value, TitleMeta meta) {
+  const style =
+      TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white);
+  String text = value.toString();
+
+  return value % 4 == 0
+      ? Text(text, style: style, textAlign: TextAlign.center)
+      : Container();
 }

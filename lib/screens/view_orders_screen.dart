@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 
 import '../providers/loading_provider.dart';
 import '../providers/user_data_provider.dart';
+import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/quotation_dialog_util.dart';
@@ -25,6 +26,8 @@ class ViewOrdersScreen extends ConsumerStatefulWidget {
 }
 
 class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
+  String sortingMethod = 'DATE';
+  Map<String, String> orderIDandNameMap = {};
   @override
   void initState() {
     super.initState();
@@ -47,22 +50,10 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
           goRouter.goNamed(GoRoutes.home);
           return;
         }
-
-        ref.read(ordersProvider).setOrderDocs(await getAllOrderDocs());
-        for (var order in ref.read(ordersProvider).orderDocs) {
-          final orderData = order.data() as Map<dynamic, dynamic>;
-          if (!orderData.containsKey(OrderFields.review)) {
-            await FirebaseFirestore.instance
-                .collection(Collections.orders)
-                .doc(order.id)
-                .update({OrderFields.review: {}});
-          }
-        }
-        ref.read(ordersProvider).orderDocs.sort((a, b) {
-          DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
-          DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
-          return bTime.compareTo(aTime);
-        });
+        ref
+            .read(ordersProvider)
+            .setOrderDocs(await getAllUncompletedOrderDocs());
+        ref.read(ordersProvider).sortOrdersByDate();
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -102,12 +93,45 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   Widget _ordersHeader() {
     return vertical20Pix(
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          quicksandWhiteBold('Orders: ', fontSize: 28),
-          Gap(4),
-          quicksandCoralRedBold(
-              ref.read(ordersProvider).orderDocs.length.toString(),
-              fontSize: 28)
+          // Orders Label
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              quicksandWhiteBold('Orders: ', fontSize: 28),
+              Gap(4),
+              quicksandCoralRedBold(
+                  ref.read(ordersProvider).orderDocs.length.toString(),
+                  fontSize: 28)
+            ],
+          ),
+          // Sorting pop-up
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              quicksandWhiteBold('Sort:'),
+              PopupMenuButton(
+                  color: CustomColors.forestGreen,
+                  iconColor: Colors.white,
+                  onSelected: (value) {
+                    if (value == 'NAME') {
+                      ref
+                          .read(ordersProvider)
+                          .sortOrdersByClientName(orderIDandNameMap);
+                    } else if (value == 'DATE') {
+                      ref.read(ordersProvider).sortOrdersByDate();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                        PopupMenuItem(
+                            value: 'NAME', child: quicksandWhiteBold('Name')),
+                        PopupMenuItem(
+                            value: 'DATE',
+                            child: quicksandWhiteBold('Date Ordered')),
+                      ]),
+            ],
+          )
         ],
       ),
     );
@@ -136,6 +160,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   }
 
   Widget _orderEntries() {
+    orderIDandNameMap.clear();
     return ListView.builder(
         shrinkWrap: true,
         itemCount: ref.read(ordersProvider).orderDocs.length,
@@ -165,6 +190,9 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                 String formattedName =
                     '${clientData[UserFields.firstName]} ${clientData[UserFields.lastName]}';
 
+                orderIDandNameMap.addAll({
+                  ref.read(ordersProvider).orderDocs[index].id: formattedName
+                });
                 return FutureBuilder(
                     future: getThisItemDoc(windowID),
                     builder: (context, snapshot) {
@@ -178,7 +206,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                       String itemType = itemData[ItemFields.itemType];
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
-
+                      List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
                       return viewContentEntryRow(context, children: [
                         viewFlexTextCell(formattedName,
                             flex: 2,
@@ -272,8 +300,9 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                       optionalWindowFields:
                                           optionalWindowFields,
                                       width: quotation[QuotationFields.width],
-                                      height:
-                                          quotation[QuotationFields.height]);
+                                      height: quotation[QuotationFields.height],
+                                      imageURLs: imageURLs,
+                                      itemName: name);
                                 },
                                 child:
                                     quicksandWhiteRegular('VIEW', fontSize: 12))

@@ -59,7 +59,11 @@ class _SelectedRawMaterialScreenState
         imageURLs = itemData[ItemFields.imageURLs];
 
         orderDocs = await getAllItemOrderDocs(widget.itemID);
-
+        orderDocs.sort((a, b) {
+          DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
+          DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
+          return bTime.compareTo(aTime);
+        });
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -119,12 +123,13 @@ class _SelectedRawMaterialScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       child: Column(children: [
-        Image.network(
-          imageURLs.first,
-          width: 150,
-          height: 150,
-          fit: BoxFit.cover,
-        ),
+        if (imageURLs.isNotEmpty)
+          Image.network(
+            imageURLs.first,
+            width: 150,
+            height: 150,
+            fit: BoxFit.cover,
+          ),
         quicksandWhiteBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
         Divider(color: CustomColors.lavenderMist)
       ]),
@@ -202,7 +207,7 @@ class _SelectedRawMaterialScreenState
                         fontSize: 12),
                     quicksandWhiteRegular('Status: $status', fontSize: 12)
                   ])),
-                  if (status == OrderStatuses.pickedUp && review.isNotEmpty)
+                  if (status == OrderStatuses.completed && review.isNotEmpty)
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       quicksandWhiteBold('Rating: ', fontSize: 14),
                       starRating(review[ReviewFields.rating],

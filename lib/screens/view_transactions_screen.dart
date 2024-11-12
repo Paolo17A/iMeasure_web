@@ -36,13 +36,14 @@ class _ViewTransactionsScreenState
       final goRouter = GoRouter.of(context);
       try {
         if (!hasLoggedInUser()) {
+          ref.read(loadingProvider).toggleLoading(false);
           goRouter.goNamed(GoRoutes.home);
           return;
         }
 
         ref
             .read(transactionsProvider)
-            .setTransactionDocs(await getAllTransactionDocs());
+            .setTransactionDocs(await getAllUnverifiedTransactionDocs());
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -171,10 +172,60 @@ class _ViewTransactionsScreenState
                         Container(
                           decoration: BoxDecoration(
                               border: Border.all(color: Colors.white)),
-                          child: TextButton(
-                              onPressed: () =>
-                                  launchThisURL(context, proofOfPayment),
-                              child: quicksandWhiteBold('DOWNLOAD')),
+                          child: IconButton(
+                              onPressed: () {
+                                //launchThisURL(context, proofOfPayment);
+                                showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (_) => Dialog(
+                                          child: SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.4,
+                                            child: SingleChildScrollView(
+                                                child: Column(children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  TextButton(
+                                                      onPressed: () =>
+                                                          GoRouter.of(context)
+                                                              .pop(),
+                                                      child: quicksandBlackBold(
+                                                          'X'))
+                                                ],
+                                              ),
+                                              Container(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.3,
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.3,
+                                                decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                        fit: BoxFit.contain,
+                                                        image: NetworkImage(
+                                                            proofOfPayment))),
+                                              ),
+                                              vertical20Pix(
+                                                  child: ElevatedButton(
+                                                      onPressed: () =>
+                                                          launchThisURL(context,
+                                                              proofOfPayment),
+                                                      child: quicksandWhiteBold(
+                                                          'DOWNLOAD')))
+                                            ])),
+                                          ),
+                                        ));
+                              },
+                              icon: Icon(Icons.visibility_outlined,
+                                  color: Colors.white)),
                         )
                       ], flex: 2, backgroundColor: backgroundColor),
                       viewFlexActionsCell([
