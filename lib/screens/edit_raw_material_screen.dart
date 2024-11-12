@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -63,11 +65,16 @@ class _EditRawMaterialScreenState extends ConsumerState<EditRawMaterialScreen> {
     });
   }
 
-  Future<void> _pickLogoImage() async {
-    final pickedFile = await ImagePickerWeb.getImageAsBytes();
-    if (pickedFile != null) {
-      ref.read(uploadedImageProvider.notifier).addImage(pickedFile);
+  Future<void> _pickImages() async {
+    List<Uint8List>? pickedFiles = await ImagePickerWeb.getMultiImagesAsBytes();
+    if (ref.read(uploadedImageProvider).uploadedImages.length +
+            pickedFiles!.length >
+        5) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('You may only upload a maximum of 5 images.')));
+      return;
     }
+    ref.read(uploadedImageProvider.notifier).addImages(pickedFiles);
   }
 
   @override
@@ -180,7 +187,7 @@ class _EditRawMaterialScreenState extends ConsumerState<EditRawMaterialScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
+                uploadImageButton('UPLOAD IMAGES', _pickImages),
                 Wrap(children: [
                   if (!ref.read(loadingProvider).isLoading &&
                       imageURLs.isNotEmpty)

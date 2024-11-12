@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -112,11 +114,18 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
     });
   }
 
-  Future<void> _pickLogoImage() async {
-    final pickedFile = await ImagePickerWeb.getImageAsBytes();
-    if (pickedFile != null) {
-      ref.read(uploadedImageProvider).addImage(pickedFile);
+  Future<void> _pickImages() async {
+    List<Uint8List>? pickedFiles = await ImagePickerWeb.getMultiImagesAsBytes();
+    if (pickedFiles == null) return;
+    if (imageURLs.length +
+            ref.read(uploadedImageProvider).uploadedImages.length +
+            pickedFiles.length >
+        5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('You may only have a maximum of 5 images.')));
+      return;
     }
+    ref.read(uploadedImageProvider).addImages(pickedFiles);
   }
 
   @override
@@ -240,8 +249,13 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
               'N/A',
               AvailableModels.series38,
               AvailableModels.series798,
-              AvailableModels.series900
-            ], '', false),
+              AvailableModels.series900,
+              AvailableModels.series38Awning,
+              AvailableModels.series38w1Panel,
+              AvailableModels.series38w2Panel,
+              AvailableModels.series798w2Panel,
+              AvailableModels.series798w4Panel
+            ], correspondingModel, false),
           ),
         ],
       ),
@@ -437,7 +451,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
+                uploadImageButton('UPLOAD IMAGES', _pickImages),
                 Wrap(children: [
                   if (!ref.read(loadingProvider).isLoading &&
                       imageURLs.isNotEmpty)

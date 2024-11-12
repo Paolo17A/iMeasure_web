@@ -73,6 +73,12 @@ class AvailableModels {
   static const String series798 = '798 Series';
   static const String series900 = '900 Series';
   static const String series38 = '38 Series';
+  static const String series38w1Panel = '38 Series 1 Panel';
+  static const String series38w2Panel = '38 Series 2 Panels';
+  static const String series38Awning = '38 Series Awning';
+  static const String series798w2Panel = '798 Series 2 Panels';
+  static const String series798w4Panel = '798 Series 4 Panels';
+  static const String series900Door = '900 Series Door';
 }
 
 class ItemTypes {

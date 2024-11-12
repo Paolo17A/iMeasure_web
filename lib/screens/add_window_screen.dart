@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -64,11 +66,16 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
     });
   }
 
-  Future<void> _pickLogoImage() async {
-    final pickedFile = await ImagePickerWeb.getImageAsBytes();
-    if (pickedFile != null) {
-      ref.read(uploadedImageProvider.notifier).addImage(pickedFile);
+  Future<void> _pickImages() async {
+    List<Uint8List>? pickedFiles = await ImagePickerWeb.getMultiImagesAsBytes();
+    if (ref.read(uploadedImageProvider).uploadedImages.length +
+            pickedFiles!.length >
+        5) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('You may only upload a maximum of 5 images.')));
+      return;
     }
+    ref.read(uploadedImageProvider.notifier).addImages(pickedFiles);
   }
 
   @override
@@ -274,7 +281,12 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
               'N/A',
               AvailableModels.series38,
               AvailableModels.series798,
-              AvailableModels.series900
+              AvailableModels.series900,
+              AvailableModels.series38Awning,
+              AvailableModels.series38w1Panel,
+              AvailableModels.series38w2Panel,
+              AvailableModels.series798w2Panel,
+              AvailableModels.series798w4Panel
             ], 'Select a corresponding 3D model', false),
           ),
         ],
@@ -291,13 +303,21 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
-                if (ref.read(uploadedImageProvider).uploadedImage != null)
-                  vertical10Pix(
-                      child: selectedMemoryImageDisplay(
-                          ref.read(uploadedImageProvider).uploadedImage, () {
-                    ref.read(uploadedImageProvider).removeImage();
-                  }))
+                uploadImageButton('UPLOAD IMAGES', _pickImages),
+                if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty)
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: ref
+                          .read(uploadedImageProvider)
+                          .uploadedImages
+                          .map((imageBytes) => all10Pix(
+                                  child: selectedMemoryImageDisplay(imageBytes,
+                                      () {
+                                ref
+                                    .read(uploadedImageProvider)
+                                    .removeImageFromList(imageBytes!);
+                              })))
+                          .toList())
               ],
             ),
           ],
