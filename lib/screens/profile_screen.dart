@@ -82,7 +82,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   Divider(),
                   horizontal5Percent(context,
                       child: Column(
-                        children: [_profileDataWidgets(), _actionButtons()],
+                        children: [
+                          _profileDataWidgets(),
+                          _actionButtons(),
+                          Gap(360),
+                          socialsFooter(context)
+                        ],
                       ))
                 ],
               ),
@@ -152,6 +157,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   right: 10, top: 10, child: pendingPickUpOrdersStreamBuilder())
             ],
           ),
+          submitButton(context,
+              label: 'COMPLETED',
+              onPress: () =>
+                  GoRouter.of(context).goNamed(GoRoutes.completedOrders)),
           Gap(16),
           ElevatedButton(
               onPressed: () {

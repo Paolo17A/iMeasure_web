@@ -169,16 +169,20 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   }
 
   Widget _windowDetails() {
+    List<dynamic> otherImages = [];
+    if (imageURLs.length > 1) otherImages = imageURLs.sublist(1);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       child: Column(children: [
-        Image.network(
-          imageURLs.first,
-          width: 150,
-          height: 150,
-          fit: BoxFit.cover,
-        ),
+        Image.network(imageURLs.first,
+            width: 150, height: 150, fit: BoxFit.cover),
+        Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: otherImages
+                .map((otherImage) =>
+                    all10Pix(child: square80NetworkImage(otherImage)))
+                .toList()),
         quicksandWhiteBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
         Gap(20),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -338,15 +342,27 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   }
 
   Widget _itemImage() {
+    List<dynamic> otherImages = [];
+    if (imageURLs.length > 1) otherImages = imageURLs.sublist(1);
     return Flexible(
-        child: imageURLs.isNotEmpty
+        child: Column(
+      children: [
+        imageURLs.isNotEmpty
             ? square300NetworkImage(imageURLs.first)
             : Container(
                 width: 300,
                 height: 300,
                 decoration:
                     BoxDecoration(border: Border.all(color: Colors.white)),
-              ));
+              ),
+        Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: otherImages
+                .map((otherImage) =>
+                    all10Pix(child: square80NetworkImage(otherImage)))
+                .toList())
+      ],
+    ));
   }
 
   Widget _itemFieldInputs() {

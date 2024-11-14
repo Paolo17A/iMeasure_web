@@ -57,14 +57,10 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
           goRouter.goNamed(GoRoutes.home);
           return;
         }
-        ref.read(ordersProvider).setOrderDocs(await getAllClientOrderDocs(
-            FirebaseAuth.instance.currentUser!.uid));
-
-        ref.read(ordersProvider).orderDocs.sort((a, b) {
-          DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
-          DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
-          return bTime.compareTo(aTime);
-        });
+        ref.read(ordersProvider).setOrderDocs(
+            await getAllClientUncompletedOrderDocs(
+                FirebaseAuth.instance.currentUser!.uid));
+        ref.read(ordersProvider).sortOrdersByDate();
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);
@@ -144,74 +140,90 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
           //String itemType = itemData[ItemFields.itemType];
           List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
           String name = itemData[ItemFields.name];
-          return Container(
-            width: 400,
-            height: 200,
-            decoration: BoxDecoration(border: Border.all(color: Colors.white)),
-            padding: EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                    width: 150,
-                    height: 170,
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: NetworkImage(imageURLs.first),
-                            fit: BoxFit.cover))),
-                Gap(12),
-                Column(
+          return Stack(
+            children: [
+              Container(
+                width: 400,
+                height: 200,
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.white)),
+                padding: EdgeInsets.all(12),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Container(
+                        width: 150,
+                        height: 170,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(imageURLs.first),
+                                fit: BoxFit.cover))),
+                    Gap(12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        quicksandWhiteBold(name),
-                        quicksandWhiteRegular('Quantity: $quantity',
-                            fontSize: 14),
-                        quicksandWhiteRegular(
-                            'Date Ordered: ${DateFormat('MMM dd, yyyy').format(dateCreated)}',
-                            fontSize: 14),
-                        quicksandWhiteRegular('Status: $orderStatus',
-                            fontSize: 14),
-                        if (orderStatus == OrderStatuses.completed &&
-                            review.isNotEmpty)
-                          Row(children: [
-                            quicksandWhiteBold('Rating: ', fontSize: 14),
-                            starRating(review[ReviewFields.rating],
-                                onUpdate: (newVal) {}, mayMove: false)
-                          ])
-                        else if (orderStatus == OrderStatuses.completed)
-                          vertical10Pix(
-                            child: ElevatedButton(
-                                onPressed: () => showRatingDialog(orderDoc),
-                                child: quicksandWhiteRegular('LEAVE REVIEW',
-                                    fontSize: 12)),
-                          )
-                        else if (orderStatus == OrderStatuses.forPickUp)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            quicksandWhiteBold(name),
+                            quicksandWhiteRegular('Quantity: $quantity',
+                                fontSize: 14),
+                            quicksandWhiteRegular(
+                                'Date Ordered: ${DateFormat('MMM dd, yyyy').format(dateCreated)}',
+                                fontSize: 14),
+                            quicksandWhiteRegular('Status: $orderStatus',
+                                fontSize: 14),
+                            if (orderStatus == OrderStatuses.completed &&
+                                review.isNotEmpty)
+                              Row(children: [
+                                quicksandWhiteBold('Rating: ', fontSize: 14),
+                                starRating(review[ReviewFields.rating],
+                                    onUpdate: (newVal) {}, mayMove: false)
+                              ])
+                            else if (orderStatus == OrderStatuses.completed)
                               vertical10Pix(
                                 child: ElevatedButton(
-                                    onPressed: () => markOrderAsPickedUp(
-                                        context, ref, orderID: orderDoc.id),
-                                    child: quicksandWhiteRegular(
-                                        'MARK AS PICKED UP',
+                                    onPressed: () => showRatingDialog(orderDoc),
+                                    child: quicksandWhiteRegular('LEAVE REVIEW',
                                         fontSize: 12)),
-                              ),
-                            ],
-                          )
+                              )
+                            else if (orderStatus == OrderStatuses.forPickUp)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  vertical10Pix(
+                                    child: ElevatedButton(
+                                        onPressed: () => markOrderAsPickedUp(
+                                            context, ref, orderID: orderDoc.id),
+                                        child: quicksandWhiteRegular(
+                                            'MARK AS PICKED UP',
+                                            fontSize: 12)),
+                                  ),
+                                ],
+                              )
+                          ],
+                        ),
+                        quicksandWhiteBold(
+                            'PHP ${formatPrice(itemOverallPrice * quantity.toDouble())}')
                       ],
-                    ),
-                    quicksandWhiteBold(
-                        'PHP ${formatPrice(itemOverallPrice * quantity.toDouble())}')
+                    )
                   ],
-                )
-              ],
-            ),
+                ),
+              ),
+              if ((orderStatus == OrderStatuses.forPickUp) ||
+                  (orderStatus == OrderStatuses.completed && review.isEmpty))
+                Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle, color: Colors.red),
+                    ))
+            ],
           );
         });
   }

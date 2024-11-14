@@ -130,6 +130,12 @@ Future logInUser(BuildContext context, WidgetRef ref,
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .update({UserFields.password: passwordController.text});
     }
+    if (userData[UserFields.email] != emailController.text) {
+      await FirebaseFirestore.instance
+          .collection(Collections.users)
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({UserFields.email: emailController.text});
+    }
     if (userData[UserFields.userType] == UserTypes.client) {
       await FirebaseFirestore.instance
           .collection(Collections.users)
@@ -219,7 +225,8 @@ Future editUserProfile(BuildContext context, WidgetRef ref,
     {required TextEditingController firstNameController,
     required TextEditingController lastNameController,
     required TextEditingController addressController,
-    required TextEditingController mobileNumberController}) async {
+    required TextEditingController mobileNumberController,
+    required TextEditingController emailAddressController}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   try {
@@ -250,6 +257,19 @@ Future editUserProfile(BuildContext context, WidgetRef ref,
       UserFields.address: addressController.text.trim(),
       UserFields.mobileNumber: mobileNumberController.text.trim()
     });
+    final userDoc = await getCurrentUserDoc();
+    final userData = userDoc.data() as Map<dynamic, dynamic>;
+    if (emailAddressController.text != userData[UserFields.email]) {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: userData[UserFields.email],
+          password: userData[UserFields.password]);
+      await FirebaseAuth.instance.currentUser!
+          .verifyBeforeUpdateEmail(emailAddressController.text.trim());
+
+      scaffoldMessenger.showSnackBar(SnackBar(
+          content: Text(
+              'A verification email has been sent to the new email address')));
+    }
     ref.read(loadingProvider).toggleLoading(false);
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully edited your profile.')));
@@ -951,6 +971,35 @@ Future<List<DocumentSnapshot>> getAllClientOrderDocs(String clientID) async {
   return orders.docs.map((order) => order as DocumentSnapshot).toList();
 }
 
+Future<List<DocumentSnapshot>> getAllClientUncompletedOrderDocs(
+    String clientID) async {
+  final orders = await FirebaseFirestore.instance
+      .collection(Collections.orders)
+      .where(OrderFields.clientID, isEqualTo: clientID)
+      .get();
+  return orders.docs.where((order) {
+    final orderData = order.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> review = orderData[OrderFields.review];
+    return orderData[OrderFields.orderStatus] != OrderStatuses.completed ||
+        review.isEmpty;
+  }).toList();
+}
+
+Future<List<DocumentSnapshot>> getAllClientCompletedOrderDocs(
+    String clientID) async {
+  final orders = await FirebaseFirestore.instance
+      .collection(Collections.orders)
+      .where(OrderFields.clientID, isEqualTo: clientID)
+      .get();
+  return orders.docs.where((order) {
+    final orderData = order.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> review = orderData[OrderFields.review];
+
+    return orderData[OrderFields.orderStatus] == OrderStatuses.completed &&
+        review.isNotEmpty;
+  }).toList();
+}
+
 Future<List<DocumentSnapshot>> getAllItemOrderDocs(String itemID) async {
   final orders = await FirebaseFirestore.instance
       .collection(Collections.orders)
@@ -1089,11 +1138,7 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
     });
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid));
-    ref.read(ordersProvider).orderDocs.sort((a, b) {
-      DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
-      DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
-      return bTime.compareTo(aTime);
-    });
+    ref.read(ordersProvider).sortOrdersByDate();
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as picked up')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1219,7 +1264,8 @@ Future reviewThisOrder(BuildContext context, WidgetRef ref,
       }
     });
     ref.read(ordersProvider).setOrderDocs(
-        await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid));
+        await getAllClientUncompletedOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
     ref.read(ordersProvider).orderDocs.sort((a, b) {
       DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
       DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();

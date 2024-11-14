@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/providers/loading_provider.dart';
 import 'package:imeasure/utils/firebase_util.dart';
@@ -81,52 +82,45 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
     String name = itemData[ItemFields.name];
     String description = itemData[ItemFields.description];
     List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
+    List<dynamic> otherImages = [];
+    if (imageURLs.length > 1) otherImages = imageURLs.sublist(1);
     List<Widget> widgets = [
       GestureDetector(
-        onTap: () {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return Dialog(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.5,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+        onTap: () => displayImageDialog(imageURLs.first),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+                width: MediaQuery.of(context).size.width * 0.4,
+                height: MediaQuery.of(context).size.width * 0.3,
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: NetworkImage(imageURLs.first)))),
+            Gap(20),
+            Column(
+                children: otherImages
+                    .map((otherImage) => GestureDetector(
+                          onTap: () => displayImageDialog(otherImage),
+                          child: Column(
                             children: [
-                              TextButton(
-                                  onPressed: () => GoRouter.of(context).pop(),
-                                  child: quicksandBlackBold('X'))
+                              Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.09,
+                                  height:
+                                      MediaQuery.of(context).size.width * 0.09,
+                                  decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: NetworkImage(otherImage)))),
+                              Gap(MediaQuery.of(context).size.height * 0.01)
                             ],
                           ),
-                          vertical10Pix(
-                            child: Container(
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              height: MediaQuery.of(context).size.width * 0.3,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  border:
-                                      Border.all(width: 5, color: Colors.red),
-                                  image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: NetworkImage(imageURLs.first))),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              });
-        },
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.5,
-          height: MediaQuery.of(context).size.width * 0.3,
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  fit: BoxFit.cover, image: NetworkImage(imageURLs.first))),
+                        ))
+                    .toList())
+          ],
         ),
       ),
       Flexible(
@@ -146,5 +140,42 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: widgets.map((e) => e).toList(),
     ));
+  }
+
+  void displayImageDialog(String imageURL) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.5,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                            onPressed: () => GoRouter.of(context).pop(),
+                            child: quicksandBlackBold('X'))
+                      ],
+                    ),
+                    vertical10Pix(
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.4,
+                        height: MediaQuery.of(context).size.width * 0.3,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: NetworkImage(imageURL))),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
   }
 }

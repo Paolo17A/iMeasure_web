@@ -8,6 +8,7 @@ import 'package:imeasure/screens/add_service_screen.dart';
 import 'package:imeasure/screens/add_testimonial_screen.dart';
 import 'package:imeasure/screens/add_window_screen.dart';
 import 'package:imeasure/screens/cart_screen.dart';
+import 'package:imeasure/screens/completed_orders_screen.dart';
 import 'package:imeasure/screens/edit_door_screen.dart';
 import 'package:imeasure/screens/edit_portfolio_screen.dart';
 import 'package:imeasure/screens/edit_profile_screen.dart';
@@ -95,6 +96,7 @@ class GoRoutes {
   static const pendingLabor = 'pendingLabor';
   static const help = 'help';
   static const history = 'history';
+  static const completedOrders = 'completedOrders';
 }
 
 final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
@@ -360,6 +362,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.history,
             pageBuilder: (context, state) =>
                 customTransition(context, state, const HistoryScreen())),
+        GoRoute(
+            name: GoRoutes.completedOrders,
+            path: GoRoutes.completedOrders,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const CompletedOrdersScreen())),
       ])
 ]);
 

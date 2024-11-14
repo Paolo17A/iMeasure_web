@@ -77,6 +77,7 @@ class _SelectedWindowScreenState
         description = itemData[ItemFields.description];
         isAvailable = itemData[ItemFields.isAvailable];
         imageURLs = itemData[ItemFields.imageURLs];
+        print(imageURLs);
         minHeight = itemData[ItemFields.minHeight];
         maxHeight = itemData[ItemFields.maxHeight];
         minWidth = itemData[ItemFields.minWidth];
@@ -187,16 +188,30 @@ class _SelectedWindowScreenState
   }
 
   Widget _windowDetails() {
+    List<dynamic> otherImages = [];
+    if (imageURLs.length > 1) otherImages = imageURLs.sublist(1);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       child: Column(children: [
         if (imageURLs.isNotEmpty)
-          Image.network(
-            imageURLs.first,
-            width: 150,
-            height: 150,
-            fit: BoxFit.cover,
+          all4Pix(
+            child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Image.network(imageURLs.first,
+                      width: 210, height: 210, fit: BoxFit.cover),
+                  Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: otherImages
+                          .map((otherImage) => all4Pix(
+                                child: Image.network(otherImage,
+                                    width: 60, height: 60, fit: BoxFit.cover),
+                              ))
+                          .toList())
+                ]),
           ),
         quicksandWhiteBold('\t\tAVAILABLE: ${isAvailable ? 'YES' : 'NO'}'),
         Gap(20),
@@ -377,9 +392,22 @@ class _SelectedWindowScreenState
   }
 
   Widget _itemImage() {
+    List<dynamic> otherImages = [];
+    if (imageURLs.length > 1) otherImages = imageURLs.sublist(1);
     return Flexible(
         child: imageURLs.isNotEmpty
-            ? square300NetworkImage(imageURLs.first)
+            ? Column(
+                children: [
+                  square300NetworkImage(imageURLs.first),
+                  Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: otherImages
+                          .map((otherImage) =>
+                              all10Pix(child: square80NetworkImage(otherImage)))
+                          .toList())
+                ],
+              )
             : Container(
                 width: 300,
                 height: 300,

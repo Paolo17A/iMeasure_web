@@ -27,6 +27,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final lastNameController = TextEditingController();
   final mobileNumberController = TextEditingController();
   final addressController = TextEditingController();
+  final emailController = TextEditingController();
 
   @override
   void initState() {
@@ -137,6 +138,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               displayPrefixIcon:
                   const Icon(Icons.house, color: CustomColors.deepCharcoal),
             )),
+            vertical10Pix(
+                child: CustomTextField(
+              text: 'Email Address',
+              controller: emailController,
+              textInputType: TextInputType.emailAddress,
+              displayPrefixIcon:
+                  const Icon(Icons.email, color: CustomColors.deepCharcoal),
+            )),
             Divider(color: Colors.white),
             submitButton(context,
                 label: 'EDIT PROFILE',
@@ -144,7 +153,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     firstNameController: firstNameController,
                     lastNameController: lastNameController,
                     addressController: addressController,
-                    mobileNumberController: mobileNumberController)),
+                    mobileNumberController: mobileNumberController,
+                    emailAddressController: emailController)),
           ],
         ),
       ),

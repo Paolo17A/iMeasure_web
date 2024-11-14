@@ -212,6 +212,15 @@ Widget selectedMemoryImageDisplay(
   );
 }
 
+Widget square80NetworkImage(String url) {
+  return Container(
+    width: 80,
+    height: 80,
+    decoration: BoxDecoration(
+        image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover)),
+  );
+}
+
 Widget square300NetworkImage(String url) {
   return Container(
     width: 300,
@@ -558,21 +567,29 @@ StreamBuilder pendingPickUpOrdersStreamBuilder() {
         .collection(Collections.orders)
         .where(OrderFields.clientID,
             isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-        .where(OrderFields.orderStatus, isEqualTo: OrderStatuses.forPickUp)
         .snapshots(),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting ||
           !snapshot.hasData ||
           snapshot.hasError) return Container();
-      int availableCollectionCount = snapshot.data!.docs.length;
-      if (availableCollectionCount > 0)
+      List<DocumentSnapshot> filteredOrders = snapshot.data!.docs;
+      filteredOrders = filteredOrders.where((order) {
+        final orderData = order.data() as Map<dynamic, dynamic>;
+        String orderStatus = orderData[OrderFields.orderStatus];
+        Map<dynamic, dynamic> review = orderData[OrderFields.review];
+        return (orderStatus == OrderStatuses.forPickUp) ||
+            (orderStatus == OrderStatuses.completed && review.isEmpty);
+      }).toList();
+      //int availableCollectionCount = snapshot.data!.docs.length;
+
+      if (filteredOrders.length > 0)
         return Container(
           width: 24,
           height: 24,
           decoration: BoxDecoration(
               shape: BoxShape.circle, color: CustomColors.coralRed),
           child: Center(
-            child: quicksandWhiteRegular(availableCollectionCount.toString(),
+            child: quicksandWhiteRegular(filteredOrders.length.toString(),
                 fontSize: 12),
           ),
         );
