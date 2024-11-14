@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/main.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/utils/quotation_dialog_util.dart';
@@ -169,11 +170,22 @@ class _SelectedWindowScreenState
   Widget _backButton() {
     return all10Pix(
         child: Row(children: [
-      backButton(context,
-          onPress: () => GoRouter.of(context).goNamed(
-              ref.read(userDataProvider).userType == UserTypes.admin
-                  ? GoRoutes.windows
-                  : GoRoutes.shop))
+      backButton(context, onPress: () {
+        if (ref.read(userDataProvider).userType == UserTypes.admin) {
+          GoRouter.of(context).goNamed(GoRoutes.windows);
+        } else {
+          if (iMeasure.searchController.text.isNotEmpty) {
+            GoRouter.of(context).goNamed(GoRoutes.search, pathParameters: {
+              PathParameters.searchInput: iMeasure.searchController.text
+            });
+            GoRouter.of(context).pushNamed(GoRoutes.search, pathParameters: {
+              PathParameters.searchInput: iMeasure.searchController.text
+            });
+          } else {
+            GoRouter.of(context).goNamed(GoRoutes.shop);
+          }
+        }
+      })
     ]));
   }
 

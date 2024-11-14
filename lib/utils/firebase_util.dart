@@ -2,7 +2,6 @@
 //USERS=========================================================================
 //==============================================================================
 // ignore_for_file: unnecessary_cast
-
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -326,6 +325,20 @@ Future<List<DocumentSnapshot>> getSelectedItemDocs(
       .where(FieldPath.documentId, whereIn: itemIDs)
       .get();
   return items.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> searchForTheseItems(String input) async {
+  String searchInput = input.toLowerCase().trim();
+  print('searchInput: $searchInput');
+  final items =
+      await FirebaseFirestore.instance.collection(Collections.items).get();
+  List<DocumentSnapshot> filteredItems = items.docs.where((item) {
+    final itemData = item.data() as Map<dynamic, dynamic>;
+    String name = itemData[ItemFields.name].toString().toLowerCase();
+    String itemType = itemData[ItemFields.itemType].toString().toLowerCase();
+    return name.contains(searchInput) || itemType.contains(searchInput);
+  }).toList();
+  return filteredItems;
 }
 
 Future<List<DocumentSnapshot>> getAllWindowDocs() async {

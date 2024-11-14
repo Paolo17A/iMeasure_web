@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/main.dart';
 import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/utils/string_util.dart';
 import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
+import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
 import '../utils/go_router_util.dart';
@@ -88,6 +90,26 @@ PreferredSizeWidget topUserNavigator(BuildContext context,
                   ]),
                 ),
                 Row(mainAxisSize: MainAxisSize.min, children: [
+                  SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.35,
+                      child: CustomTextField(
+                          text: 'Search...',
+                          hasSearchButton: true,
+                          controller: iMeasure.searchController,
+                          textInputType: TextInputType.text,
+                          fillColor: Colors.white.withOpacity(0.8),
+                          onSearchPress: () {
+                            GoRouter.of(context).goNamed(GoRoutes.search,
+                                pathParameters: {
+                                  PathParameters.searchInput:
+                                      iMeasure.searchController.text
+                                });
+                            GoRouter.of(context).pushNamed(GoRoutes.search,
+                                pathParameters: {
+                                  PathParameters.searchInput:
+                                      iMeasure.searchController.text
+                                });
+                          })),
                   topNavigatorButton(context,
                       label: 'HOME',
                       thisPath: GoRoutes.home,

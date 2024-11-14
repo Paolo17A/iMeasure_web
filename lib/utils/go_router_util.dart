@@ -23,6 +23,7 @@ import 'package:imeasure/screens/login_screen.dart';
 import 'package:imeasure/screens/order_history_screen.dart';
 import 'package:imeasure/screens/profile_screen.dart';
 import 'package:imeasure/screens/register_screen.dart';
+import 'package:imeasure/screens/search_result_screen.dart';
 import 'package:imeasure/screens/shop_screen.dart';
 import 'package:imeasure/screens/view_doors_screen.dart';
 import 'package:imeasure/screens/view_gallery_screen.dart';
@@ -62,6 +63,7 @@ class GoRoutes {
   static const profile = 'profile';
   static const editProfile = 'editProfile';
   static const orderHistory = 'orderHistory';
+  static const search = 'search';
   //  ADMIN
   static const users = 'users';
   static const selectedUser = 'selectedUser';
@@ -156,6 +158,15 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.orderHistory,
             pageBuilder: (context, state) =>
                 customTransition(context, state, const OrderHistoryScreen())),
+        GoRoute(
+            name: GoRoutes.search,
+            path: '${GoRoutes.search}/:${PathParameters.searchInput}',
+            pageBuilder: (context, state) => customTransition(
+                context,
+                state,
+                SearchResultScreen(
+                    searchInput:
+                        state.pathParameters[PathParameters.searchInput]!))),
         GoRoute(
             name: GoRoutes.users,
             path: GoRoutes.users,

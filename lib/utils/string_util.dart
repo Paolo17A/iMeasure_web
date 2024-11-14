@@ -238,6 +238,7 @@ class PathParameters {
   static const String faqID = 'faqID';
   static const String orderID = 'orderID';
   static const String galleryID = 'galleryID';
+  static const String searchInput = 'searchInput';
 }
 
 String generateRandomHexString(int length) {

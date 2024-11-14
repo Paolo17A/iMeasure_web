@@ -86,13 +86,16 @@ class _LiliwECommerceTextFieldState extends State<CustomTextField> {
                             widget.textColor ?? Colors.black.withOpacity(0.6),
                       ))
                   : widget.hasSearchButton && widget.onSearchPress != null
-                      ? Transform.scale(
-                          scale: 0.95,
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 4),
                           child: ElevatedButton(
                               onPressed: () {
                                 if (widget.controller.text.isEmpty) return;
                                 widget.onSearchPress!();
                               },
+                              style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10))),
                               child: const Icon(Icons.search,
                                   color: Colors.white)),
                         )
