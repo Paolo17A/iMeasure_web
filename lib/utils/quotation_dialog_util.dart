@@ -28,7 +28,6 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
           width: double.parse(widthController.text),
           height: double.parse(heightController.text),
           oldOptionalWindowFields: optionalWindowFields);
-  print(_pricedOptionalWindowFields);
   optionalPrice = calculateOptionalPrice(_pricedOptionalWindowFields);
   //  Calculate mandatory payment
   totalMandatoryPayment = calculateTotalMandatoryPayment(ref,
@@ -45,9 +44,6 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
     selectedOptionalFields = _pricedOptionalWindowFields
         .where((window) => window[OptionalWindowFields.isSelected])
         .toList();
-    for (var selectedOption in selectedOptionalFields) {
-      print(selectedOption);
-    }
   }
   totalOverallPayment = totalMandatoryPayment + totalGlassPrice + optionalPrice;
 

@@ -107,7 +107,7 @@ class _SelectedWindowScreenState
             return review.isNotEmpty;
           }).toList();
         }
-
+        ref.read(cartProvider).setGlassType('');
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(

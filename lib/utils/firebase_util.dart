@@ -1668,6 +1668,48 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
             });
             break;
         }
+      } else if (windowSubField[WindowSubfields.priceBasis] == 'PERIMETER') {
+        num perimeter = (2 * width) + (2 * height);
+        switch (ref.read(cartProvider).selectedColor) {
+          case WindowColors.brown:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.brownPrice] / 21) * perimeter
+            });
+            break;
+          case WindowColors.white:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.whitePrice] / 21) * perimeter
+            });
+            break;
+          case WindowColors.mattBlack:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.mattBlackPrice] / 21) *
+                      perimeter
+            });
+            break;
+          case WindowColors.mattGray:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.mattGrayPrice] / 21) *
+                      perimeter
+            });
+            break;
+          case WindowColors.woodFinish:
+            mandatoryMap.add({
+              OrderBreakdownMap.field: windowSubField[WindowSubfields.name],
+              OrderBreakdownMap.breakdownPrice:
+                  (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
+                      perimeter
+            });
+            break;
+        }
       }
     }
 

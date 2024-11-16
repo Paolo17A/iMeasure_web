@@ -96,6 +96,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
             });
           }
         }
+        ref.read(cartProvider).setGlassType('');
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -526,7 +527,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
               if (mayProceedToInitialQuotationScreen()) {
                 addFurnitureItemToCart(context, ref,
                     itemID: widget.itemID,
-                    itemType: ItemTypes.window,
+                    itemType: ItemTypes.door,
                     width: double.parse(widthController.text),
                     height: double.parse(heightController.text),
                     mandatoryWindowFields: mandatoryWindowFields,
