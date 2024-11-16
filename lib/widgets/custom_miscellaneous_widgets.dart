@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/custom_text_field_widget.dart';
@@ -759,4 +760,31 @@ Widget leftTitleWidgets(double value, TitleMeta meta) {
   return value % 4 == 0
       ? Text(text, style: style, textAlign: TextAlign.center)
       : Container();
+}
+
+void showEnlargedPics(BuildContext context, {required String imageURL}) {
+  showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+              content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.7,
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Column(children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                      onPressed: () => GoRouter.of(context).pop(),
+                      child: quicksandBlackBold('X'))
+                ],
+              ),
+              Container(
+                width: MediaQuery.of(context).size.height * 0.65,
+                height: MediaQuery.of(context).size.height * 0.65,
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                        image: NetworkImage(imageURL), fit: BoxFit.fill)),
+              ),
+            ]),
+          )));
 }

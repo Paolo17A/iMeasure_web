@@ -81,7 +81,10 @@ PreferredSizeWidget topUserNavigator(BuildContext context,
                 TextButton(
                   onPressed: path == GoRoutes.home
                       ? null
-                      : () => GoRouter.of(context).goNamed(GoRoutes.home),
+                      : () {
+                          iMeasure.searchController.clear();
+                          GoRouter.of(context).goNamed(GoRoutes.home);
+                        },
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
                     Gap(40),
                     Image.asset(ImagePaths.heritageIcon, scale: 4),

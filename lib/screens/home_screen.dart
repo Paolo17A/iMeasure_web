@@ -64,6 +64,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.read(userDataProvider).setUserType(userType);
         if (ref.read(userDataProvider).userType == UserTypes.admin) {
           itemDocs = await getAllItemDocs();
+          // for (var itemDoc in itemDocs) {
+          //   final itemData = itemDoc.data() as Map<dynamic, dynamic>;
+          //   String itemType = itemData[ItemFields.itemType];
+          //   if (itemType == ItemTypes.window) {
+          //     await FirebaseFirestore.instance
+          //         .collection(Collections.items)
+          //         .doc(itemDoc.id)
+          //         .update({ItemFields.hasGlass: true});
+          //   } else if (itemType == ItemTypes.door) {
+          //     await FirebaseFirestore.instance
+          //         .collection(Collections.items)
+          //         .doc(itemDoc.id)
+          //         .update({ItemFields.hasGlass: false});
+          //   }
+          // }
           final users = await getAllClientDocs();
           usersCount = users.length;
 

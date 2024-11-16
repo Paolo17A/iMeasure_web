@@ -15,7 +15,8 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
     required TextEditingController heightController,
     required List<dynamic> mandatoryWindowFields,
     required List<Map<dynamic, dynamic>> optionalWindowFields,
-    required String itemType}) {
+    required String itemType,
+    required bool hasGlass}) {
   num totalMandatoryPayment = 0;
   num totalGlassPrice = 0;
   num optionalPrice = 0;
@@ -37,7 +38,7 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
 
   //  Calculate glass payment
   List<Map<dynamic, dynamic>> selectedOptionalFields = [];
-  if (itemType == ItemTypes.window) {
+  if (hasGlass) {
     totalGlassPrice = calculateGlassPrice(ref,
         width: double.parse(widthController.text),
         height: double.parse(heightController.text));
@@ -88,7 +89,7 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
                                     .toList()),
 
                             //  Glass
-                            if (itemType == ItemTypes.window)
+                            if (hasGlass)
                               Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,

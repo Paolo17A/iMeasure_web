@@ -67,6 +67,7 @@ class ItemFields {
   static const String windowFields = 'windowFields';
   static const String accessoryFields = 'accessoryFields';
   static const String correspondingModel = 'correspondingModel';
+  static const String hasGlass = 'hasGlass';
 }
 
 class AvailableModels {
@@ -78,7 +79,15 @@ class AvailableModels {
   static const String series38Awning = '38 Series Awning';
   static const String series798w2Panel = '798 Series 2 Panels';
   static const String series798w4Panel = '798 Series 4 Panels';
+
+  //DOORS
   static const String series900Door = '900 Series Door';
+  static const String aluminimDoorBathDoor = 'Aluminum Door Bath Door';
+  static const String aluminumDoorGlassDoor = 'Aluminum Door Glass Door';
+  static const String singleSwingDoor = 'Single Swing Door';
+  static const String doubleSwingDoorGlass = 'Double Swing Door Glass';
+  static const String kitchenCabinet = 'Kitchen Cabinet';
+  static const String screenDoor = 'Screen Door';
 }
 
 class ItemTypes {

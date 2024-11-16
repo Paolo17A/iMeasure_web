@@ -162,7 +162,8 @@ class _ViewDoorsScreenState extends ConsumerState<ViewDoorsScreen> {
                 image: DecorationImage(
                     image: NetworkImage(imageURL.first), fit: BoxFit.cover)),
           ),
-          quicksandWhiteRegular(name),
+          SizedBox(
+              height: 60, child: Center(child: quicksandWhiteRegular(name))),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             if (isAvailable)
               Container(

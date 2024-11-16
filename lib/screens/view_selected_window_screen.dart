@@ -410,13 +410,19 @@ class _SelectedWindowScreenState
         child: imageURLs.isNotEmpty
             ? Column(
                 children: [
-                  square300NetworkImage(imageURLs.first),
+                  GestureDetector(
+                      onTap: () =>
+                          showEnlargedPics(context, imageURL: imageURLs.first),
+                      child: square300NetworkImage(imageURLs.first)),
                   Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: otherImages
-                          .map((otherImage) =>
-                              all10Pix(child: square80NetworkImage(otherImage)))
+                          .map((otherImage) => all10Pix(
+                              child: GestureDetector(
+                                  onTap: () => showEnlargedPics(context,
+                                      imageURL: otherImage),
+                                  child: square80NetworkImage(otherImage))))
                           .toList())
                 ],
               )
@@ -586,7 +592,8 @@ class _SelectedWindowScreenState
                   heightController: heightController,
                   mandatoryWindowFields: mandatoryWindowFields,
                   optionalWindowFields: optionalWindowFields,
-                  itemType: ItemTypes.window);
+                  itemType: ItemTypes.window,
+                  hasGlass: true);
             } else {
               if (double.tryParse(widthController.text) == null ||
                   double.tryParse(heightController.text) == null) {

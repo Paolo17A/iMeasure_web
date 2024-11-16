@@ -18,6 +18,7 @@ import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
+import '../widgets/dropdown_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class AddDoorScreen extends ConsumerStatefulWidget {
@@ -34,6 +35,8 @@ class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
   final maxHeightController = TextEditingController();
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
+  bool hasGlass = false;
+  String correspondingModel = '';
 
   List<WindowFieldModel> windowFieldModels = [WindowFieldModel()];
   List<WindowAccessoryModel> windowAccessoryModels = [];
@@ -56,6 +59,7 @@ class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
           goRouter.goNamed(GoRoutes.home);
           return;
         }
+        ref.read(uploadedImageProvider).resetImages();
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -119,7 +123,9 @@ class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
                                   _maxWidthWidget(),
                                 ]),
                           ),
+                          _hasGlassCheckbox(),
                           _windowDescriptionWidget(),
+                          _correspondingModelWidget(),
                           Divider(color: CustomColors.lavenderMist),
                           _windowFields(),
                           _accessoryFields(),
@@ -166,6 +172,24 @@ class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
     ]);
   }
 
+  Widget _hasGlassCheckbox() {
+    return SizedBox(
+      width: double.infinity,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        vertical10Pix(child: quicksandWhiteBold('Has Glass', fontSize: 24)),
+        Checkbox(
+            value: hasGlass,
+            checkColor: Colors.white,
+            focusColor: Colors.white,
+            onChanged: (newVal) {
+              setState(() {
+                hasGlass = newVal!;
+              });
+            })
+      ]),
+    );
+  }
+
   Widget _windowDescriptionWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       vertical10Pix(
@@ -176,6 +200,36 @@ class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
           textInputType: TextInputType.multiline,
           displayPrefixIcon: null),
     ]);
+  }
+
+  Widget _correspondingModelWidget() {
+    return vertical10Pix(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          quicksandWhiteBold('Correspoding 3D Model'),
+          Container(
+            width: MediaQuery.of(context).size.width * 0.7,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            child: dropdownWidget(correspondingModel, (newVal) {
+              setState(() {
+                correspondingModel = newVal!;
+              });
+            }, [
+              'N/A',
+              AvailableModels.series900Door,
+              AvailableModels.aluminimDoorBathDoor,
+              AvailableModels.aluminumDoorGlassDoor,
+              AvailableModels.singleSwingDoor,
+              AvailableModels.doubleSwingDoorGlass,
+              AvailableModels.kitchenCabinet,
+              AvailableModels.screenDoor,
+            ], 'Select a corresponding 3D model', false),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _minHeightWidget() {
@@ -262,28 +316,23 @@ class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
     return vertical20Pix(
       child: SizedBox(
         width: double.infinity,
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                uploadImageButton('UPLOAD IMAGES', _pickImages),
-                if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty)
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: ref
-                          .read(uploadedImageProvider)
-                          .uploadedImages
-                          .map((imageBytes) => all10Pix(
-                                  child: selectedMemoryImageDisplay(imageBytes,
-                                      () {
-                                ref
-                                    .read(uploadedImageProvider)
-                                    .removeImageFromList(imageBytes!);
-                              })))
-                          .toList())
-              ],
-            ),
+            uploadImageButton('UPLOAD IMAGES', _pickImages),
+            if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty)
+              Wrap(
+                  //mainAxisAlignment: MainAxisAlignment.center,
+                  children: ref
+                      .read(uploadedImageProvider)
+                      .uploadedImages
+                      .map((imageBytes) => all10Pix(
+                              child: selectedMemoryImageDisplay(imageBytes, () {
+                            ref
+                                .read(uploadedImageProvider)
+                                .removeImageFromList(imageBytes!);
+                          })))
+                      .toList())
           ],
         ),
       ),
@@ -407,7 +456,8 @@ class _AddDoorScreenState extends ConsumerState<AddDoorScreen> {
             maxWidthController: maxWidthController,
             windowFieldModels: windowFieldModels,
             windowAccesoryModels: windowAccessoryModels,
-            correspondingModel: ''),
+            correspondingModel: correspondingModel,
+            hasGlass: hasGlass),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

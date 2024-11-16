@@ -18,6 +18,7 @@ import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
+import '../widgets/dropdown_widget.dart';
 import '../widgets/text_widgets.dart';
 
 class EditDoorScreen extends ConsumerStatefulWidget {
@@ -36,6 +37,8 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
   final minWidthController = TextEditingController();
   final maxWidthController = TextEditingController();
   List<dynamic> imageURLs = [];
+  bool hasGlass = false;
+  String correspondingModel = '';
 
   List<WindowFieldModel> windowFieldModels = [];
   List<WindowAccessoryModel> windowAccessoryModels = [];
@@ -69,6 +72,8 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
         minWidthController.text = itemData[ItemFields.minWidth].toString();
         maxWidthController.text = itemData[ItemFields.maxWidth].toString();
         imageURLs = itemData[ItemFields.imageURLs];
+        correspondingModel = itemData[ItemFields.correspondingModel];
+        hasGlass = itemData[ItemFields.hasGlass];
 
         List<dynamic> windowFields = itemData[ItemFields.windowFields];
         List<dynamic> accessoryFields = itemData[ItemFields.accessoryFields];
@@ -101,6 +106,7 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
               accessoryField[WindowAccessorySubfields.price].toString();
           windowAccessoryModels.add(windowAccessoryModel);
         }
+
         ref.read(uploadedImageProvider).resetImages();
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
@@ -168,7 +174,9 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
                                   _maxWidthWidget(),
                                 ]),
                           ),
+                          _hasGlassCheckbox(),
                           _windowDescriptionWidget(),
+                          _correspondingModelWidget(),
                           Gap(20),
                           Divider(color: CustomColors.lavenderMist),
                           _windowFields(),
@@ -216,6 +224,24 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
     ]);
   }
 
+  Widget _hasGlassCheckbox() {
+    return SizedBox(
+      width: double.infinity,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        vertical10Pix(child: quicksandWhiteBold('Has Glass', fontSize: 24)),
+        Checkbox(
+            value: hasGlass,
+            checkColor: Colors.white,
+            focusColor: Colors.white,
+            onChanged: (newVal) {
+              setState(() {
+                hasGlass = newVal!;
+              });
+            })
+      ]),
+    );
+  }
+
   Widget _windowDescriptionWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       vertical10Pix(
@@ -227,6 +253,36 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
           textInputType: TextInputType.multiline,
           displayPrefixIcon: null),
     ]);
+  }
+
+  Widget _correspondingModelWidget() {
+    return vertical10Pix(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          quicksandWhiteBold('Correspoding 3D Model'),
+          Container(
+            width: MediaQuery.of(context).size.width * 0.7,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            child: dropdownWidget(correspondingModel, (newVal) {
+              setState(() {
+                correspondingModel = newVal!;
+              });
+            }, [
+              'N/A',
+              AvailableModels.series900Door,
+              AvailableModels.aluminimDoorBathDoor,
+              AvailableModels.aluminumDoorGlassDoor,
+              AvailableModels.singleSwingDoor,
+              AvailableModels.doubleSwingDoorGlass,
+              AvailableModels.kitchenCabinet,
+              AvailableModels.screenDoor,
+            ], correspondingModel, false),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _minHeightWidget() {
@@ -413,49 +469,43 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
     return vertical20Pix(
       child: SizedBox(
         width: double.infinity,
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
-                Wrap(children: [
-                  if (!ref.read(loadingProvider).isLoading &&
-                      imageURLs.isNotEmpty)
-                    ...imageURLs
-                        .map((imageURL) => all10Pix(
-                                child: selectedNetworkImageDisplay(imageURL,
-                                    displayDelete: true, onDelete: () {
-                              if (imageURLs.length +
-                                      ref
-                                          .read(uploadedImageProvider)
-                                          .uploadedImages
-                                          .length ==
-                                  1) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text(
-                                        'You must have at least one image available for this item ')));
-                                return;
-                              }
-                              setState(() {
-                                imageURLs.remove(imageURL);
-                              });
-                            })))
-                        .toList(),
-                  if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty)
-                    ...ref
-                        .read(uploadedImageProvider)
-                        .uploadedImages
-                        .map((imageByte) => all10Pix(
-                            child: selectedMemoryImageDisplay(
-                                imageByte,
-                                () => ref
-                                    .read(uploadedImageProvider)
-                                    .removeImage())))
-                        .toList()
-                ])
-              ],
-            ),
+            uploadImageButton('UPLOAD IMAGE', _pickLogoImage),
+            Wrap(children: [
+              if (!ref.read(loadingProvider).isLoading && imageURLs.isNotEmpty)
+                ...imageURLs
+                    .map((imageURL) => all10Pix(
+                            child: selectedNetworkImageDisplay(imageURL,
+                                displayDelete: true, onDelete: () {
+                          if (imageURLs.length +
+                                  ref
+                                      .read(uploadedImageProvider)
+                                      .uploadedImages
+                                      .length ==
+                              1) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text(
+                                    'You must have at least one image available for this item ')));
+                            return;
+                          }
+                          setState(() {
+                            imageURLs.remove(imageURL);
+                          });
+                        })))
+                    .toList(),
+              if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty)
+                ...ref
+                    .read(uploadedImageProvider)
+                    .uploadedImages
+                    .map((imageByte) => all10Pix(
+                        child: selectedMemoryImageDisplay(
+                            imageByte,
+                            () =>
+                                ref.read(uploadedImageProvider).removeImage())))
+                    .toList()
+            ])
           ],
         ),
       ),
@@ -479,8 +529,9 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
             maxWidthController: maxWidthController,
             windowFieldModels: windowFieldModels,
             windowAccesoryModels: windowAccessoryModels,
-            correspondingModel: '',
-            imageURLs: imageURLs),
+            correspondingModel: correspondingModel,
+            imageURLs: imageURLs,
+            hasGlass: hasGlass),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

@@ -9,6 +9,7 @@ import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
+import '../models/glass_model.dart';
 import '../providers/cart_provider.dart';
 import '../providers/loading_provider.dart';
 import '../utils/firebase_util.dart';
@@ -42,6 +43,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   List<dynamic> imageURLs = [];
   int currentImageIndex = 0;
   List<DocumentSnapshot> orderDocs = [];
+  bool hasGlass = false;
 
   //  USER VARIABLES
   final widthController = TextEditingController();
@@ -75,6 +77,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
         maxHeight = itemData[ItemFields.maxHeight];
         minWidth = itemData[ItemFields.minWidth];
         maxWidth = itemData[ItemFields.maxWidth];
+        hasGlass = itemData[ItemFields.hasGlass];
         orderDocs = await getAllItemOrderDocs(widget.itemID);
         if (ref.read(userDataProvider).userType == UserTypes.client) {
           List<dynamic> windowFields = itemData[ItemFields.windowFields];
@@ -103,7 +106,9 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   }
 
   bool mayProceedToInitialQuotationScreen() {
-    return ref.read(cartProvider).selectedColor.isNotEmpty &&
+    return ((hasGlass && ref.read(cartProvider).selectedGlassType.isNotEmpty) ||
+            !hasGlass) &&
+        ref.read(cartProvider).selectedColor.isNotEmpty &&
         widthController.text.isNotEmpty &&
         double.tryParse(widthController.text) != null &&
         double.parse(widthController.text.trim()) >= minWidth &&
@@ -286,8 +291,9 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        quicksandWhiteRegular('Glass Type: $glassType',
-                            fontSize: 18, textAlign: TextAlign.left),
+                        if (hasGlass)
+                          quicksandWhiteRegular('Glass Type: $glassType',
+                              fontSize: 18, textAlign: TextAlign.left),
                         quicksandWhiteRegular('Color: $color', fontSize: 12),
                         quicksandWhiteRegular('Status: $status', fontSize: 12),
                         if (status == OrderStatuses.pickedUp &&
@@ -360,7 +366,10 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
         child: Column(
       children: [
         imageURLs.isNotEmpty
-            ? square300NetworkImage(imageURLs.first)
+            ? GestureDetector(
+                onTap: () =>
+                    showEnlargedPics(context, imageURL: imageURLs.first),
+                child: square300NetworkImage(imageURLs.first))
             : Container(
                 width: 300,
                 height: 300,
@@ -370,8 +379,11 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
         Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: otherImages
-                .map((otherImage) =>
-                    all10Pix(child: square80NetworkImage(otherImage)))
+                .map((otherImage) => all10Pix(
+                    child: GestureDetector(
+                        onTap: () =>
+                            showEnlargedPics(context, imageURL: otherImage),
+                        child: square80NetworkImage(otherImage))))
                 .toList())
       ],
     ));
@@ -436,6 +448,30 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                           ),
                         ],
                       ),
+                      if (hasGlass)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            quicksandWhiteBold('Glass Color'),
+                            Container(
+                              width: MediaQuery.of(context).size.width * 0.15,
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(5)),
+                              child: dropdownWidget(
+                                  ref.read(cartProvider).selectedGlassType,
+                                  (newVal) {
+                                ref.read(cartProvider).setGlassType(newVal!);
+                              },
+                                  allGlassModels
+                                      .map((glassModel) =>
+                                          glassModel.glassTypeName)
+                                      .toList(),
+                                  'Select your glass type',
+                                  false),
+                            ),
+                          ],
+                        ),
                     ]),
                 if (optionalWindowFields.isNotEmpty) _optionalWindowFields(),
               ],
@@ -525,7 +561,8 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                 heightController: heightController,
                 mandatoryWindowFields: mandatoryWindowFields,
                 optionalWindowFields: optionalWindowFields,
-                itemType: ItemTypes.door);
+                itemType: ItemTypes.door,
+                hasGlass: hasGlass);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content:

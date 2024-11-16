@@ -105,6 +105,7 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
           windowAccessoryModels.add(windowAccessoryModel);
         }
         ref.read(uploadedImageProvider).resetImages();
+
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -513,7 +514,8 @@ class _AddWindowScreenState extends ConsumerState<EditWindowScreen> {
             windowFieldModels: windowFieldModels,
             windowAccesoryModels: windowAccessoryModels,
             correspondingModel: correspondingModel,
-            imageURLs: imageURLs),
+            imageURLs: imageURLs,
+            hasGlass: true),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

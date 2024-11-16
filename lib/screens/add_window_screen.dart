@@ -59,6 +59,7 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
           goRouter.goNamed(GoRoutes.home);
           return;
         }
+        ref.read(uploadedImageProvider).resetImages();
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -443,7 +444,8 @@ class _AddWindowScreenState extends ConsumerState<AddWindowScreen> {
             maxWidthController: maxWidthController,
             windowFieldModels: windowFieldModels,
             windowAccesoryModels: windowAccessoryModels,
-            correspondingModel: correspondingModel),
+            correspondingModel: correspondingModel,
+            hasGlass: true),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: quicksandBlackBold('SUBMIT'),

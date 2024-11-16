@@ -83,7 +83,10 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
     String description = itemData[ItemFields.description];
     List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
     List<dynamic> otherImages = [];
-    if (imageURLs.length > 1) otherImages = imageURLs.sublist(1);
+    if (imageURLs.length > 1) {
+      otherImages = imageURLs.sublist(1);
+      otherImages = otherImages.take(3).toList();
+    }
     List<Widget> widgets = [
       GestureDetector(
         onTap: () => displayImageDialog(imageURLs.first),

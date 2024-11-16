@@ -382,7 +382,8 @@ Future addFurnitureItemEntry(BuildContext context, WidgetRef ref,
     required TextEditingController maxWidthController,
     required List<WindowFieldModel> windowFieldModels,
     required List<WindowAccessoryModel> windowAccesoryModels,
-    required String correspondingModel}) async {
+    required String correspondingModel,
+    required bool hasGlass}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (nameController.text.isEmpty ||
@@ -488,7 +489,8 @@ Future addFurnitureItemEntry(BuildContext context, WidgetRef ref,
       ItemFields.windowFields: windowFields,
       ItemFields.accessoryFields: accessoryFields,
       ItemFields.correspondingModel:
-          correspondingModel == 'N/A' ? '' : correspondingModel
+          correspondingModel == 'N/A' ? '' : correspondingModel,
+      ItemFields.hasGlass: hasGlass
     });
 
     //  Upload Item Images to Firebase Storage
@@ -545,7 +547,8 @@ Future editFurnitureItemEntry(BuildContext context, WidgetRef ref,
     required List<WindowFieldModel> windowFieldModels,
     required List<WindowAccessoryModel> windowAccesoryModels,
     required String correspondingModel,
-    required List<dynamic> imageURLs}) async {
+    required List<dynamic> imageURLs,
+    required bool hasGlass}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (nameController.text.isEmpty ||
@@ -644,7 +647,8 @@ Future editFurnitureItemEntry(BuildContext context, WidgetRef ref,
       ItemFields.windowFields: windowFields,
       ItemFields.accessoryFields: accessoryFields,
       ItemFields.correspondingModel:
-          correspondingModel == 'N/A' ? '' : correspondingModel
+          correspondingModel == 'N/A' ? '' : correspondingModel,
+      ItemFields.hasGlass: hasGlass
     });
 
     //  Upload Item Images to Firebase Storage
