@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/providers/cart_provider.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
@@ -16,6 +17,7 @@ import '../utils/string_util.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
+import '../widgets/top_navigator_widget.dart';
 
 class ViewSelectedRawMaterialScreen extends ConsumerStatefulWidget {
   final String itemID;
@@ -32,6 +34,7 @@ class _SelectedRawMaterialScreenState
   String name = '';
   String description = '';
   bool isAvailable = false;
+  num price = 0;
 
   List<dynamic> imageURLs = [];
   List<DocumentSnapshot> orderDocs = [];
@@ -49,6 +52,7 @@ class _SelectedRawMaterialScreenState
           return;
         }
         ref.read(loadingProvider.notifier).toggleLoading(true);
+        ref.read(userDataProvider).setUserType(await getCurrentUserType());
 
         //  GET PRODUCT DATA
         final item = await getThisItemDoc(widget.itemID);
@@ -57,13 +61,21 @@ class _SelectedRawMaterialScreenState
         description = itemData[ItemFields.description];
         isAvailable = itemData[ItemFields.isAvailable];
         imageURLs = itemData[ItemFields.imageURLs];
-
+        price = itemData[ItemFields.price];
         orderDocs = await getAllItemOrderDocs(widget.itemID);
         orderDocs.sort((a, b) {
           DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
           DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
           return bTime.compareTo(aTime);
         });
+        if (ref.read(userDataProvider).userType == UserTypes.client) {
+          ref.watch(cartProvider).setCartItems(await getCartEntries(context));
+          orderDocs = orderDocs.where((orderDoc) {
+            final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+            Map review = orderData[OrderFields.review];
+            return review.isNotEmpty;
+          }).toList();
+        }
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -76,33 +88,48 @@ class _SelectedRawMaterialScreenState
   @override
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
+    ref.watch(userDataProvider);
+    ref.watch(cartProvider);
     return Scaffold(
+      appBar: hasLoggedInUser() &&
+              ref.read(userDataProvider).userType == UserTypes.client
+          ? topUserNavigator(context, path: GoRoutes.shop)
+          : null,
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              leftNavigator(context, path: GoRoutes.windows),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _backButton(),
-                      horizontal5Percent(context,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _windowDetails(),
-                              orderHistory(),
-                            ],
-                          )),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          )),
+          ref.read(userDataProvider).userType == UserTypes.admin
+              ? _adminWidgets()
+              : _userWidgets()),
+    );
+  }
+
+  //============================================================================
+  //ADMIN=======================================================================
+  //============================================================================
+  Widget _adminWidgets() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        leftNavigator(context, path: GoRoutes.windows),
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _backButton(),
+                horizontal5Percent(context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _windowDetails(),
+                        orderHistory(),
+                      ],
+                    )),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -222,6 +249,108 @@ class _SelectedRawMaterialScreenState
           ),
         ));
       },
+    );
+  }
+
+  Widget _userWidgets() {
+    return SingleChildScrollView(
+      child: horizontal5Percent(
+        context,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _backButton(),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (imageURLs.isNotEmpty) _itemImagesDisplay(),
+                Gap(40),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _name(),
+                    _price(),
+                    _actionButtons(),
+                  ],
+                ),
+              ],
+            ),
+            _description(),
+            if (orderDocs.isNotEmpty) userReviews(orderDocs)
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _itemImagesDisplay() {
+    List<dynamic> otherImages = [];
+    if (imageURLs.length > 1) otherImages = imageURLs.sublist(1);
+    return imageURLs.isNotEmpty
+        ? Column(
+            children: [
+              GestureDetector(
+                  onTap: () =>
+                      showEnlargedPics(context, imageURL: imageURLs.first),
+                  child: square300NetworkImage(imageURLs.first)),
+              SizedBox(
+                width: 300,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: otherImages
+                          .map((otherImage) => all10Pix(
+                              child: GestureDetector(
+                                  onTap: () => showEnlargedPics(context,
+                                      imageURL: otherImage),
+                                  child: square80NetworkImage(otherImage))))
+                          .toList()),
+                ),
+              )
+            ],
+          )
+        : Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(border: Border.all(color: Colors.white)),
+          );
+  }
+
+  Widget _name() {
+    return quicksandWhiteBold(name, fontSize: 26, textAlign: TextAlign.left);
+  }
+
+  Widget _price() {
+    return quicksandWhiteBold('PHP ${formatPrice(price.toDouble())}',
+        fontSize: 36, textAlign: TextAlign.left);
+  }
+
+  Widget _description() {
+    return all10Pix(
+        child: quicksandWhiteRegular(description,
+            textAlign: TextAlign.left,
+            fontSize: 18,
+            textOverflow: TextOverflow.ellipsis));
+  }
+
+  Widget _actionButtons() {
+    return SizedBox(
+      height: 60,
+      child: ElevatedButton(
+          onPressed: isAvailable
+              ? () {
+                  addRawMaterialToCart(context, ref, itemID: widget.itemID);
+                }
+              : null,
+          style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  side: BorderSide(), borderRadius: BorderRadius.circular(10)),
+              backgroundColor: Colors.white,
+              disabledBackgroundColor: Colors.blueGrey),
+          child: quicksandBlackRegular('+ ADD TO CART',
+              textAlign: TextAlign.center)),
     );
   }
 }

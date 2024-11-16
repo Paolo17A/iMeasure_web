@@ -16,6 +16,7 @@ import 'package:imeasure/widgets/text_widgets.dart';
 
 import '../providers/cart_provider.dart';
 import '../utils/color_util.dart';
+import '../utils/firebase_util.dart';
 import '../utils/string_util.dart';
 
 Widget stackedLoadingContainer(
@@ -787,4 +788,88 @@ void showEnlargedPics(BuildContext context, {required String imageURL}) {
               ),
             ]),
           )));
+}
+
+Widget userReviews(List<DocumentSnapshot> orderDocs) {
+  return vertical20Pix(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Divider(),
+        quicksandWhiteBold('REVIEWS'),
+        vertical10Pix(
+          child: ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: orderDocs.length,
+              itemBuilder: (context, index) {
+                final orderData = orderDocs[index];
+                String clientID = orderData[OrderFields.clientID];
+                Map<String, dynamic> review = orderData[OrderFields.review];
+                num rating = review[ReviewFields.rating];
+                List<dynamic> imageURLs = review[ReviewFields.imageURLs];
+                String reviewText = review[ReviewFields.review];
+                return all4Pix(
+                  child: Container(
+                      //height: 100,
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white)),
+                      padding: EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    FutureBuilder(
+                                        future: getThisUserDoc(clientID),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                                  ConnectionState.waiting ||
+                                              !snapshot.hasData ||
+                                              snapshot.hasError)
+                                            return Container();
+                                          final userData = snapshot.data!.data()
+                                              as Map<dynamic, dynamic>;
+                                          String formattedName =
+                                              '${userData[UserFields.firstName]} ${userData[UserFields.lastName]}';
+
+                                          return quicksandWhiteRegular(
+                                              formattedName);
+                                        }),
+                                    starRating(rating.toDouble(),
+                                        onUpdate: (val) {}, mayMove: false),
+                                    quicksandWhiteRegular(reviewText,
+                                        fontSize: 16),
+                                  ]),
+                            ],
+                          ),
+                          if (imageURLs.isNotEmpty)
+                            Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: imageURLs
+                                    .map((imageURL) => all4Pix(
+                                          child: Container(
+                                              width: 80,
+                                              height: 80,
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image: NetworkImage(
+                                                          imageURL)))),
+                                        ))
+                                    .toList())
+                        ],
+                      )),
+                );
+              }),
+        ),
+      ],
+    ),
+  );
 }

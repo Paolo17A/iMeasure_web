@@ -21,6 +21,7 @@ import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/custom_text_field_widget.dart';
 import '../widgets/dropdown_widget.dart';
+import '../widgets/top_navigator_widget.dart';
 
 class ViewSelectedDoorScreen extends ConsumerStatefulWidget {
   final String itemID;
@@ -124,6 +125,10 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     return Scaffold(
+      appBar: hasLoggedInUser() &&
+              ref.read(userDataProvider).userType == UserTypes.client
+          ? topUserNavigator(context, path: GoRoutes.shop)
+          : null,
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           ref.read(userDataProvider).userType == UserTypes.admin
@@ -523,37 +528,44 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(
-            onPressed: () {
-              if (mayProceedToInitialQuotationScreen()) {
-                addFurnitureItemToCart(context, ref,
-                    itemID: widget.itemID,
-                    itemType: ItemTypes.door,
-                    width: double.parse(widthController.text),
-                    height: double.parse(heightController.text),
-                    mandatoryWindowFields: mandatoryWindowFields,
-                    optionalWindowFields: pricedOptionalWindowFields(ref,
-                        width: double.parse(widthController.text),
-                        height: double.parse(heightController.text),
-                        oldOptionalWindowFields: optionalWindowFields));
-              } else {
-                if (double.parse(widthController.text.trim()) < minWidth ||
-                    double.parse(widthController.text.trim()) > maxWidth) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Inputted width must be $minWidth = ${maxWidth} ft only.')));
-                } else if (double.parse(heightController.text.trim()) <
-                        minHeight ||
-                    double.parse(heightController.text.trim()) > maxHeight) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Inputted height must be $minHeight = ${maxHeight} ft only.')));
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Please fill up all the required fields first.')));
-                }
-              }
-            },
+            style:
+                ElevatedButton.styleFrom(disabledBackgroundColor: Colors.grey),
+            onPressed: isAvailable
+                ? () {
+                    if (mayProceedToInitialQuotationScreen()) {
+                      addFurnitureItemToCart(context, ref,
+                          itemID: widget.itemID,
+                          itemType: ItemTypes.door,
+                          width: double.parse(widthController.text),
+                          height: double.parse(heightController.text),
+                          mandatoryWindowFields: mandatoryWindowFields,
+                          optionalWindowFields: pricedOptionalWindowFields(ref,
+                              width: double.parse(widthController.text),
+                              height: double.parse(heightController.text),
+                              oldOptionalWindowFields: optionalWindowFields));
+                    } else {
+                      if (double.parse(widthController.text.trim()) <
+                              minWidth ||
+                          double.parse(widthController.text.trim()) >
+                              maxWidth) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                'Inputted width must be $minWidth = ${maxWidth} ft only.')));
+                      } else if (double.parse(heightController.text.trim()) <
+                              minHeight ||
+                          double.parse(heightController.text.trim()) >
+                              maxHeight) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                'Inputted height must be $minHeight = ${maxHeight} ft only.')));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                'Please fill up all the required fields first.')));
+                      }
+                    }
+                  }
+                : null,
             child: quicksandWhiteBold('ADD TO CART')),
         submitButton(context, label: 'VIEW ESTIMATED QUOTE', onPress: () {
           if (mayProceedToInitialQuotationScreen()) {

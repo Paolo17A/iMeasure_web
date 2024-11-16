@@ -27,7 +27,7 @@ class ShopScreen extends ConsumerStatefulWidget {
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   List<DocumentSnapshot> itemDocs = [];
   List<DocumentSnapshot> filteredDocs = [];
-  String currentItemType = ItemTypes.window;
+  String currentItemType = '';
 
   @override
   void initState() {
@@ -63,6 +63,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   void filterDocsByItemType() {
     setState(() {
+      if (currentItemType.isEmpty) {
+        filteredDocs = itemDocs;
+        return;
+      }
       filteredDocs = itemDocs.where((itemDoc) {
         final itemData = itemDoc.data() as Map<dynamic, dynamic>;
         return itemData[ItemFields.itemType] == currentItemType;
@@ -74,6 +78,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(userDataProvider);
+    ref.watch(cartProvider);
     return Scaffold(
       appBar: hasLoggedInUser()
           ? topUserNavigator(context, path: GoRoutes.shop)
@@ -113,6 +118,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       child: Column(
         children: [
           Gap(40),
+          itemButton(context, label: 'ALL', itemType: ''),
           itemButton(context, label: 'WINDOWS', itemType: ItemTypes.window),
           itemButton(context, label: 'DOORS', itemType: ItemTypes.door),
           itemButton(context,
@@ -222,7 +228,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   GoRouter.of(context).goNamed(GoRoutes.selectedDoor,
                       pathParameters: {PathParameters.itemID: itemDoc.id});
                 } else if (itemType == ItemTypes.rawMaterial) {
-                  addRawMaterialToCart(context, ref, itemID: itemDoc.id);
+                  GoRouter.of(context).goNamed(GoRoutes.selectedRawMaterial,
+                      pathParameters: {PathParameters.itemID: itemDoc.id});
+                  //addRawMaterialToCart(context, ref, itemID: itemDoc.id);
                 }
               },
               child: quicksandWhiteRegular('ADD TO CART'))

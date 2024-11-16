@@ -159,7 +159,8 @@ class _SearchResultScreenState extends ConsumerState<SearchResultScreen> {
                   GoRouter.of(context).goNamed(GoRoutes.selectedDoor,
                       pathParameters: {PathParameters.itemID: itemDoc.id});
                 } else if (itemType == ItemTypes.rawMaterial) {
-                  addRawMaterialToCart(context, ref, itemID: itemDoc.id);
+                  GoRouter.of(context).goNamed(GoRoutes.selectedRawMaterial,
+                      pathParameters: {PathParameters.itemID: itemDoc.id});
                 }
               },
               child: quicksandWhiteRegular('ADD TO CART'))
