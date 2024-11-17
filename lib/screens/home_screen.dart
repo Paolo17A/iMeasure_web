@@ -64,21 +64,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.read(userDataProvider).setUserType(userType);
         if (ref.read(userDataProvider).userType == UserTypes.admin) {
           itemDocs = await getAllItemDocs();
-          // for (var itemDoc in itemDocs) {
-          //   final itemData = itemDoc.data() as Map<dynamic, dynamic>;
-          //   String itemType = itemData[ItemFields.itemType];
-          //   if (itemType == ItemTypes.window) {
-          //     await FirebaseFirestore.instance
-          //         .collection(Collections.items)
-          //         .doc(itemDoc.id)
-          //         .update({ItemFields.hasGlass: true});
-          //   } else if (itemType == ItemTypes.door) {
-          //     await FirebaseFirestore.instance
-          //         .collection(Collections.items)
-          //         .doc(itemDoc.id)
-          //         .update({ItemFields.hasGlass: false});
-          //   }
-          // }
           final users = await getAllClientDocs();
           usersCount = users.length;
 
@@ -717,21 +702,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: itemDocs.take(3).map((item) {
-                  final itemData = item.data() as Map<dynamic, dynamic>;
-                  List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
-                  return all10Pix(
-                      child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            fit: BoxFit.fill,
-                            image: NetworkImage(imageURLs.first))),
-                  ));
-                }).toList(),
-              ),
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      [ImagePaths.home1, ImagePaths.home2, ImagePaths.home3]
+                          .map((imagePatb) => all10Pix(
+                                  child: Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                        fit: BoxFit.fill,
+                                        image: AssetImage(imagePatb))),
+                              )))
+                          .toList()),
             ))
         ],
       ),

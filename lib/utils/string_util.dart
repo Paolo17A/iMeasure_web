@@ -9,6 +9,10 @@ class ImagePaths {
       'assets/images/heritage_background.jpg';
   static const String heritageIcon = 'assets/images/heritage_icon.png';
   static const String testimony = 'assets/images/testimony.png';
+  static const String about = 'assets/images/about.jpg';
+  static const String home1 = 'assets/images/home1.jpg';
+  static const String home2 = 'assets/images/home2.jpg';
+  static const String home3 = 'assets/images/home3.jpg';
 }
 
 class StorageFields {

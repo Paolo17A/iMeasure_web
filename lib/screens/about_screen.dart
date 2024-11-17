@@ -61,7 +61,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 decoration: BoxDecoration(
                     image: DecorationImage(
                         fit: BoxFit.cover,
-                        image: AssetImage(ImagePaths.testimony))),
+                        image: AssetImage(ImagePaths.about))),
               ),
             ),
             Gap(MediaQuery.of(context).size.width * 0.05),

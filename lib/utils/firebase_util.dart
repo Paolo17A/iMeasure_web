@@ -706,9 +706,9 @@ Future addRawMaterialEntry(BuildContext context, WidgetRef ref,
         content: Text('Please enter a valid price higher than PHP 0.00')));
     return;
   }
-  if (ref.read(uploadedImageProvider).uploadedImage == null) {
-    scaffoldMessenger
-        .showSnackBar(SnackBar(content: Text('Please upload a valid image.')));
+  if (ref.read(uploadedImageProvider).uploadedImages.isEmpty) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text('Please upload at least one item image.')));
     return;
   }
   try {
@@ -998,7 +998,8 @@ Future<List<DocumentSnapshot>> getAllClientUncompletedOrderDocs(
     final orderData = order.data() as Map<dynamic, dynamic>;
     Map<dynamic, dynamic> review = orderData[OrderFields.review];
     return orderData[OrderFields.orderStatus] != OrderStatuses.completed ||
-        review.isEmpty;
+        (orderData[OrderFields.orderStatus] == OrderStatuses.completed &&
+            review.isEmpty);
   }).toList();
 }
 

@@ -181,8 +181,8 @@ class _AddRawMaterialScreenState extends ConsumerState<AddRawMaterialScreen> {
               children: [
                 uploadImageButton('UPLOAD IMAGES', _pickImages),
                 if (ref.read(uploadedImageProvider).uploadedImages.isNotEmpty)
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                      //mainAxisAlignment: MainAxisAlignment.center,
                       children: ref
                           .read(uploadedImageProvider)
                           .uploadedImages
