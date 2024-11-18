@@ -193,6 +193,7 @@ class _ViewPendingLaborScreenState
                                 final optionalWindowFields =
                                     quotation[QuotationFields.optionalMap]
                                         as List<dynamic>;
+                                final color = quotation[QuotationFields.color];
                                 showCartQuotationDialog(context, ref,
                                     totalOverallPayment: itemOverallPrice,
                                     laborPrice: 0,
@@ -200,6 +201,7 @@ class _ViewPendingLaborScreenState
                                         mandatoryWindowFields,
                                     optionalWindowFields: optionalWindowFields,
                                     accessoryFields: accessoryFields,
+                                    color: color,
                                     width: quotation[QuotationFields.width],
                                     height: quotation[QuotationFields.height],
                                     itemName: name,

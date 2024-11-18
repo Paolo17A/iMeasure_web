@@ -445,6 +445,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   final optionalWindowFields =
                                       quotation[QuotationFields.optionalMap]
                                           as List<dynamic>;
+                                  final color =
+                                      quotation[QuotationFields.color];
                                   showCartQuotationDialog(context, ref,
                                       totalOverallPayment: itemOverallPrice,
                                       laborPrice:
@@ -454,6 +456,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       optionalWindowFields:
                                           optionalWindowFields,
                                       accessoryFields: accessoryFields,
+                                      color: color,
                                       width: quotation[QuotationFields.width],
                                       height: quotation[QuotationFields.height],
                                       imageURLs: imageURLs,

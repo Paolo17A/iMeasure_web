@@ -135,6 +135,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       String name = associatedItemDoc[ItemFields.name];
       List<dynamic> imageURLs = associatedItemDoc[ItemFields.imageURLs];
       List<dynamic> accesoryField = [];
+      String color = '';
       if (itemType == ItemTypes.rawMaterial) {
         price = associatedItemDoc[ItemFields.price];
       } else {
@@ -142,6 +143,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         price = quotation[QuotationFields.itemOverallPrice];
         laborPrice = quotation[QuotationFields.laborPrice];
         accesoryField = associatedItemDoc[ItemFields.accessoryFields];
+        color = quotation[QuotationFields.color];
       }
       //num price = associatedItemDoc[ItemFields.price];
       return all10Pix(
@@ -243,7 +245,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     cartData[CartFields.quotation],
                                     name,
                                     imageURLs,
-                                    accesoryField))
+                                    accesoryField,
+                                    color))
                             : Container()
                       ],
                     ),
@@ -321,8 +324,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     }
   }
 
-  Widget _showQuotationButton(String itemType, Map<dynamic, dynamic> quotation,
-      String itemName, List<dynamic> imageURLs, List<dynamic> accessoryField) {
+  Widget _showQuotationButton(
+      String itemType,
+      Map<dynamic, dynamic> quotation,
+      String itemName,
+      List<dynamic> imageURLs,
+      List<dynamic> accessoryField,
+      String color) {
     final mandatoryWindowFields = quotation[QuotationFields.mandatoryMap];
     final optionalWindowFields =
         quotation[QuotationFields.optionalMap] as List<dynamic>;
@@ -335,6 +343,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             accessoryFields: accessoryField,
             width: quotation[QuotationFields.width],
             height: quotation[QuotationFields.height],
+            color: color,
             itemName: itemName,
             imageURLs: imageURLs),
         child: quicksandWhiteRegular('VIEW\nQUOTATION', fontSize: 16));

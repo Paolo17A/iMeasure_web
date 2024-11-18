@@ -161,7 +161,7 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
                                                         .name],
                                                 fontSize: 14),
                                             quicksandBlackRegular(
-                                                'PHP ${formatPrice(accessory[WindowAccessorySubfields.price] as double)}',
+                                                'PHP ${formatPrice((accessory[WindowAccessorySubfields.price] as num).toDouble())}',
                                                 fontSize: 14)
                                           ],
                                         ))
@@ -198,8 +198,10 @@ void showCartQuotationDialog(BuildContext context, WidgetRef ref,
     required List<dynamic> accessoryFields,
     required num width,
     required num height,
+    required String color,
     required List<dynamic> imageURLs,
     required String itemName}) {
+  print(color);
   showDialog(
       context: context,
       barrierDismissible: false,
@@ -259,6 +261,13 @@ void showCartQuotationDialog(BuildContext context, WidgetRef ref,
                               quicksandBlackBold('Height', fontSize: 14),
                               quicksandBlackBold('${height.toString()} ft',
                                   fontSize: 14)
+                            ]),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              quicksandBlackBold('Color', fontSize: 14),
+                              quicksandBlackBold(color, fontSize: 14)
                             ]),
                         Gap(12),
                         Column(
@@ -322,7 +331,7 @@ void showCartQuotationDialog(BuildContext context, WidgetRef ref,
                                                 WindowAccessorySubfields.name],
                                             fontSize: 14),
                                         quicksandBlackRegular(
-                                            'PHP ${formatPrice(accessory[WindowAccessorySubfields.price] as double)}',
+                                            'PHP ${formatPrice((accessory[WindowAccessorySubfields.price] as num).toDouble())}',
                                             fontSize: 14)
                                       ],
                                     ))

@@ -241,6 +241,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                   final optionalWindowFields =
                                       quotation[QuotationFields.optionalMap]
                                           as List<dynamic>;
+                                  final color =
+                                      quotation[QuotationFields.color];
                                   showCartQuotationDialog(context, ref,
                                       totalOverallPayment: itemOverallPrice,
                                       laborPrice:
@@ -253,6 +255,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                       width: quotation[QuotationFields.width],
                                       height: quotation[QuotationFields.height],
                                       itemName: name,
+                                      color: color,
                                       imageURLs: imageURLs);
                                 },
                                 child:
