@@ -1156,6 +1156,16 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
     });
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid));
+    List<DocumentSnapshot> orderDocs =
+        ref.read(ordersProvider).orderDocs.where((orderDoc) {
+      final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+      Map<dynamic, dynamic> review = orderData[OrderFields.review];
+
+      return (orderData[OrderFields.orderStatus] != OrderStatuses.completed) ||
+          (orderData[OrderFields.orderStatus] == OrderStatuses.completed &&
+              review.isEmpty);
+    }).toList();
+    ref.read(ordersProvider).setOrderDocs(orderDocs);
     ref.read(ordersProvider).sortOrdersByDate();
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as picked up')));
