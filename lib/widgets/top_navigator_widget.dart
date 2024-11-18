@@ -94,7 +94,7 @@ PreferredSizeWidget topUserNavigator(BuildContext context,
                 ),
                 Row(mainAxisSize: MainAxisSize.min, children: [
                   SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.35,
+                      width: MediaQuery.of(context).size.width * 0.3,
                       child: CustomTextField(
                           text: 'Search...',
                           hasSearchButton: true,

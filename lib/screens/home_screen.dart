@@ -410,6 +410,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
                       List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
+                      List<dynamic> accessoryFields =
+                          itemData[ItemFields.accessoryFields];
                       return viewContentEntryRow(context, children: [
                         viewFlexTextCell(formattedName,
                             flex: 2,
@@ -451,6 +453,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           mandatoryWindowFields,
                                       optionalWindowFields:
                                           optionalWindowFields,
+                                      accessoryFields: accessoryFields,
                                       width: quotation[QuotationFields.width],
                                       height: quotation[QuotationFields.height],
                                       imageURLs: imageURLs,

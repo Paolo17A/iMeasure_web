@@ -52,6 +52,7 @@ class _SelectedWindowScreenState
   final heightController = TextEditingController();
   List<dynamic> mandatoryWindowFields = [];
   List<Map<dynamic, dynamic>> optionalWindowFields = [];
+  List<dynamic> accesoryFields = [];
   num totalMandatoryPayment = 0;
   num totalGlassPrice = 0;
   num totalOverallPayment = 0;
@@ -79,11 +80,11 @@ class _SelectedWindowScreenState
         description = itemData[ItemFields.description];
         isAvailable = itemData[ItemFields.isAvailable];
         imageURLs = itemData[ItemFields.imageURLs];
-        print(imageURLs);
         minHeight = itemData[ItemFields.minHeight];
         maxHeight = itemData[ItemFields.maxHeight];
         minWidth = itemData[ItemFields.minWidth];
         maxWidth = itemData[ItemFields.maxWidth];
+
         orderDocs = await getAllItemOrderDocs(widget.itemID);
 
         if (ref.read(userDataProvider).userType == UserTypes.client) {
@@ -102,6 +103,8 @@ class _SelectedWindowScreenState
               OptionalWindowFields.price: 0
             });
           }
+          accesoryFields = itemData[ItemFields.accessoryFields];
+
           orderDocs = orderDocs.where((orderDoc) {
             final orderData = orderDoc.data() as Map<dynamic, dynamic>;
             Map review = orderData[OrderFields.review];
@@ -564,7 +567,8 @@ class _SelectedWindowScreenState
                       optionalWindowFields: pricedOptionalWindowFields(ref,
                           width: double.parse(widthController.text),
                           height: double.parse(heightController.text),
-                          oldOptionalWindowFields: optionalWindowFields));
+                          oldOptionalWindowFields: optionalWindowFields),
+                      accessoryFields: accesoryFields);
                 } else {
                   if (double.tryParse(widthController.text) == null ||
                       double.tryParse(heightController.text) == null) {
@@ -597,7 +601,10 @@ class _SelectedWindowScreenState
                   heightController: heightController,
                   mandatoryWindowFields: mandatoryWindowFields,
                   optionalWindowFields: optionalWindowFields,
+                  accessoryFields: accesoryFields,
                   itemType: ItemTypes.window,
+                  imageURLs: imageURLs,
+                  itemName: name,
                   hasGlass: true);
             } else {
               if (double.tryParse(widthController.text) == null ||

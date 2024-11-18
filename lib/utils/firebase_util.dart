@@ -1575,7 +1575,8 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
     required double width,
     required double height,
     required List<dynamic> mandatoryWindowFields,
-    required List<Map<dynamic, dynamic>> optionalWindowFields}) async {
+    required List<Map<dynamic, dynamic>> optionalWindowFields,
+    required List<dynamic> accessoryFields}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (!hasLoggedInUser()) {
@@ -1822,6 +1823,10 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
         });
       }
     }
+    double accesoriesPrice = 0;
+    for (var accessory in accessoryFields) {
+      accesoriesPrice += accessory[WindowAccessorySubfields.price];
+    }
 
     await FirebaseFirestore.instance.collection(Collections.cart).add({
       CartFields.itemID: itemID,
@@ -1841,7 +1846,8 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
                     width: width,
                     height: height,
                     mandatoryWindowFields: mandatoryWindowFields) +
-                calculateOptionalPrice(optionalWindowFields),
+                calculateOptionalPrice(optionalWindowFields) +
+                accesoriesPrice,
         QuotationFields.laborPrice: 0,
         QuotationFields.quotationURL: ''
       }

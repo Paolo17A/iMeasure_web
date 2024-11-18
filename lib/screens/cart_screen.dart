@@ -134,6 +134,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     else {
       String name = associatedItemDoc[ItemFields.name];
       List<dynamic> imageURLs = associatedItemDoc[ItemFields.imageURLs];
+      List<dynamic> accesoryField =
+          associatedItemDoc[ItemFields.accessoryFields];
       if (itemType == ItemTypes.rawMaterial) {
         price = associatedItemDoc[ItemFields.price];
       } else {
@@ -199,7 +201,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                quicksandWhiteBold(name),
+                                SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.15,
+                                    child: quicksandWhiteBold(name,
+                                        textAlign: TextAlign.left,
+                                        textOverflow: TextOverflow.ellipsis)),
                                 Row(
                                   children: [
                                     quicksandWhiteRegular(
@@ -235,7 +242,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     itemType,
                                     cartData[CartFields.quotation],
                                     name,
-                                    imageURLs))
+                                    imageURLs,
+                                    accesoryField))
                             : Container()
                       ],
                     ),
@@ -314,7 +322,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _showQuotationButton(String itemType, Map<dynamic, dynamic> quotation,
-      String itemName, List<dynamic> imageURLs) {
+      String itemName, List<dynamic> imageURLs, List<dynamic> accessoryField) {
     final mandatoryWindowFields = quotation[QuotationFields.mandatoryMap];
     final optionalWindowFields =
         quotation[QuotationFields.optionalMap] as List<dynamic>;
@@ -324,6 +332,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             totalOverallPayment: quotation[QuotationFields.itemOverallPrice],
             mandatoryWindowFields: mandatoryWindowFields,
             optionalWindowFields: optionalWindowFields,
+            accessoryFields: accessoryField,
             width: quotation[QuotationFields.width],
             height: quotation[QuotationFields.height],
             itemName: itemName,

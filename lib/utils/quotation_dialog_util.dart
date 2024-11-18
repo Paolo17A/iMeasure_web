@@ -16,11 +16,15 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
     required List<dynamic> mandatoryWindowFields,
     required List<Map<dynamic, dynamic>> optionalWindowFields,
     required String itemType,
-    required bool hasGlass}) {
+    required List<dynamic> imageURLs,
+    required bool hasGlass,
+    required String itemName,
+    required List<dynamic> accessoryFields}) {
   num totalMandatoryPayment = 0;
   num totalGlassPrice = 0;
   num optionalPrice = 0;
   num totalOverallPayment = 0;
+  num totalAccessoryPayment = 0;
 
   //  Calculate Optional Price
   List<Map<dynamic, dynamic>> _pricedOptionalWindowFields =
@@ -45,7 +49,13 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
         .where((window) => window[OptionalWindowFields.isSelected])
         .toList();
   }
-  totalOverallPayment = totalMandatoryPayment + totalGlassPrice + optionalPrice;
+  for (Map<dynamic, dynamic> accessory in accessoryFields) {
+    totalAccessoryPayment += accessory[WindowAccessorySubfields.price];
+  }
+  totalOverallPayment = totalMandatoryPayment +
+      totalGlassPrice +
+      optionalPrice +
+      totalAccessoryPayment;
 
   showDialog(
       context: context,
@@ -63,6 +73,27 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
                           onPressed: () => GoRouter.of(context).pop(),
                           child: quicksandBlackBold('X'))
                     ]),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.network(
+                            imageURLs.first,
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                          Column(children: [
+                            Image.asset(ImagePaths.heritageIcon, scale: 2),
+                            quicksandBlackBold('iMeasure', fontSize: 24),
+                            quicksandBlackBold('• LOS BAÑOS •', fontSize: 12),
+                          ]),
+                          Gap(200)
+                        ]),
+                    all10Pix(
+                      child: Row(children: [
+                        quicksandBlackBold(itemName, textAlign: TextAlign.left)
+                      ]),
+                    ),
                     quicksandBlackBold('ESTIMATED QUOTATION', fontSize: 16),
                     all20Pix(
                       child: Container(
@@ -96,7 +127,7 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
                                         'PHP ${formatPrice(totalGlassPrice.toDouble())}',
                                         fontSize: 14)
                                   ]),
-                            //  Accessories
+                            //  Optional Fields
                             Gap(12),
                             Column(
                               children: selectedOptionalFields
@@ -116,6 +147,25 @@ void showQuotationDialog(BuildContext context, WidgetRef ref,
                                       ))
                                   .toList(),
                             ),
+                            // Accessories
+                            Gap(12),
+                            Column(
+                                children: accessoryFields
+                                    .map((accessory) => Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            quicksandBlackRegular(
+                                                accessory[
+                                                    WindowAccessorySubfields
+                                                        .name],
+                                                fontSize: 14),
+                                            quicksandBlackRegular(
+                                                'PHP ${formatPrice(accessory[WindowAccessorySubfields.price] as double)}',
+                                                fontSize: 14)
+                                          ],
+                                        ))
+                                    .toList()),
                             //  TOTAL
 
                             Gap(12),
@@ -145,6 +195,7 @@ void showCartQuotationDialog(BuildContext context, WidgetRef ref,
     required num laborPrice,
     required List<dynamic> mandatoryWindowFields,
     required List<dynamic> optionalWindowFields,
+    required List<dynamic> accessoryFields,
     required num width,
     required num height,
     required List<dynamic> imageURLs,
@@ -257,6 +308,24 @@ void showCartQuotationDialog(BuildContext context, WidgetRef ref,
                                                 fontSize: 14),
                                           ),
                                         ]))
+                                .toList()),
+                        // Accessories
+                        Gap(12),
+                        Column(
+                            children: accessoryFields
+                                .map((accessory) => Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        quicksandBlackRegular(
+                                            accessory[
+                                                WindowAccessorySubfields.name],
+                                            fontSize: 14),
+                                        quicksandBlackRegular(
+                                            'PHP ${formatPrice(accessory[WindowAccessorySubfields.price] as double)}',
+                                            fontSize: 14)
+                                      ],
+                                    ))
                                 .toList()),
                         if (laborPrice > 0)
                           Row(
@@ -379,33 +448,28 @@ num calculateTotalMandatoryPayment(WidgetRef ref,
       }
     } else if (windowSubField[WindowSubfields.priceBasis] ==
         'PERIMETER DOUBLED') {
-      num perimeter = (2 * width) + (2 * height);
+      num perimeter = (4 * width) + (2 * height);
       switch (ref.read(cartProvider).selectedColor) {
         case WindowColors.brown:
           totalMandatoryPayment +=
-              (windowSubField[WindowSubfields.brownPrice] / 21) * perimeter * 2;
+              (windowSubField[WindowSubfields.brownPrice] / 21) * perimeter;
           break;
         case WindowColors.white:
           totalMandatoryPayment +=
-              (windowSubField[WindowSubfields.whitePrice] / 21) * perimeter * 2;
+              (windowSubField[WindowSubfields.whitePrice] / 21) * perimeter;
           break;
         case WindowColors.mattBlack:
           totalMandatoryPayment +=
-              (windowSubField[WindowSubfields.mattBlackPrice] / 21) *
-                  perimeter *
-                  2;
+              (windowSubField[WindowSubfields.mattBlackPrice] / 21) * perimeter;
           break;
         case WindowColors.mattGray:
           totalMandatoryPayment +=
-              (windowSubField[WindowSubfields.mattGrayPrice] / 21) *
-                  perimeter *
-                  2;
+              (windowSubField[WindowSubfields.mattGrayPrice] / 21) * perimeter;
           break;
         case WindowColors.woodFinish:
           totalMandatoryPayment +=
               (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
-                  perimeter *
-                  2;
+                  perimeter;
           break;
       }
     } else if (windowSubField[WindowSubfields.priceBasis] == 'STACKED WIDTH') {

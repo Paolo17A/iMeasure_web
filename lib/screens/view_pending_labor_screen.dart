@@ -151,6 +151,8 @@ class _ViewPendingLaborScreenState
                           snapshot.data!.data() as Map<dynamic, dynamic>;
                       String name = itemData[WindowFields.name];
                       List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
+                      List<dynamic> accessoryFields =
+                          itemData[ItemFields.accessoryFields];
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
 
@@ -197,6 +199,7 @@ class _ViewPendingLaborScreenState
                                     mandatoryWindowFields:
                                         mandatoryWindowFields,
                                     optionalWindowFields: optionalWindowFields,
+                                    accessoryFields: accessoryFields,
                                     width: quotation[QuotationFields.width],
                                     height: quotation[QuotationFields.height],
                                     itemName: name,

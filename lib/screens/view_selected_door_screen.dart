@@ -51,6 +51,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   final heightController = TextEditingController();
   List<dynamic> mandatoryWindowFields = [];
   List<Map<dynamic, dynamic>> optionalWindowFields = [];
+  List<dynamic> accesoryFields = [];
   num totalMandatoryPayment = 0;
   num totalOverallPayment = 0;
 
@@ -79,6 +80,7 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
         minWidth = itemData[ItemFields.minWidth];
         maxWidth = itemData[ItemFields.maxWidth];
         hasGlass = itemData[ItemFields.hasGlass];
+        accesoryFields = itemData[ItemFields.accessoryFields];
         orderDocs = await getAllItemOrderDocs(widget.itemID);
         if (ref.read(userDataProvider).userType == UserTypes.client) {
           List<dynamic> windowFields = itemData[ItemFields.windowFields];
@@ -149,12 +151,14 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                     ),
                   ],
                 )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _backButton(),
-                    horizontal5Percent(context, child: _userWidgets()),
-                  ],
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _backButton(),
+                      horizontal5Percent(context, child: _userWidgets()),
+                    ],
+                  ),
                 )),
     );
   }
@@ -542,7 +546,8 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                           optionalWindowFields: pricedOptionalWindowFields(ref,
                               width: double.parse(widthController.text),
                               height: double.parse(heightController.text),
-                              oldOptionalWindowFields: optionalWindowFields));
+                              oldOptionalWindowFields: optionalWindowFields),
+                          accessoryFields: accesoryFields);
                     } else {
                       if (double.parse(widthController.text.trim()) <
                               minWidth ||
@@ -574,7 +579,10 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                 heightController: heightController,
                 mandatoryWindowFields: mandatoryWindowFields,
                 optionalWindowFields: optionalWindowFields,
+                imageURLs: imageURLs,
                 itemType: ItemTypes.door,
+                accessoryFields: accesoryFields,
+                itemName: name,
                 hasGlass: hasGlass);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(

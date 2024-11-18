@@ -551,6 +551,75 @@ Widget mandatoryWindowSubfield(WidgetRef ref,
         price = (windowSubField[WindowSubfields.woodFinishPrice] / 21) * width;
         break;
     }
+  } else if (windowSubField[WindowSubfields.priceBasis] == 'PERIMETER') {
+    num perimeter = (2 * width) + (2 * height);
+    switch (ref.read(cartProvider).selectedColor) {
+      case WindowColors.brown:
+        price = (windowSubField[WindowSubfields.brownPrice] / 21) * perimeter;
+        break;
+      case WindowColors.white:
+        price = (windowSubField[WindowSubfields.whitePrice] / 21) * perimeter;
+        break;
+      case WindowColors.mattBlack:
+        price =
+            (windowSubField[WindowSubfields.mattBlackPrice] / 21) * perimeter;
+        break;
+      case WindowColors.mattGray:
+        price =
+            (windowSubField[WindowSubfields.mattGrayPrice] / 21) * perimeter;
+        break;
+      case WindowColors.woodFinish:
+        price =
+            (windowSubField[WindowSubfields.woodFinishPrice] / 21) * perimeter;
+        break;
+    }
+  } else if (windowSubField[WindowSubfields.priceBasis] ==
+      'PERIMETER DOUBLED') {
+    num perimeter = (4 * width) + (2 * height);
+    switch (ref.read(cartProvider).selectedColor) {
+      case WindowColors.brown:
+        price = (windowSubField[WindowSubfields.brownPrice] / 21) * perimeter;
+        break;
+      case WindowColors.white:
+        price = (windowSubField[WindowSubfields.whitePrice] / 21) * perimeter;
+        break;
+      case WindowColors.mattBlack:
+        price =
+            (windowSubField[WindowSubfields.mattBlackPrice] / 21) * perimeter;
+        break;
+      case WindowColors.mattGray:
+        price =
+            (windowSubField[WindowSubfields.mattGrayPrice] / 21) * perimeter;
+        break;
+      case WindowColors.woodFinish:
+        price =
+            (windowSubField[WindowSubfields.woodFinishPrice] / 21) * perimeter;
+        break;
+    }
+  } else if (windowSubField[WindowSubfields.priceBasis] == 'STACKED WIDTH') {
+    num stackedValue = (2 * height) + (6 * width);
+    switch (ref.read(cartProvider).selectedColor) {
+      case WindowColors.brown:
+        price =
+            (windowSubField[WindowSubfields.brownPrice] / 21) * stackedValue;
+        break;
+      case WindowColors.white:
+        price =
+            (windowSubField[WindowSubfields.whitePrice] / 21) * stackedValue;
+        break;
+      case WindowColors.mattBlack:
+        price = (windowSubField[WindowSubfields.mattBlackPrice] / 21) *
+            stackedValue;
+        break;
+      case WindowColors.mattGray:
+        price =
+            (windowSubField[WindowSubfields.mattGrayPrice] / 21) * stackedValue;
+        break;
+      case WindowColors.woodFinish:
+        price = (windowSubField[WindowSubfields.woodFinishPrice] / 21) *
+            stackedValue;
+        break;
+    }
   }
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,

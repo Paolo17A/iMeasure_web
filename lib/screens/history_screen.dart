@@ -205,6 +205,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
                       List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
+                      List<dynamic> accessoryFields =
+                          itemData[ItemFields.accessoryFields];
 
                       return viewContentEntryRow(context, children: [
                         viewFlexTextCell(formattedName,
@@ -247,6 +249,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                           mandatoryWindowFields,
                                       optionalWindowFields:
                                           optionalWindowFields,
+                                      accessoryFields: accessoryFields,
                                       width: quotation[QuotationFields.width],
                                       height: quotation[QuotationFields.height],
                                       itemName: name,
