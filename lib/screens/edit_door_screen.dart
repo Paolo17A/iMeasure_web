@@ -271,6 +271,14 @@ class _EditWindowScreenState extends ConsumerState<EditDoorScreen> {
               });
             }, [
               'N/A',
+              AvailableModels.series38,
+              AvailableModels.series798,
+              AvailableModels.series900,
+              AvailableModels.series38Awning,
+              AvailableModels.series38w1Panel,
+              AvailableModels.series38w2Panel,
+              AvailableModels.series798w2Panel,
+              AvailableModels.series798w4Panel,
               AvailableModels.series900Door,
               AvailableModels.aluminimDoorBathDoor,
               AvailableModels.aluminumDoorGlassDoor,

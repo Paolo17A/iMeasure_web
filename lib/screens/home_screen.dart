@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:imeasure/main.dart';
 import 'package:imeasure/providers/user_data_provider.dart';
 import 'package:imeasure/utils/string_util.dart';
 import 'package:imeasure/widgets/active_clients_widget.dart';
@@ -618,11 +619,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Wrap(
               spacing: 40,
               runSpacing: 40,
-              children: itemDocs.take(6).map((itemDoc) {
+              children: itemDocs.map((itemDoc) {
                 final itemData = itemDoc.data() as Map<dynamic, dynamic>;
                 String itemType = itemData[ItemFields.itemType];
                 return GestureDetector(
                     onTap: () {
+                      iMeasure.lastPage = GoRoutes.home;
                       if (itemType == ItemTypes.window) {
                         GoRouter.of(context).goNamed(GoRoutes.selectedWindow,
                             pathParameters: {

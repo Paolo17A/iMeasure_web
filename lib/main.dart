@@ -21,6 +21,7 @@ void main() async {
 // ignore: camel_case_types
 class iMeasure extends StatelessWidget {
   static final searchController = TextEditingController();
+  static String lastPage = '';
   const iMeasure({super.key});
   @override
   Widget build(BuildContext context) {
