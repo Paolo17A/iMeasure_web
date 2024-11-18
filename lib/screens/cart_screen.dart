@@ -134,14 +134,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     else {
       String name = associatedItemDoc[ItemFields.name];
       List<dynamic> imageURLs = associatedItemDoc[ItemFields.imageURLs];
-      List<dynamic> accesoryField =
-          associatedItemDoc[ItemFields.accessoryFields];
+      List<dynamic> accesoryField = [];
       if (itemType == ItemTypes.rawMaterial) {
         price = associatedItemDoc[ItemFields.price];
       } else {
         quotation = cartData[CartFields.quotation];
         price = quotation[QuotationFields.itemOverallPrice];
         laborPrice = quotation[QuotationFields.laborPrice];
+        accesoryField = associatedItemDoc[ItemFields.accessoryFields];
       }
       //num price = associatedItemDoc[ItemFields.price];
       return all10Pix(
