@@ -34,7 +34,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   double initialRating = 5;
   final feedbackController = TextEditingController();
   List<Uint8List>? reviewImageBytesList = [];
-
+  List<DateTime> proposedDates = [];
   @override
   void initState() {
     super.initState();
@@ -129,6 +129,9 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
     Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
     Map<dynamic, dynamic> review = orderData[OrderFields.review];
     num itemOverallPrice = quotation[QuotationFields.itemOverallPrice];
+    num laborPrice = quotation[QuotationFields.laborPrice] ?? 0;
+    num additionalServicePrice =
+        quotation[QuotationFields.additionalServicePrice] ?? 0;
     return FutureBuilder(
         future: getThisItemDoc(itemID),
         builder: (context, snapshot) {
@@ -167,14 +170,23 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            quicksandWhiteBold(name),
+                            SizedBox(
+                              width: 200,
+                              child: quicksandWhiteBold(name,
+                                  textAlign: TextAlign.left,
+                                  textOverflow: TextOverflow.ellipsis),
+                            ),
                             quicksandWhiteRegular('Quantity: $quantity',
                                 fontSize: 14),
                             quicksandWhiteRegular(
                                 'Date Ordered: ${DateFormat('MMM dd, yyyy').format(dateCreated)}',
                                 fontSize: 14),
-                            quicksandWhiteRegular('Status: $orderStatus',
-                                fontSize: 14),
+                            SizedBox(
+                                width: 200,
+                                child: quicksandWhiteRegular(
+                                    'Status: $orderStatus',
+                                    textAlign: TextAlign.left,
+                                    fontSize: 12)),
                             if (orderStatus == OrderStatuses.completed &&
                                 review.isNotEmpty)
                               Row(children: [
@@ -190,29 +202,56 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                         fontSize: 12)),
                               )
                             else if (orderStatus == OrderStatuses.forPickUp)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  vertical10Pix(
-                                    child: ElevatedButton(
-                                        onPressed: () => markOrderAsPickedUp(
-                                            context, ref, orderID: orderDoc.id),
-                                        child: quicksandWhiteRegular(
-                                            'MARK AS PICKED UP',
-                                            fontSize: 12)),
-                                  ),
-                                ],
-                              )
+                              vertical10Pix(
+                                  child: ElevatedButton(
+                                      onPressed: () => markOrderAsPickedUp(
+                                          context, ref, orderID: orderDoc.id),
+                                      child: quicksandWhiteRegular(
+                                          'MARK AS PICKED UP',
+                                          fontSize: 12)))
+                            else if (orderStatus == OrderStatuses.forDelivery)
+                              vertical10Pix(
+                                  child: ElevatedButton(
+                                      onPressed: () => markOrderAsDelivered(
+                                          context, ref, orderID: orderDoc.id),
+                                      child: quicksandWhiteRegular(
+                                          'MARK AS DELIVERED',
+                                          fontSize: 12)))
+                            else if (orderStatus ==
+                                OrderStatuses.forInstallation)
+                              vertical10Pix(
+                                  child: ElevatedButton(
+                                      onPressed: () => markOrderAsInstalled(
+                                          context, ref, orderID: orderDoc.id),
+                                      child: quicksandWhiteRegular(
+                                          'MARK AS INSTALLED',
+                                          fontSize: 12)))
+                            else if (orderStatus ==
+                                    OrderStatuses.pendingDelivery ||
+                                orderStatus ==
+                                    OrderStatuses.pendingInstallation)
+                              vertical10Pix(
+                                  child: ElevatedButton(
+                                      onPressed: () => showDateSelectionDialog(
+                                          orderID: orderDoc.id,
+                                          orderStatus: orderStatus),
+                                      child: quicksandWhiteRegular(
+                                          'SELECT ${orderStatus == OrderStatuses.pendingDelivery ? 'DELIVERY' : 'INSTALLATION'} DATES',
+                                          fontSize: 10)))
                           ],
                         ),
                         quicksandWhiteBold(
-                            'PHP ${formatPrice(itemOverallPrice * quantity.toDouble())}')
+                            'PHP ${formatPrice(((itemOverallPrice * quantity) + laborPrice + additionalServicePrice).toDouble())}')
                       ],
                     )
                   ],
                 ),
               ),
               if ((orderStatus == OrderStatuses.forPickUp) ||
+                  orderStatus == OrderStatuses.pendingDelivery ||
+                  orderStatus == OrderStatuses.pendingInstallation ||
+                  orderStatus == OrderStatuses.forDelivery ||
+                  orderStatus == OrderStatuses.forInstallation ||
                   (orderStatus == OrderStatuses.completed && review.isEmpty))
                 Positioned(
                     top: 10,
@@ -226,6 +265,115 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
             ],
           );
         });
+  }
+
+  void showDateSelectionDialog(
+      {required String orderID, required String orderStatus}) {
+    proposedDates.clear();
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => StatefulBuilder(
+              builder: (context, setState) => Dialog(
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  padding: EdgeInsets.all(20),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                  onPressed: () => GoRouter.of(context).pop(),
+                                  child: quicksandBlackBold('X'))
+                            ]),
+                        quicksandBlackBold(
+                            'SELECT UP TO FIVE ${orderStatus == OrderStatuses.pendingDelivery ? 'DELIVERY' : 'INSTALLATION'} DATES',
+                            fontSize: 28),
+                        Gap(20),
+                        ElevatedButton(
+                            onPressed: () async {
+                              if (proposedDates.length == 5) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(
+                                        'You can only select a maximum of 5 dates')));
+                                return;
+                              }
+                              DateTime? pickedDate = await showDatePicker(
+                                  context: context,
+                                  firstDate:
+                                      DateTime.now().add(Duration(days: 1)),
+                                  lastDate:
+                                      DateTime.now().add(Duration(days: 14)));
+                              if (pickedDate == null) return null;
+                              if (proposedDates
+                                      .where((proposedDate) =>
+                                          proposedDate.day == pickedDate.day &&
+                                          proposedDate.month ==
+                                              pickedDate.month &&
+                                          pickedDate.year == pickedDate.year)
+                                      .firstOrNull !=
+                                  null) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(
+                                        'You have already selected this date.')));
+                                return;
+                              }
+                              setState(() {
+                                proposedDates.add(pickedDate);
+                              });
+                            },
+                            child: quicksandWhiteRegular('ADD A DATE')),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.25,
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: proposedDates
+                                  .map((proposedDate) => Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          quicksandBlackBold(
+                                              DateFormat('MMM dd, yyy')
+                                                  .format(proposedDate)),
+                                          IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  proposedDates
+                                                      .remove(proposedDate);
+                                                });
+                                              },
+                                              icon: Icon(Icons.delete,
+                                                  color: Colors.black))
+                                        ],
+                                      ))
+                                  .toList()),
+                        ),
+                        if (proposedDates.isNotEmpty)
+                          vertical20Pix(
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    if (orderStatus ==
+                                        OrderStatuses.pendingDelivery)
+                                      markOrderAsPendingDeliveryApproval(
+                                          context, ref,
+                                          orderID: orderID,
+                                          requestedDates: proposedDates);
+                                    else
+                                      markOrderAsPendingInstallationApproval(
+                                          context, ref,
+                                          orderID: orderID,
+                                          requestedDates: proposedDates);
+                                  },
+                                  child: quicksandWhiteRegular(
+                                      'REQUEST FOR ${orderStatus == OrderStatuses.pendingDelivery ? 'DELIVERY' : 'INSTALLATION'}')))
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ));
   }
 
   void showRatingDialog(DocumentSnapshot orderDoc) {

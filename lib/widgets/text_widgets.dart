@@ -5,9 +5,11 @@ import 'package:imeasure/utils/color_util.dart';
 Text quicksandWhiteBold(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
+    int? maxLines,
     TextOverflow? textOverflow}) {
   return Text(label,
       textAlign: textAlign,
+      maxLines: maxLines,
       style: GoogleFonts.quicksand(
           fontSize: fontSize,
           color: Colors.white,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/providers/appointments_provider.dart';
 import 'package:imeasure/providers/loading_provider.dart';
 import 'package:imeasure/providers/profile_image_url_provider.dart';
 import 'package:imeasure/utils/color_util.dart';
@@ -57,6 +58,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             .setImageURL(userData[UserFields.profileImageURL]);
         address = userData[UserFields.address];
         mobileNumber = userData[UserFields.mobileNumber];
+        ref
+            .read(appointmentsProvider)
+            .setAppointmentDocs(await getAllUserAppointments());
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);
@@ -70,6 +74,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(userDataProvider);
+    ref.watch(appointmentsProvider);
     return Scaffold(
       appBar: topUserNavigator(context, path: GoRoutes.profile),
       body: switchedLoadingContainer(
@@ -139,39 +144,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _actionButtons() {
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
+    return Wrap(alignment: WrapAlignment.center, children: [
+      submitButton(context,
+          label: 'EDIT PROFILE',
+          onPress: () => GoRouter.of(context).goNamed(GoRoutes.editProfile)),
+      submitButton(context, label: 'TRANSACTION HISTORY', onPress: () {}),
+      Stack(
         children: [
           submitButton(context,
-              label: 'EDIT PROFILE',
+              label: 'ORDER HISTORY',
               onPress: () =>
-                  GoRouter.of(context).goNamed(GoRoutes.editProfile)),
-          Stack(
-            children: [
-              submitButton(context,
-                  label: 'ORDER HISTORY',
-                  onPress: () =>
-                      GoRouter.of(context).goNamed(GoRoutes.orderHistory)),
-              Positioned(
-                  right: 10, top: 10, child: pendingPickUpOrdersStreamBuilder())
-            ],
-          ),
-          submitButton(context,
-              label: 'COMPLETED',
-              onPress: () =>
-                  GoRouter.of(context).goNamed(GoRoutes.completedOrders)),
-          Gap(16),
-          ElevatedButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut().then((value) {
-                  GoRouter.of(context).goNamed(GoRoutes.home);
-                  GoRouter.of(context).pushNamed(GoRoutes.home);
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: CustomColors.coralRed),
-              child: quicksandWhiteBold('LOG-OUT'))
-        ]);
+                  GoRouter.of(context).goNamed(GoRoutes.orderHistory)),
+          Positioned(
+              right: 10, top: 10, child: pendingPickUpOrdersStreamBuilder())
+        ],
+      ),
+      submitButton(context,
+          label: 'COMPLETED',
+          onPress: () =>
+              GoRouter.of(context).goNamed(GoRoutes.completedOrders)),
+      Stack(
+        children: [
+          submitButton(context, label: 'APPOINTMENTS', onPress: () {}),
+          Positioned(right: 10, top: 10, child: Container())
+        ],
+      ),
+      Gap(16),
+      all20Pix(
+        child: ElevatedButton(
+            onPressed: () {
+              FirebaseAuth.instance.signOut().then((value) {
+                GoRouter.of(context).goNamed(GoRoutes.home);
+                GoRouter.of(context).pushNamed(GoRoutes.home);
+              });
+            },
+            style: ElevatedButton.styleFrom(
+                backgroundColor: CustomColors.coralRed),
+            child: quicksandWhiteBold('LOG-OUT')),
+      )
+    ]);
   }
 }

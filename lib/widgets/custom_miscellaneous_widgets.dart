@@ -648,7 +648,11 @@ StreamBuilder pendingPickUpOrdersStreamBuilder() {
         final orderData = order.data() as Map<dynamic, dynamic>;
         String orderStatus = orderData[OrderFields.orderStatus];
         Map<dynamic, dynamic> review = orderData[OrderFields.review];
-        return (orderStatus == OrderStatuses.forPickUp) ||
+        return orderStatus == OrderStatuses.pendingInstallation ||
+            orderStatus == OrderStatuses.pendingDelivery ||
+            orderStatus == OrderStatuses.forPickUp ||
+            orderStatus == OrderStatuses.forDelivery ||
+            orderStatus == OrderStatuses.forInstallation ||
             (orderStatus == OrderStatuses.completed && review.isEmpty);
       }).toList();
       //int availableCollectionCount = snapshot.data!.docs.length;
@@ -661,6 +665,56 @@ StreamBuilder pendingPickUpOrdersStreamBuilder() {
               shape: BoxShape.circle, color: CustomColors.coralRed),
           child: Center(
             child: quicksandWhiteRegular(filteredOrders.length.toString(),
+                fontSize: 12),
+          ),
+        );
+      else {
+        return Container();
+      }
+    },
+  );
+}
+
+StreamBuilder pendingCheckOutStreamBuilder() {
+  return StreamBuilder(
+    stream: FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .where(CartFields.clientID,
+            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting ||
+          !snapshot.hasData ||
+          snapshot.hasError) return Container();
+      List<DocumentSnapshot> filteredCartItems = snapshot.data!.docs;
+      filteredCartItems = filteredCartItems.where((cart) {
+        final cartData = cart.data() as Map<dynamic, dynamic>;
+        String itemType = cartData[CartFields.itemType];
+        Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+        String requestStatus = quotation[QuotationFields.requestStatus];
+        bool isRequestingAdditionalService =
+            quotation[QuotationFields.isRequestingAdditionalService];
+        bool isFurniture =
+            (itemType == ItemTypes.window || itemType == ItemTypes.door);
+        return (isFurniture &&
+                (requestStatus == RequestStatuses.approved ||
+                    requestStatus == RequestStatuses.denied)) ||
+            (!isFurniture && !isRequestingAdditionalService) ||
+            (!isFurniture &&
+                isRequestingAdditionalService &&
+                (requestStatus == RequestStatuses.approved ||
+                    requestStatus == RequestStatuses.denied));
+      }).toList();
+      //int availableCollectionCount = snapshot.data!.docs.length;
+
+      if (filteredCartItems.length > 0)
+        return Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+              shape: BoxShape.circle, color: CustomColors.coralRed),
+          child: Center(
+            child: quicksandWhiteRegular(filteredCartItems.length.toString(),
                 fontSize: 12),
           ),
         );
@@ -941,4 +995,104 @@ Widget userReviews(List<DocumentSnapshot> orderDocs) {
       ],
     ),
   );
+}
+
+StreamBuilder uncompletedOrdersStreamBuilder({bool displayifEmpty = true}) {
+  return StreamBuilder(
+    stream: FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .where(OrderFields.orderStatus, whereNotIn: [
+      OrderStatuses.completed,
+      OrderStatuses.denied
+    ]).snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting ||
+          snapshot.hasError ||
+          !snapshot.hasData) return Container();
+      List<dynamic> orders = snapshot.data!.docs;
+
+      return (orders.isNotEmpty || displayifEmpty)
+          ? quicksandCoralRedBold(orders.length.toString(), fontSize: 28)
+          : Container();
+    },
+  );
+}
+
+StreamBuilder windowItemsStreamBuilder() {
+  return StreamBuilder(
+    stream: FirebaseFirestore.instance
+        .collection(Collections.items)
+        .where(ItemFields.itemType, isEqualTo: ItemTypes.window)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting ||
+          snapshot.hasError ||
+          !snapshot.hasData) return Container();
+      List<dynamic> items = snapshot.data!.docs;
+
+      return quicksandCoralRedBold(items.length.toString());
+    },
+  );
+}
+
+StreamBuilder doorItemsStreamBuilder() {
+  return StreamBuilder(
+    stream: FirebaseFirestore.instance
+        .collection(Collections.items)
+        .where(ItemFields.itemType, isEqualTo: ItemTypes.door)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting ||
+          snapshot.hasError ||
+          !snapshot.hasData) return Container();
+      List<dynamic> items = snapshot.data!.docs;
+
+      return quicksandCoralRedBold(items.length.toString());
+    },
+  );
+}
+
+StreamBuilder rawMaterialItemsStreamBuilder() {
+  return StreamBuilder(
+    stream: FirebaseFirestore.instance
+        .collection(Collections.items)
+        .where(ItemFields.itemType, isEqualTo: ItemTypes.rawMaterial)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting ||
+          snapshot.hasError ||
+          !snapshot.hasData) return Container();
+      List<dynamic> items = snapshot.data!.docs;
+
+      return quicksandCoralRedBold(items.length.toString());
+    },
+  );
+}
+
+void showDenialReasonDialog(BuildContext context,
+    {required String denialReason}) {
+  showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.4,
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                      TextButton(
+                          onPressed: () => GoRouter.of(context).pop(),
+                          child: quicksandBlackBold('X'))
+                    ]),
+                    quicksandBlackBold('DENIAL REASON', fontSize: 28),
+                    Gap(12),
+                    quicksandBlackRegular(denialReason,
+                        textAlign: TextAlign.left)
+                  ],
+                ),
+              ),
+            ),
+          ));
 }

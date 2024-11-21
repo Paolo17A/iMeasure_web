@@ -17,6 +17,7 @@ import '../utils/string_util.dart';
 import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_miscellaneous_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
+import '../widgets/custom_text_field_widget.dart';
 import '../widgets/top_navigator_widget.dart';
 
 class ViewSelectedRawMaterialScreen extends ConsumerStatefulWidget {
@@ -35,6 +36,9 @@ class _SelectedRawMaterialScreenState
   String description = '';
   bool isAvailable = false;
   num price = 0;
+  bool requestingService = false;
+  final addressController = TextEditingController();
+  final contactNumberController = TextEditingController();
 
   List<dynamic> imageURLs = [];
   List<DocumentSnapshot> orderDocs = [];
@@ -270,11 +274,13 @@ class _SelectedRawMaterialScreenState
                   children: [
                     _name(),
                     _price(),
+                    _availInstallation(),
                     _actionButtons(),
                   ],
                 ),
               ],
             ),
+            Divider(color: Colors.white),
             _description(),
             if (orderDocs.isNotEmpty) userReviews(orderDocs)
           ],
@@ -335,13 +341,61 @@ class _SelectedRawMaterialScreenState
             textOverflow: TextOverflow.ellipsis));
   }
 
+  Widget _availInstallation() {
+    return vertical20Pix(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Checkbox(
+                  value: requestingService,
+                  onChanged: (newVal) {
+                    setState(() {
+                      requestingService = newVal!;
+                    });
+                  }),
+              quicksandWhiteBold('AVAIL INSTALLATION SERVICE', fontSize: 20)
+            ],
+          ),
+          if (requestingService)
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  quicksandWhiteBold('Installation Address'),
+                  CustomTextField(
+                      text: 'Installation Address',
+                      controller: addressController,
+                      textInputType: TextInputType.streetAddress),
+                  Gap(20),
+                  quicksandWhiteBold('Mobile Number'),
+                  CustomTextField(
+                      text: 'Contact Number',
+                      controller: contactNumberController,
+                      textInputType: TextInputType.phone),
+                ],
+              ),
+            )
+        ],
+      ),
+    );
+  }
+
   Widget _actionButtons() {
     return SizedBox(
       height: 60,
       child: ElevatedButton(
           onPressed: isAvailable
               ? () {
-                  addRawMaterialToCart(context, ref, itemID: widget.itemID);
+                  addRawMaterialToCart(context, ref,
+                      itemID: widget.itemID,
+                      requestingService: requestingService,
+                      addressController: addressController,
+                      itemOverallPrice: price,
+                      contactNumberController: contactNumberController);
                 }
               : null,
           style: ElevatedButton.styleFrom(

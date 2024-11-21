@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker_web/image_picker_web.dart';
+import 'package:imeasure/providers/appointments_provider.dart';
 import 'package:imeasure/providers/gallery_provider.dart';
 import 'package:imeasure/providers/items_provider.dart';
 import 'package:imeasure/providers/orders_provider.dart';
@@ -907,9 +908,17 @@ Future approveThisPayment(BuildContext context, WidgetRef ref,
 }
 
 Future denyThisPayment(BuildContext context, WidgetRef ref,
-    {required String paymentID, required List<dynamic> orderIDs}) async {
+    {required String paymentID,
+    required List<dynamic> orderIDs,
+    required TextEditingController denialReasonController}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
+  if (denialReasonController.text.isEmpty) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('You must indicate a reason for denying this payment.')));
+    return;
+  }
   try {
+    GoRouter.of(context).pop();
     ref.read(loadingProvider.notifier).toggleLoading(true);
 
     await FirebaseFirestore.instance
@@ -918,7 +927,8 @@ Future denyThisPayment(BuildContext context, WidgetRef ref,
         .update({
       TransactionFields.dateApproved: DateTime.now(),
       TransactionFields.paymentVerified: true,
-      TransactionFields.transactionStatus: TransactionStatuses.denied
+      TransactionFields.transactionStatus: TransactionStatuses.denied,
+      TransactionFields.denialReason: denialReasonController.text.trim()
     });
     for (var orderID in orderIDs) {
       await FirebaseFirestore.instance
@@ -958,16 +968,21 @@ Future<List<DocumentSnapshot>> getAllUncompletedOrderDocs() async {
       .collection(Collections.orders)
       .where(OrderFields.orderStatus, isNotEqualTo: OrderStatuses.completed)
       .get();
-  return orders.docs.reversed
-      .map((order) => order as DocumentSnapshot)
-      .toList();
+
+  //  REMOVE ALL PAYMENT DENIED
+  List<DocumentSnapshot> fileteredOrders = orders.docs.where((order) {
+    final orderData = order.data();
+    String orderStatus = orderData[OrderFields.orderStatus];
+    return orderStatus != OrderStatuses.denied;
+  }).toList();
+  return fileteredOrders;
 }
 
 Future<List<DocumentSnapshot>> getAllCompletedOrderDocs() async {
   final orders = await FirebaseFirestore.instance
       .collection(Collections.orders)
-      .where(OrderFields.orderStatus, isEqualTo: OrderStatuses.completed)
-      .get();
+      .where(OrderFields.orderStatus,
+          whereIn: [OrderStatuses.completed, OrderStatuses.denied]).get();
   return orders.docs.reversed
       .map((order) => order as DocumentSnapshot)
       .toList();
@@ -1036,17 +1051,8 @@ Future purchaseSelectedCartItems(BuildContext context, WidgetRef ref,
     for (var cartItem in ref.read(cartProvider).selectedCartItemIDs) {
       final cartDoc = await getThisCartEntry(cartItem);
       final cartData = cartDoc.data() as Map<dynamic, dynamic>;
-      Map<dynamic, dynamic> quotation = {};
-      num price = 0;
-      if (cartData[CartFields.itemType] != ItemTypes.rawMaterial) {
-        quotation = cartData[CartFields.quotation];
-        quotation[QuotationFields.laborPrice] = 0;
-      } else {
-        String itemID = cartData[CartFields.itemID];
-        final item = await getThisItemDoc(itemID);
-        final itemData = item.data() as Map<dynamic, dynamic>;
-        price = itemData[ItemFields.price];
-      }
+      //String itemType = cartData[CartFields.itemID];
+      Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
 
       DocumentReference orderReference =
           await FirebaseFirestore.instance.collection(Collections.orders).add({
@@ -1055,10 +1061,7 @@ Future purchaseSelectedCartItems(BuildContext context, WidgetRef ref,
         OrderFields.quantity: cartData[CartFields.quantity],
         OrderFields.orderStatus: OrderStatuses.pending,
         OrderFields.dateCreated: DateTime.now(),
-        OrderFields.quotation:
-            cartData[CartFields.itemType] != ItemTypes.rawMaterial
-                ? quotation
-                : {QuotationFields.itemOverallPrice: price},
+        OrderFields.quotation: quotation,
         OrderFields.review: {}
       });
 
@@ -1082,7 +1085,8 @@ Future purchaseSelectedCartItems(BuildContext context, WidgetRef ref,
           ref.read(cartProvider).selectedPaymentMethod,
       TransactionFields.dateCreated: DateTime.now(),
       TransactionFields.dateApproved: DateTime(1970),
-      TransactionFields.orderIDs: orderIDs
+      TransactionFields.orderIDs: orderIDs,
+      TransactionFields.denialReason: ''
     });
 
     //  2. Upload the proof of payment image to Firebase Storage
@@ -1115,6 +1119,183 @@ Future purchaseSelectedCartItems(BuildContext context, WidgetRef ref,
   }
 }
 
+Future markOrderAsPendingInstallation(BuildContext context, WidgetRef ref,
+    {required String orderID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({OrderFields.orderStatus: OrderStatuses.pendingInstallation});
+    ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
+    ref.read(ordersProvider).sortOrdersByDate();
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Successfully marked order as ready for pick up.')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Error marking order as pending installation: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future markOrderAsPendingDelivery(BuildContext context, WidgetRef ref,
+    {required String orderID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({OrderFields.orderStatus: OrderStatuses.pendingDelivery});
+    ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
+    ref.read(ordersProvider).sortOrdersByDate();
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Successfully marked order as ready for pick up.')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Error marking order as pending delivery: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future markOrderAsForInstallation(BuildContext context, WidgetRef ref,
+    {required String orderID, required Timestamp selectedDate}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    final order = await getThisOrderDoc(orderID);
+    final orderData = order.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
+    quotation[QuotationFields.selectedDate] = selectedDate;
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.orderStatus: OrderStatuses.forInstallation,
+      OrderFields.quotation: quotation
+    });
+    ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
+    ref.read(ordersProvider).sortOrdersByDate();
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Successfully marked order as ready for installation.')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Error marking order as for installation: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future markOrderAsForDelivery(BuildContext context, WidgetRef ref,
+    {required String orderID, required Timestamp selectedDate}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    final order = await getThisOrderDoc(orderID);
+    final orderData = order.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
+    quotation[QuotationFields.selectedDate] = selectedDate;
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.orderStatus: OrderStatuses.forDelivery,
+      OrderFields.quotation: quotation
+    });
+    ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
+    ref.read(ordersProvider).sortOrdersByDate();
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text('Successfully marked order as ready for delivery.')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error marking order as for delivery: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future markOrderAsPendingInstallationApproval(
+    BuildContext context, WidgetRef ref,
+    {required String orderID, required List<DateTime> requestedDates}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    GoRouter.of(context).pop();
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    final order = await getThisOrderDoc(orderID);
+    final orderData = order.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
+    quotation[QuotationFields.requestedDates] = requestedDates;
+    quotation[QuotationFields.selectedDate] = DateTime(1970);
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.quotation: quotation,
+      OrderFields.orderStatus: OrderStatuses.installationPendingApproval
+    });
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Successfully marked order as pending installation approval.')));
+    ref.read(ordersProvider).setOrderDocs(
+        await getAllClientUncompletedOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
+    List<DocumentSnapshot> orderDocs =
+        ref.read(ordersProvider).orderDocs.where((orderDoc) {
+      final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+      Map<dynamic, dynamic> review = orderData[OrderFields.review];
+
+      return (orderData[OrderFields.orderStatus] != OrderStatuses.completed) ||
+          (orderData[OrderFields.orderStatus] == OrderStatuses.completed &&
+              review.isEmpty);
+    }).toList();
+    ref.read(ordersProvider).setOrderDocs(orderDocs);
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content: Text(
+            'Error marking order as pending installation approval: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future markOrderAsPendingDeliveryApproval(BuildContext context, WidgetRef ref,
+    {required String orderID, required List<DateTime> requestedDates}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    GoRouter.of(context).pop();
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    final order = await getThisOrderDoc(orderID);
+    final orderData = order.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
+    quotation[QuotationFields.requestedDates] = requestedDates;
+    quotation[QuotationFields.selectedDate] = DateTime(1970);
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.quotation: quotation,
+      OrderFields.orderStatus: OrderStatuses.deliveryPendingApproval
+    });
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content:
+            Text('Successfully marked order as pending delivery approval.')));
+    ref.read(ordersProvider).setOrderDocs(
+        await getAllClientUncompletedOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content:
+            Text('Error marking order as pending delivery approval: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
 Future markOrderAsReadyForPickUp(BuildContext context, WidgetRef ref,
     {required String orderID}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -1125,12 +1306,10 @@ Future markOrderAsReadyForPickUp(BuildContext context, WidgetRef ref,
         .collection(Collections.orders)
         .doc(orderID)
         .update({OrderFields.orderStatus: OrderStatuses.forPickUp});
-    ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
-    ref.read(ordersProvider).orderDocs.sort((a, b) {
-      DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
-      DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
-      return bTime.compareTo(aTime);
-    });
+    ref.read(ordersProvider).setOrderDocs(
+        await getAllClientUncompletedOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
+    ref.read(ordersProvider).sortOrdersByDate();
     scaffoldMessenger.showSnackBar(SnackBar(
         content: Text('Successfully marked order as ready for pick up.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1146,7 +1325,6 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
-
     await FirebaseFirestore.instance
         .collection(Collections.orders)
         .doc(orderID)
@@ -1155,17 +1333,60 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
       OrderFields.datePickedUp: DateTime.now()
     });
     ref.read(ordersProvider).setOrderDocs(
-        await getAllClientOrderDocs(FirebaseAuth.instance.currentUser!.uid));
-    List<DocumentSnapshot> orderDocs =
-        ref.read(ordersProvider).orderDocs.where((orderDoc) {
-      final orderData = orderDoc.data() as Map<dynamic, dynamic>;
-      Map<dynamic, dynamic> review = orderData[OrderFields.review];
+        await getAllClientUncompletedOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
+    ref.read(ordersProvider).sortOrdersByDate();
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully marked order as picked up')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error marking order as picked up: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
 
-      return (orderData[OrderFields.orderStatus] != OrderStatuses.completed) ||
-          (orderData[OrderFields.orderStatus] == OrderStatuses.completed &&
-              review.isEmpty);
-    }).toList();
-    ref.read(ordersProvider).setOrderDocs(orderDocs);
+Future markOrderAsInstalled(BuildContext context, WidgetRef ref,
+    {required String orderID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.orderStatus: OrderStatuses.installed,
+      OrderFields.datePickedUp: DateTime.now()
+    });
+    ref.read(ordersProvider).setOrderDocs(
+        await getAllClientUncompletedOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
+    ref.read(ordersProvider).sortOrdersByDate();
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully marked order as picked up')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error marking order as picked up: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future markOrderAsDelivered(BuildContext context, WidgetRef ref,
+    {required String orderID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.orderStatus: OrderStatuses.delivered,
+      OrderFields.datePickedUp: DateTime.now()
+    });
+    ref.read(ordersProvider).setOrderDocs(
+        await getAllClientUncompletedOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
     ref.read(ordersProvider).sortOrdersByDate();
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as picked up')));
@@ -1188,11 +1409,8 @@ Future markOrderAsCompleted(BuildContext context, WidgetRef ref,
         .doc(orderID)
         .update({OrderFields.orderStatus: OrderStatuses.completed});
     ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
-    ref.read(ordersProvider).orderDocs.sort((a, b) {
-      DateTime aTime = (a[OrderFields.dateCreated] as Timestamp).toDate();
-      DateTime bTime = (b[OrderFields.dateCreated] as Timestamp).toDate();
-      return bTime.compareTo(aTime);
-    });
+    ref.read(ordersProvider).sortOrdersByDate();
+
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as completed.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1586,12 +1804,22 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
     required double height,
     required List<dynamic> mandatoryWindowFields,
     required List<Map<dynamic, dynamic>> optionalWindowFields,
-    required List<dynamic> accessoryFields}) async {
+    required List<dynamic> accessoryFields,
+    required bool requestingService,
+    required TextEditingController addressController,
+    required TextEditingController contactNumberController}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   if (!hasLoggedInUser()) {
     scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Please log-in to your account first.')));
+    return;
+  }
+  if (requestingService &&
+      (addressController.text.isEmpty ||
+          contactNumberController.text.isEmpty)) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text('Please provide a valid address and contact number.')));
     return;
   }
   try {
@@ -1836,6 +2064,7 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
       CartFields.clientID: FirebaseAuth.instance.currentUser!.uid,
       CartFields.quantity: 1,
       CartFields.itemType: itemType,
+      CartFields.dateLastModified: DateTime.now(),
       CartFields.quotation: {
         QuotationFields.width: width,
         QuotationFields.height: height,
@@ -1852,7 +2081,15 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
                 calculateOptionalPrice(optionalWindowFields) +
                 accesoriesPrice,
         QuotationFields.laborPrice: 0,
-        QuotationFields.quotationURL: ''
+        QuotationFields.quotationURL: '',
+        //REQUESTS
+        QuotationFields.isRequestingAdditionalService: requestingService,
+        QuotationFields.additionalServicePrice: 0,
+        QuotationFields.requestAddress: addressController.text.trim(),
+        QuotationFields.requestContactNumber:
+            contactNumberController.text.trim(),
+        QuotationFields.requestStatus: '',
+        QuotationFields.requestDenialReason: ''
       }
     });
 
@@ -1868,9 +2105,20 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
 }
 
 Future addRawMaterialToCart(BuildContext context, WidgetRef ref,
-    {required String itemID}) async {
+    {required String itemID,
+    required bool requestingService,
+    required num itemOverallPrice,
+    required TextEditingController addressController,
+    required TextEditingController contactNumberController}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
+    if (requestingService &&
+        (addressController.text.isEmpty ||
+            contactNumberController.text.isEmpty)) {
+      scaffoldMessenger.showSnackBar(const SnackBar(
+          content: Text('Please provide a valid address and contact number.')));
+      return;
+    }
     if (ref.read(cartProvider).cartContainsThisItem(itemID)) {
       scaffoldMessenger.showSnackBar(
           const SnackBar(content: Text('This item is already in your cart.')));
@@ -1881,7 +2129,18 @@ Future addRawMaterialToCart(BuildContext context, WidgetRef ref,
       CartFields.itemID: itemID,
       CartFields.clientID: FirebaseAuth.instance.currentUser!.uid,
       CartFields.quantity: 1,
-      CartFields.itemType: ItemTypes.rawMaterial
+      CartFields.itemType: ItemTypes.rawMaterial,
+      CartFields.dateLastModified: DateTime.now(),
+      CartFields.quotation: {
+        QuotationFields.isRequestingAdditionalService: requestingService,
+        QuotationFields.additionalServicePrice: 0,
+        QuotationFields.requestAddress: addressController.text.trim(),
+        QuotationFields.requestContactNumber:
+            contactNumberController.text.trim(),
+        QuotationFields.requestStatus: '',
+        QuotationFields.itemOverallPrice: itemOverallPrice,
+        QuotationFields.requestDenialReason: ''
+      }
     });
     ref.read(cartProvider.notifier).addCartItem(await cartDocReference.get());
     scaffoldMessenger.showSnackBar(
@@ -1901,6 +2160,7 @@ void removeCartItem(BuildContext context, WidgetRef ref,
     scaffoldMessenger.showSnackBar(const SnackBar(
         content: Text('Successfully removed this item from your cart.')));
     ref.read(cartProvider).removeCartItem(cartDoc);
+    ref.read(cartProvider).updateCartSubLists();
   } catch (error) {
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Error removing cart item: $error')));
@@ -1933,7 +2193,10 @@ Future changeCartItemQuantity(BuildContext context, WidgetRef ref,
 
 Future setCartItemLaborPrice(BuildContext context, WidgetRef ref,
     {required String cartID,
-    required TextEditingController laborPriceController}) async {
+    required TextEditingController laborPriceController,
+    required bool requestingAdditionalService,
+    required bool willGrantInstallation,
+    required TextEditingController installationController}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   try {
@@ -1943,6 +2206,23 @@ Future setCartItemLaborPrice(BuildContext context, WidgetRef ref,
       scaffoldMessenger.showSnackBar(SnackBar(
           content:
               Text('Pleas input a valid labor price higher than PHP 0.00')));
+      return;
+    }
+    if (requestingAdditionalService &&
+        willGrantInstallation &&
+        (double.tryParse(installationController.text) == null ||
+            double.parse(installationController.text) <= 0)) {
+      scaffoldMessenger.showSnackBar(SnackBar(
+          content: Text(
+              'Pleas input a valid installation price higher than PHP 0.00')));
+      return;
+    }
+    if (requestingAdditionalService &&
+        !willGrantInstallation &&
+        installationController.text.isEmpty) {
+      scaffoldMessenger.showSnackBar(SnackBar(
+          content: Text(
+              'Pleas input a valid reason for denying the installation request')));
       return;
     }
     goRouter.pop();
@@ -1955,10 +2235,34 @@ Future setCartItemLaborPrice(BuildContext context, WidgetRef ref,
     Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
     quotation[QuotationFields.laborPrice] =
         double.parse(laborPriceController.text);
+    //  User is requesting both labor and installation
+    if (requestingAdditionalService) {
+      quotation[QuotationFields.requestStatus] = willGrantInstallation
+          ? RequestStatuses.approved
+          : RequestStatuses.denied;
+      //  Installation request is granted
+      if (willGrantInstallation) {
+        quotation[QuotationFields.additionalServicePrice] =
+            double.parse(installationController.text.trim());
+      }
+      //  Installation request is denied
+      else {
+        quotation[QuotationFields.requestDenialReason] =
+            installationController.text.trim();
+      }
+    }
+    //  User is only requesting for labor
+    else {
+      quotation[QuotationFields.requestStatus] = RequestStatuses.approved;
+    }
+
     await FirebaseFirestore.instance
         .collection(Collections.cart)
         .doc(cartID)
-        .update({CartFields.quotation: quotation});
+        .update({
+      CartFields.quotation: quotation,
+      CartFields.dateLastModified: DateTime.now()
+    });
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully set item labor price.')));
     ref
@@ -1973,6 +2277,92 @@ Future setCartItemLaborPrice(BuildContext context, WidgetRef ref,
   }
 }
 
+Future setCartItemDeliveryPrice(BuildContext context, WidgetRef ref,
+    {required String cartID,
+    required TextEditingController deliveryPriceController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    if (deliveryPriceController.text.isEmpty ||
+        double.tryParse(deliveryPriceController.text) == null ||
+        double.parse(deliveryPriceController.text) <= 0) {
+      scaffoldMessenger.showSnackBar(SnackBar(
+          content:
+              Text('Pleas input a valid delivery price higher than PHP 0.00')));
+      return;
+    }
+    goRouter.pop();
+    ref.read(loadingProvider).toggleLoading(true);
+    final cart = await FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .doc(cartID)
+        .get();
+    final cartData = cart.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+    quotation[QuotationFields.additionalServicePrice] =
+        double.parse(deliveryPriceController.text);
+    quotation[QuotationFields.requestStatus] = RequestStatuses.approved;
+    await FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .doc(cartID)
+        .update({
+      CartFields.quotation: quotation,
+      CartFields.dateLastModified: DateTime.now()
+    });
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully set item delivery price.')));
+    ref
+        .read(cartProvider)
+        .setCartItems(await getAllCartItemsWithNoDeliveryPrice());
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error setting item delivery price: $error')));
+  }
+}
+
+Future denyCartItemDeliveryRequest(BuildContext context, WidgetRef ref,
+    {required String cartID,
+    required TextEditingController deliveryController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  final goRouter = GoRouter.of(context);
+  try {
+    if (deliveryController.text.isEmpty) {
+      scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Pleas input a valid denial reason')));
+      return;
+    }
+    goRouter.pop();
+    ref.read(loadingProvider).toggleLoading(true);
+    final cart = await FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .doc(cartID)
+        .get();
+    final cartData = cart.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+    quotation[QuotationFields.requestDenialReason] = deliveryController.text;
+    quotation[QuotationFields.requestStatus] = RequestStatuses.denied;
+    await FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .doc(cartID)
+        .update({
+      CartFields.quotation: quotation,
+      CartFields.dateLastModified: DateTime.now()
+    });
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully denied delivery request')));
+    ref
+        .read(cartProvider)
+        .setCartItems(await getAllCartItemsWithNoDeliveryPrice());
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error setting item delivery price: $error')));
+  }
+}
+
 Future<List<DocumentSnapshot>> getAllCartItemsWithNoLaborPrice() async {
   final cart = await FirebaseFirestore.instance
       .collection(Collections.cart)
@@ -1981,8 +2371,177 @@ Future<List<DocumentSnapshot>> getAllCartItemsWithNoLaborPrice() async {
   final filteredCartItems = cart.docs.where((cartDoc) {
     final cartData = cartDoc.data() as Map<dynamic, dynamic>;
     Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
-    return quotation.containsKey(QuotationFields.laborPrice) &&
+    String requestStatus = quotation[QuotationFields.requestStatus];
+    return requestStatus == RequestStatuses.pending &&
+        quotation.containsKey(QuotationFields.laborPrice) &&
         quotation[QuotationFields.laborPrice] <= 0;
   }).toList();
   return filteredCartItems;
+}
+
+Future<List<DocumentSnapshot>> getAllCartItemsWithNoDeliveryPrice() async {
+  final cart = await FirebaseFirestore.instance
+      .collection(Collections.cart)
+      .where(CartFields.itemType, isEqualTo: ItemTypes.rawMaterial)
+      .get();
+  final filteredCartItems = cart.docs.where((cartDoc) {
+    final cartData = cartDoc.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+    String requestStatus = quotation[QuotationFields.requestStatus];
+    num additionalServicePrice =
+        quotation[QuotationFields.additionalServicePrice];
+    return requestStatus == RequestStatuses.pending &&
+        additionalServicePrice <= 0;
+  }).toList();
+  return filteredCartItems;
+}
+
+Future requestForAdditionalCosts(BuildContext context, WidgetRef ref,
+    {required String cartID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    final cartDoc = await getThisCartEntry(cartID);
+    final cartData = cartDoc.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+    quotation[QuotationFields.requestStatus] = RequestStatuses.pending;
+    await FirebaseFirestore.instance
+        .collection(Collections.cart)
+        .doc(cartID)
+        .update({
+      CartFields.quotation: quotation,
+      CartFields.dateLastModified: DateTime.now()
+    });
+    scaffoldMessenger.showSnackBar(SnackBar(
+        content:
+            Text('Sucessfully requested for additional cost calculation.')));
+    ref.read(cartProvider).setCartItems(await getCartEntries(context));
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error requesting for additional costs.')));
+  }
+}
+
+//==============================================================================
+//==APPOINTMENT=================================================================
+//==============================================================================
+Future<List<DocumentSnapshot>> getAllAppointments() async {
+  final appointments = await FirebaseFirestore.instance
+      .collection(Collections.appointments)
+      .get();
+  return appointments.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> getAllUserAppointments() async {
+  final appointments = await FirebaseFirestore.instance
+      .collection(Collections.appointments)
+      .where(AppointmentFields.clientID,
+          isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+      .get();
+  return appointments.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future requestForAppointment(BuildContext context, WidgetRef ref,
+    {required List<DateTime> requestedDates}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    GoRouter.of(context).pop();
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance.collection(Collections.appointments).add({
+      AppointmentFields.clientID: FirebaseAuth.instance.currentUser!.uid,
+      AppointmentFields.proposedDates: requestedDates,
+      AppointmentFields.appointmentStatus: AppointmentStatuses.pending,
+      AppointmentFields.selectedDate: DateTime.now(),
+      AppointmentFields.denialReason: ''
+    });
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully requested for an appointment.')));
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error requesting for an appointment.')));
+  }
+}
+
+Future deletePendingAppointment(BuildContext context, WidgetRef ref,
+    {required String appointmentID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.appointments)
+        .doc(appointmentID)
+        .delete();
+    ref
+        .read(appointmentsProvider)
+        .setAppointmentDocs(await getAllUserAppointments());
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully deleted this appointment.')));
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error deleting pending appointment.')));
+  }
+}
+
+Future approveThisAppointment(BuildContext context, WidgetRef ref,
+    {required String appointmentID, required DateTime selectedDate}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    GoRouter.of(context).pop();
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.appointments)
+        .doc(appointmentID)
+        .update({
+      AppointmentFields.appointmentStatus: AppointmentStatuses.approved,
+      AppointmentFields.selectedDate: selectedDate
+    });
+    ref
+        .read(appointmentsProvider)
+        .setAppointmentDocs(await getAllAppointments());
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully approved this appointment.')));
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error approved pending appointment.')));
+  }
+}
+
+Future denyThisAppointment(BuildContext context, WidgetRef ref,
+    {required String appointmentID,
+    required TextEditingController denialReasonController}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+  try {
+    if (denialReasonController.text.isEmpty) {
+      scaffoldMessenger.showSnackBar(SnackBar(
+          content:
+              Text('You must indicate a reason for denying this payment.')));
+      return;
+    }
+    GoRouter.of(context).pop();
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.appointments)
+        .doc(appointmentID)
+        .update({
+      AppointmentFields.appointmentStatus: AppointmentStatuses.denied,
+      AppointmentFields.denialReason: denialReasonController.text.trim()
+    });
+    ref
+        .read(appointmentsProvider)
+        .setAppointmentDocs(await getAllAppointments());
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully denied this appointment.')));
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error denied pending appointment.')));
+  }
 }

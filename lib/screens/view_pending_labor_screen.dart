@@ -13,6 +13,7 @@ import 'package:imeasure/widgets/left_navigator_widget.dart';
 
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
+import '../widgets/custom_button_widgets.dart';
 import '../widgets/text_widgets.dart';
 
 class ViewPendingLaborScreen extends ConsumerStatefulWidget {
@@ -26,6 +27,8 @@ class ViewPendingLaborScreen extends ConsumerStatefulWidget {
 class _ViewPendingLaborScreenState
     extends ConsumerState<ViewPendingLaborScreen> {
   final laborCostController = TextEditingController();
+  final installationController = TextEditingController();
+  bool willGrantInstallationRequest = true;
   @override
   void initState() {
     super.initState();
@@ -42,6 +45,22 @@ class _ViewPendingLaborScreenState
         ref
             .read(cartProvider)
             .setCartItems(await getAllCartItemsWithNoLaborPrice());
+        // for (DocumentSnapshot cartItem in ref.read(cartProvider).cartItems) {
+        //   final cartData = cartItem.data() as Map<dynamic, dynamic>;
+        //   Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+        //   if (!quotation
+        //       .containsKey(QuotationFields.isRequestingAdditionalService)) {
+        //     quotation[QuotationFields.isRequestingAdditionalService] = false;
+        //     quotation[QuotationFields.additionalServicePrice] = 0;
+        //     quotation[QuotationFields.requestStatus] = '';
+        //     quotation[QuotationFields.requestAddress] = '';
+
+        //     await FirebaseFirestore.instance
+        //         .collection(Collections.cart)
+        //         .doc(cartItem.id)
+        //         .update({CartFields.quotation: quotation});
+        //   }
+        // }
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);
@@ -62,13 +81,31 @@ class _ViewPendingLaborScreenState
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              leftNavigator(context, path: GoRoutes.pendingLabor),
+              leftNavigator(context, path: GoRoutes.orders),
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: SingleChildScrollView(
                   child: horizontal5Percent(context,
                       child: Column(
-                        children: [_pendingLaborHeader(), _ordersContainer()],
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Row(
+                                    //mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      ongoingOrdersButton(context),
+                                      _pendingLaborHeader(),
+                                      pendingDeliveryButton(context),
+                                      transactionsButton(context)
+                                    ]),
+                              ),
+                            ],
+                          ),
+                          _ordersContainer()
+                        ],
                       )),
                 ),
               )
@@ -81,7 +118,8 @@ class _ViewPendingLaborScreenState
     return vertical20Pix(
       child: Row(
         children: [
-          quicksandWhiteBold('Pending Labor Price: ', fontSize: 28),
+          forestGreenQuicksandBold('Pending Labor &\nInstallation Cost: ',
+              fontSize: 20),
           Gap(4),
           quicksandCoralRedBold(
               ref.read(cartProvider).cartItems.length.toString(),
@@ -127,7 +165,10 @@ class _ViewPendingLaborScreenState
           num itemOverallPrice =
               cartData[OrderFields.quotation][QuotationFields.itemOverallPrice];
           dynamic quotation = cartData[CartFields.quotation];
-
+          bool isRequestingAdditionalService =
+              quotation[QuotationFields.isRequestingAdditionalService];
+          String requestedAddress =
+              quotation[QuotationFields.requestAddress] ?? '';
           return FutureBuilder(
               future: getThisUserDoc(clientID),
               builder: (context, snapshot) {
@@ -156,61 +197,20 @@ class _ViewPendingLaborScreenState
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
 
-                      return viewContentEntryRow(context, children: [
-                        viewFlexTextCell(formattedName,
-                            flex: 2,
-                            backgroundColor: backgroundColor,
-                            textColor: entryColor),
-                        viewFlexTextCell(name,
-                            flex: 2,
-                            backgroundColor: backgroundColor,
-                            textColor: entryColor),
-                        viewFlexTextCell(
-                            'PHP ${formatPrice(itemOverallPrice.toDouble())}',
-                            flex: 2,
-                            backgroundColor: backgroundColor,
-                            textColor: entryColor),
-                        viewFlexTextCell(quantity.toString(),
-                            flex: 2,
-                            backgroundColor: backgroundColor,
-                            textColor: entryColor),
-                        viewFlexActionsCell([
-                          Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white)),
-                            child: TextButton(
-                                onPressed: () => showLaborCostDialog(
-                                    ref.read(cartProvider).cartItems[index].id),
-                                child: quicksandWhiteBold('SET LABOR COST',
-                                    fontSize: 12)),
-                          )
-                        ], flex: 2, backgroundColor: backgroundColor),
-                        viewFlexActionsCell([
-                          ElevatedButton(
-                              onPressed: () {
-                                final mandatoryWindowFields =
-                                    quotation[QuotationFields.mandatoryMap];
-                                final optionalWindowFields =
-                                    quotation[QuotationFields.optionalMap]
-                                        as List<dynamic>;
-                                final color = quotation[QuotationFields.color];
-                                showCartQuotationDialog(context, ref,
-                                    totalOverallPayment: itemOverallPrice,
-                                    laborPrice: 0,
-                                    mandatoryWindowFields:
-                                        mandatoryWindowFields,
-                                    optionalWindowFields: optionalWindowFields,
-                                    accessoryFields: accessoryFields,
-                                    color: color,
-                                    width: quotation[QuotationFields.width],
-                                    height: quotation[QuotationFields.height],
-                                    itemName: name,
-                                    imageURLs: imageURLs);
-                              },
-                              child:
-                                  quicksandWhiteRegular('VIEW', fontSize: 12))
-                        ], flex: 2, backgroundColor: backgroundColor),
-                      ]);
+                      return _pendingLaborCostEntry(
+                          formattedName: formattedName,
+                          backgroundColor: backgroundColor,
+                          entryColor: entryColor,
+                          name: name,
+                          itemOverallPrice: itemOverallPrice,
+                          quantity: quantity,
+                          cartID: ref.read(cartProvider).cartItems[index].id,
+                          quotation: quotation,
+                          accessoryFields: accessoryFields,
+                          imageURLs: imageURLs,
+                          isRequestingAdditionalService:
+                              isRequestingAdditionalService,
+                          requestedAddress: requestedAddress);
                     });
                 //  Item Variables
               });
@@ -218,41 +218,162 @@ class _ViewPendingLaborScreenState
         });
   }
 
-  void showLaborCostDialog(String cartID) {
+  Widget _pendingLaborCostEntry(
+      {required String formattedName,
+      required Color backgroundColor,
+      required Color entryColor,
+      required String name,
+      required num itemOverallPrice,
+      required num quantity,
+      required String cartID,
+      required Map<dynamic, dynamic> quotation,
+      required List<dynamic> accessoryFields,
+      required List<dynamic> imageURLs,
+      required bool isRequestingAdditionalService,
+      required String requestedAddress}) {
+    return viewContentEntryRow(context, children: [
+      viewFlexTextCell(formattedName,
+          flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
+      viewFlexTextCell(name,
+          flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
+      viewFlexTextCell('PHP ${formatPrice(itemOverallPrice.toDouble())}',
+          flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
+      viewFlexTextCell(quantity.toString(),
+          flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
+      viewFlexActionsCell([
+        Container(
+          decoration: BoxDecoration(border: Border.all(color: Colors.white)),
+          child: TextButton(
+              onPressed: () => showLaborCostDialog(
+                  cartID, isRequestingAdditionalService, requestedAddress),
+              child: quicksandWhiteBold(
+                  isRequestingAdditionalService
+                      ? 'SET LABOR &\n INSTALLATION COST'
+                      : 'SET LABOR COST',
+                  fontSize: 12)),
+        )
+      ], flex: 2, backgroundColor: backgroundColor),
+      viewFlexActionsCell([
+        ElevatedButton(
+            onPressed: () {
+              final mandatoryWindowFields =
+                  quotation[QuotationFields.mandatoryMap];
+              final optionalWindowFields =
+                  quotation[QuotationFields.optionalMap] as List<dynamic>;
+              final color = quotation[QuotationFields.color];
+              showCartQuotationDialog(context, ref,
+                  totalOverallPayment: itemOverallPrice,
+                  laborPrice: 0,
+                  mandatoryWindowFields: mandatoryWindowFields,
+                  optionalWindowFields: optionalWindowFields,
+                  accessoryFields: accessoryFields,
+                  color: color,
+                  width: quotation[QuotationFields.width],
+                  height: quotation[QuotationFields.height],
+                  itemName: name,
+                  imageURLs: imageURLs);
+            },
+            child: quicksandWhiteRegular('VIEW', fontSize: 12))
+      ], flex: 2, backgroundColor: backgroundColor),
+    ]);
+  }
+
+  void showLaborCostDialog(String cartID, bool isRequestingAdditionalService,
+      String requestedAddress) {
     laborCostController.clear();
+    setState(() {
+      willGrantInstallationRequest = true;
+    });
     showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => Dialog(
-              child: SingleChildScrollView(
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.4,
-                  padding: EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                        TextButton(
-                            onPressed: () => GoRouter.of(context).pop(),
-                            child: quicksandBlackBold('X'))
-                      ]),
-                      quicksandBlackBold('SET LABOR COST', fontSize: 28),
-                      CustomTextField(
-                          text: 'Labor Post',
-                          controller: laborCostController,
-                          textInputType: TextInputType.number),
-                      Gap(20),
-                      ElevatedButton(
-                          onPressed: () => setCartItemLaborPrice(context, ref,
-                              cartID: cartID,
-                              laborPriceController: laborCostController),
-                          style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5))),
-                          child: quicksandWhiteRegular('Set Labor Cost'))
-                    ],
+        builder: (_) => StatefulBuilder(
+            builder: (context, setState) => Dialog(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.4,
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                    onPressed: () => GoRouter.of(context).pop(),
+                                    child: quicksandBlackBold('X'))
+                              ]),
+                          quicksandBlackBold(
+                              isRequestingAdditionalService
+                                  ? 'SET LABOR & INSTALLATION COST'
+                                  : 'SET LABOR COST',
+                              fontSize: 28),
+                          if (isRequestingAdditionalService)
+                            Row(children: [
+                              quicksandBlackBold('Requested Address: '),
+                              quicksandBlackRegular(requestedAddress)
+                            ]),
+                          Row(children: [quicksandBlackBold('LABOR COST')]),
+                          CustomTextField(
+                              text: 'Labor Cost',
+                              controller: laborCostController,
+                              textInputType: TextInputType.number),
+                          Gap(20),
+                          if (isRequestingAdditionalService)
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Checkbox(
+                                      value: willGrantInstallationRequest,
+                                      onChanged: (newVal) {
+                                        setState(() {
+                                          willGrantInstallationRequest =
+                                              newVal!;
+                                        });
+                                      }),
+                                  Gap(4),
+                                  quicksandBlackBold(
+                                      'Grant Installation Request')
+                                ]),
+                          if (isRequestingAdditionalService &
+                              willGrantInstallationRequest) ...[
+                            Row(children: [
+                              quicksandBlackBold('INSTALLATION COST')
+                            ]),
+                            CustomTextField(
+                                text: 'Installation Cost',
+                                controller: installationController,
+                                textInputType: TextInputType.number),
+                            Gap(20)
+                          ] else if (isRequestingAdditionalService &
+                              !willGrantInstallationRequest) ...[
+                            Row(children: [
+                              quicksandBlackBold('DENIAL REASON')
+                            ]),
+                            CustomTextField(
+                                text: 'Denial Reason',
+                                controller: installationController,
+                                textInputType: TextInputType.text),
+                            Gap(20)
+                          ],
+                          ElevatedButton(
+                              onPressed: () => setCartItemLaborPrice(
+                                  context, ref,
+                                  cartID: cartID,
+                                  laborPriceController: laborCostController,
+                                  requestingAdditionalService:
+                                      isRequestingAdditionalService,
+                                  willGrantInstallation:
+                                      willGrantInstallationRequest,
+                                  installationController:
+                                      installationController),
+                              style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5))),
+                              child: quicksandWhiteRegular('Set Labor Cost'))
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ));
+                )));
   }
 }

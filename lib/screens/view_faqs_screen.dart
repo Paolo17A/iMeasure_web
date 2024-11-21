@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imeasure/utils/firebase_util.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
@@ -22,7 +25,9 @@ class ViewFAQsScreen extends ConsumerStatefulWidget {
 
 class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
   List<DocumentSnapshot> allFAQDocs = [];
-
+  List<DocumentSnapshot> currentDisplayedFAQs = [];
+  int currentPage = 0;
+  int maxPage = 0;
   @override
   void initState() {
     super.initState();
@@ -44,6 +49,9 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
           return;
         }
         allFAQDocs = await getAllFAQs();
+        maxPage = (allFAQDocs.length / 10).floor();
+        if (allFAQDocs.length % 10 == 0) maxPage--;
+        setDisplayedFAQs();
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -51,6 +59,16 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
         ref.read(loadingProvider.notifier).toggleLoading(false);
       }
     });
+  }
+
+  void setDisplayedFAQs() {
+    if (allFAQDocs.length > 10) {
+      currentDisplayedFAQs = allFAQDocs
+          .getRange(
+              currentPage * 10, min((currentPage * 10) + 10, allFAQDocs.length))
+          .toList();
+    } else
+      currentDisplayedFAQs = allFAQDocs;
   }
 
   @override
@@ -87,7 +105,14 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        quicksandWhiteBold('FREQUENTLY ASKED QUESTIONS', fontSize: 40),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            quicksandWhiteBold('FREQUENTLY ASKED QUESTIONS: ', fontSize: 28),
+            Gap(8),
+            quicksandCoralRedBold(allFAQDocs.length.toString(), fontSize: 28),
+          ],
+        ),
         ElevatedButton(
             onPressed: () => GoRouter.of(context).goNamed(GoRoutes.addFAQ),
             child: quicksandWhiteBold('ADD FAQ'))
@@ -102,6 +127,22 @@ class _ViewFAQsScreenState extends ConsumerState<ViewFAQsScreen> {
         allFAQDocs.isNotEmpty
             ? _faqEntries()
             : viewContentUnavailable(context, text: 'NO AVAILABLE FAQs'),
+        if (allFAQDocs.length > 10)
+          pageNavigatorButtons(
+              currentPage: currentPage,
+              maxPage: maxPage,
+              onPreviousPage: () {
+                currentPage--;
+                setState(() {
+                  setDisplayedFAQs();
+                });
+              },
+              onNextPage: () {
+                currentPage++;
+                setState(() {
+                  setDisplayedFAQs();
+                });
+              })
       ],
     );
   }

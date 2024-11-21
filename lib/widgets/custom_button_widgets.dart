@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/utils/string_util.dart';
+import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
 import '../utils/color_util.dart';
@@ -125,4 +129,158 @@ Widget logOutButton(BuildContext context) {
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
           child: quicksandWhiteBold('LOG-OUT')));
+}
+
+Widget ongoingOrdersButton(BuildContext context) {
+  return all10Pix(
+    child: TextButton(
+      onPressed: () => GoRouter.of(context).goNamed(GoRoutes.orders),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          quicksandWhiteRegular('Ongoing\nOrders: ', fontSize: 20),
+          Gap(4),
+          uncompletedOrdersStreamBuilder()
+        ],
+      ),
+    ),
+  );
+}
+
+Widget pendingLaborAndPriceButton(BuildContext context) {
+  return all10Pix(
+    child: TextButton(
+      onPressed: () => GoRouter.of(context).goNamed(GoRoutes.pendingLabor),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          quicksandWhiteRegular('Pending Labor &\nInstallation Cost: ',
+              fontSize: 20),
+          Gap(8),
+          StreamBuilder(
+            stream: FirebaseFirestore.instance
+                .collection(Collections.cart)
+                .where(CartFields.itemType,
+                    whereIn: [ItemTypes.window, ItemTypes.door]).snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting ||
+                  snapshot.hasError ||
+                  !snapshot.hasData) return Container();
+              List<dynamic> furnitureItems = snapshot.data!.docs;
+              final filteredCartItems = furnitureItems.where((cartDoc) {
+                final cartData = cartDoc.data() as Map<dynamic, dynamic>;
+                Map<dynamic, dynamic> quotation =
+                    cartData[CartFields.quotation];
+                String requestStatus = quotation[QuotationFields.requestStatus];
+                return requestStatus == RequestStatuses.pending &&
+                    quotation.containsKey(QuotationFields.laborPrice) &&
+                    quotation[QuotationFields.laborPrice] <= 0;
+              }).toList();
+              return quicksandCoralRedBold(filteredCartItems.length.toString(),
+                  fontSize: 28);
+            },
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+Widget pendingDeliveryButton(BuildContext context) {
+  return all10Pix(
+    child: TextButton(
+      onPressed: () => GoRouter.of(context).goNamed(GoRoutes.pendingDelivery),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          quicksandWhiteRegular('Pending\nDelivery Cost: ', fontSize: 20),
+          Gap(4),
+          StreamBuilder(
+            stream: FirebaseFirestore.instance
+                .collection(Collections.cart)
+                .where(CartFields.itemType, isEqualTo: ItemTypes.rawMaterial)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting ||
+                  snapshot.hasError ||
+                  !snapshot.hasData) return Container();
+              List<dynamic> furnitureItems = snapshot.data!.docs;
+              final filteredCartItems = furnitureItems.where((cartDoc) {
+                final cartData = cartDoc.data() as Map<dynamic, dynamic>;
+                Map<dynamic, dynamic> quotation =
+                    cartData[CartFields.quotation];
+                String requestStatus = quotation[QuotationFields.requestStatus];
+                num additionalServicePrice =
+                    quotation[QuotationFields.additionalServicePrice];
+                return requestStatus == RequestStatuses.pending &&
+                    additionalServicePrice <= 0;
+              }).toList();
+              return quicksandCoralRedBold(filteredCartItems.length.toString(),
+                  fontSize: 28);
+            },
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+Widget transactionsButton(BuildContext context) {
+  return all10Pix(
+    child: TextButton(
+      onPressed: () => GoRouter.of(context).goNamed(GoRoutes.transactions),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          quicksandWhiteRegular('Unverified\nTransactions: ', fontSize: 20),
+          Gap(4),
+          StreamBuilder(
+            stream: FirebaseFirestore.instance
+                .collection(Collections.transactions)
+                .where(TransactionFields.transactionStatus,
+                    isEqualTo: TransactionStatuses.pending)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting ||
+                  snapshot.hasError ||
+                  !snapshot.hasData) return Container();
+              List<dynamic> transactions = snapshot.data!.docs;
+
+              return quicksandCoralRedBold(transactions.length.toString(),
+                  fontSize: 28);
+            },
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+Widget pageNavigatorButtons(
+    {required int currentPage,
+    required int maxPage,
+    required Function onPreviousPage,
+    required Function onNextPage}) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.end,
+    children: [
+      TextButton(
+          onPressed: currentPage == 0
+              ? null
+              : () {
+                  onPreviousPage();
+                },
+          child: Icon(Icons.arrow_back,
+              color: currentPage == 0 ? Colors.grey : Colors.white)),
+      quicksandWhiteBold((currentPage + 1).toString()),
+      TextButton(
+          onPressed: currentPage == maxPage
+              ? null
+              : () {
+                  onNextPage();
+                },
+          child: Icon(Icons.arrow_forward,
+              color: currentPage == maxPage ? Colors.grey : Colors.white))
+    ],
+  );
 }

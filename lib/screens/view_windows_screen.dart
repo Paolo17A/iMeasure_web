@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +27,9 @@ class ViewWindowsScreen extends ConsumerStatefulWidget {
 }
 
 class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
+  List<DocumentSnapshot> currentDisplayedItems = [];
+  int currentPage = 0;
+  int maxPage = 0;
   @override
   void initState() {
     super.initState();
@@ -52,6 +57,9 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
                 .update({ItemFields.correspondingModel: ''});
           }
         }
+        maxPage = (ref.read(itemsProvider).itemDocs.length / 10).floor();
+        if (ref.read(itemsProvider).itemDocs.length % 10 == 0) maxPage--;
+        setDisplayedItems();
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -59,6 +67,20 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
         ref.read(loadingProvider.notifier).toggleLoading(false);
       }
     });
+  }
+
+  void setDisplayedItems() {
+    if (ref.read(itemsProvider).itemDocs.length > 10) {
+      currentDisplayedItems = ref
+          .read(itemsProvider)
+          .itemDocs
+          .getRange(
+              currentPage * 10,
+              min((currentPage * 10) + 10,
+                  ref.read(itemsProvider).itemDocs.length))
+          .toList();
+    } else
+      currentDisplayedItems = ref.read(itemsProvider).itemDocs;
   }
 
   @override
@@ -101,21 +123,36 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
                 child: ElevatedButton(
                     onPressed: () =>
                         GoRouter.of(context).goNamed(GoRoutes.windows),
-                    child: quicksandWhiteBold('WINDOWS'))),
+                    child: Row(
+                      children: [
+                        quicksandWhiteBold('WINDOWS: '),
+                        windowItemsStreamBuilder()
+                      ],
+                    ))),
             all4Pix(
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         backgroundColor: CustomColors.lavenderMist),
                     onPressed: () =>
                         GoRouter.of(context).goNamed(GoRoutes.doors),
-                    child: quicksandBlackBold('DOORS'))),
+                    child: Row(
+                      children: [
+                        quicksandBlackBold('DOORS: '),
+                        doorItemsStreamBuilder()
+                      ],
+                    ))),
             all4Pix(
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         backgroundColor: CustomColors.lavenderMist),
                     onPressed: () =>
                         GoRouter.of(context).goNamed(GoRoutes.rawMaterial),
-                    child: quicksandBlackBold('RAW MATERIALS'))),
+                    child: Row(
+                      children: [
+                        quicksandBlackBold('RAW MATERIALS: '),
+                        rawMaterialItemsStreamBuilder()
+                      ],
+                    ))),
           ],
         ),
         SizedBox(
@@ -137,6 +174,22 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
         ref.read(itemsProvider).itemDocs.isNotEmpty
             ? _windowEntries()
             : viewContentUnavailable(context, text: 'NO AVAILABLE WINDOWS'),
+        if (ref.read(itemsProvider).itemDocs.length > 10)
+          pageNavigatorButtons(
+              currentPage: currentPage,
+              maxPage: maxPage,
+              onPreviousPage: () {
+                currentPage--;
+                setState(() {
+                  setDisplayedItems();
+                });
+              },
+              onNextPage: () {
+                currentPage++;
+                setState(() {
+                  setDisplayedItems();
+                });
+              })
       ],
     );
   }
@@ -147,11 +200,8 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
           alignment: WrapAlignment.start,
           spacing: 60,
           runSpacing: 60,
-          children: ref
-              .read(itemsProvider)
-              .itemDocs
-              .map((item) => _windowEntry(item))
-              .toList()),
+          children:
+              currentDisplayedItems.map((item) => _windowEntry(item)).toList()),
     );
   }
 

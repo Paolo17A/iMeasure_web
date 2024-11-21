@@ -50,12 +50,15 @@ class _SelectedWindowScreenState
   //  USER VARIABLES
   final widthController = TextEditingController();
   final heightController = TextEditingController();
+  final addressController = TextEditingController();
+  final contactNumberController = TextEditingController();
   List<dynamic> mandatoryWindowFields = [];
   List<Map<dynamic, dynamic>> optionalWindowFields = [];
   List<dynamic> accesoryFields = [];
   num totalMandatoryPayment = 0;
   num totalGlassPrice = 0;
   num totalOverallPayment = 0;
+  bool requestingService = false;
 
   @override
   void initState() {
@@ -457,24 +460,38 @@ class _SelectedWindowScreenState
                     children: [
                       SizedBox(
                           width: MediaQuery.of(context).size.width * 0.25,
-                          child: CustomTextField(
-                              text: 'Insert Height',
-                              controller: heightController,
-                              textInputType: TextInputType.number)),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.25,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5)),
-                        child: dropdownWidget(
-                            ref.read(cartProvider).selectedGlassType, (newVal) {
-                          ref.read(cartProvider).setGlassType(newVal!);
-                        },
-                            allGlassModels
-                                .map((glassModel) => glassModel.glassTypeName)
-                                .toList(),
-                            'Select your glass type',
-                            false),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              quicksandWhiteBold('Height'),
+                              CustomTextField(
+                                  text: 'Insert Height',
+                                  controller: heightController,
+                                  textInputType: TextInputType.number),
+                            ],
+                          )),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          quicksandWhiteBold('Glass Type'),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.25,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5)),
+                            child: dropdownWidget(
+                                ref.read(cartProvider).selectedGlassType,
+                                (newVal) {
+                              ref.read(cartProvider).setGlassType(newVal!);
+                            },
+                                allGlassModels
+                                    .map((glassModel) =>
+                                        glassModel.glassTypeName)
+                                    .toList(),
+                                'Select your glass type',
+                                false),
+                          ),
+                        ],
                       ),
                     ]),
                 Gap(20),
@@ -483,34 +500,96 @@ class _SelectedWindowScreenState
                   children: [
                     SizedBox(
                         width: MediaQuery.of(context).size.width * 0.25,
-                        child: CustomTextField(
-                            text: 'Insert Width',
-                            controller: widthController,
-                            textInputType: TextInputType.number)),
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.25,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5)),
-                      child: dropdownWidget(
-                          ref.read(cartProvider).selectedColor, (newVal) {
-                        ref.read(cartProvider).setSelectedColor(newVal!);
-                      }, [
-                        WindowColors.brown,
-                        WindowColors.white,
-                        WindowColors.mattBlack,
-                        WindowColors.mattGray,
-                        WindowColors.woodFinish
-                      ], 'Select window color', false),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            quicksandWhiteBold('Width'),
+                            CustomTextField(
+                                text: 'Insert Width',
+                                controller: widthController,
+                                textInputType: TextInputType.number),
+                          ],
+                        )),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        quicksandWhiteBold('Window Color'),
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.25,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(5)),
+                          child: Column(
+                            children: [
+                              dropdownWidget(
+                                  ref.read(cartProvider).selectedColor,
+                                  (newVal) {
+                                ref
+                                    .read(cartProvider)
+                                    .setSelectedColor(newVal!);
+                              }, [
+                                WindowColors.brown,
+                                WindowColors.white,
+                                WindowColors.mattBlack,
+                                WindowColors.mattGray,
+                                WindowColors.woodFinish
+                              ], 'Select window color', false),
+                            ],
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),
                 if (optionalWindowFields.isNotEmpty) _optionalWindowFields(),
               ],
             ),
+            _availInstallation(),
             _userButtons(),
           ],
         ));
+  }
+
+  Widget _availInstallation() {
+    return vertical20Pix(
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Checkbox(
+                  value: requestingService,
+                  onChanged: (newVal) {
+                    setState(() {
+                      requestingService = newVal!;
+                    });
+                  }),
+              quicksandWhiteBold('AVAIL INSTALLATION SERVICE', fontSize: 20)
+            ],
+          ),
+          if (requestingService)
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  quicksandWhiteBold('Installation Address'),
+                  CustomTextField(
+                      text: 'Installation Address',
+                      controller: addressController,
+                      textInputType: TextInputType.streetAddress),
+                  Gap(20),
+                  quicksandWhiteBold('Mobile Number'),
+                  CustomTextField(
+                      text: 'Contact Number',
+                      controller: contactNumberController,
+                      textInputType: TextInputType.phone),
+                ],
+              ),
+            )
+        ],
+      ),
+    );
   }
 
   Widget _optionalWindowFields() {
@@ -568,7 +647,10 @@ class _SelectedWindowScreenState
                           width: double.parse(widthController.text),
                           height: double.parse(heightController.text),
                           oldOptionalWindowFields: optionalWindowFields),
-                      accessoryFields: accesoryFields);
+                      accessoryFields: accesoryFields,
+                      requestingService: requestingService,
+                      addressController: addressController,
+                      contactNumberController: contactNumberController);
                 } else {
                   if (double.tryParse(widthController.text) == null ||
                       double.tryParse(heightController.text) == null) {

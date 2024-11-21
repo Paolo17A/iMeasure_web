@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +16,7 @@ import '../utils/go_router_util.dart';
 import '../utils/quotation_dialog_util.dart';
 import '../utils/string_util.dart';
 import '../utils/url_util.dart';
+import '../widgets/custom_button_widgets.dart';
 import '../widgets/custom_padding_widgets.dart';
 import '../widgets/left_navigator_widget.dart';
 import '../widgets/text_widgets.dart';
@@ -27,6 +30,10 @@ class HistoryScreen extends ConsumerStatefulWidget {
 
 class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   String currentlyViewing = 'ORDERS';
+  List<DocumentSnapshot> currentDisplayedOrders = [];
+  List<DocumentSnapshot> currentDisplayedTransactions = [];
+  int currentPage = 0;
+  int maxPage = 0;
 
   @override
   void initState() {
@@ -66,6 +73,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               (b[TransactionFields.dateApproved] as Timestamp).toDate();
           return bTime.compareTo(aTime);
         });
+        currentPage = 0;
+        maxPage = (ref.read(ordersProvider).orderDocs.length / 10).floor();
+        if (ref.read(ordersProvider).orderDocs.length % 10 == 0) maxPage--;
+        setDisplayedOrders();
+        setDisplayedTransactions();
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(SnackBar(
@@ -73,6 +85,35 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ref.read(loadingProvider).toggleLoading(false);
       }
     });
+  }
+
+  void setDisplayedOrders() {
+    if (ref.read(ordersProvider).orderDocs.length > 10) {
+      currentDisplayedOrders = ref
+          .read(ordersProvider)
+          .orderDocs
+          .getRange(
+              currentPage * 10,
+              min((currentPage * 10) + 10,
+                  ref.read(ordersProvider).orderDocs.length))
+          .toList();
+    } else
+      currentDisplayedOrders = ref.read(ordersProvider).orderDocs;
+  }
+
+  void setDisplayedTransactions() {
+    if (ref.read(transactionsProvider).transactionDocs.length > 10) {
+      currentDisplayedTransactions = ref
+          .read(transactionsProvider)
+          .transactionDocs
+          .getRange(
+              currentPage * 10,
+              min((currentPage * 10) + 10,
+                  ref.read(transactionsProvider).transactionDocs.length))
+          .toList();
+    } else
+      currentDisplayedTransactions =
+          ref.read(transactionsProvider).transactionDocs;
   }
 
   @override
@@ -116,11 +157,23 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         onPressed: () {
           setState(() {
             currentlyViewing = 'ORDERS';
+            currentPage = 0;
+            maxPage = (ref.read(ordersProvider).orderDocs.length / 10).floor();
+            if (ref.read(ordersProvider).orderDocs.length % 10 == 0) maxPage--;
+            setDisplayedOrders();
           });
         },
-        child: currentlyViewing == 'ORDERS'
-            ? forestGreenQuicksandBold('COMPLETED ORDERS', fontSize: 28)
-            : quicksandWhiteBold('COMPLETED ORDERS', fontSize: 28),
+        child: Row(
+          children: [
+            currentlyViewing == 'ORDERS'
+                ? forestGreenQuicksandBold('COMPLETED ORDERS: ', fontSize: 28)
+                : quicksandWhiteBold('COMPLETED ORDERS: ', fontSize: 28),
+            //Gap(8),
+            quicksandCoralRedBold(
+                ref.read(ordersProvider).orderDocs.length.toString(),
+                fontSize: 28)
+          ],
+        ),
       ),
     );
   }
@@ -131,11 +184,30 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         onPressed: () {
           setState(() {
             currentlyViewing = 'TRANSACTIONS';
+            currentPage = 0;
+            maxPage =
+                (ref.read(transactionsProvider).transactionDocs.length / 10)
+                    .floor();
+            if (ref.read(transactionsProvider).transactionDocs.length % 10 == 0)
+              maxPage--;
+            setDisplayedOrders();
           });
         },
-        child: currentlyViewing == 'TRANSACTIONS'
-            ? forestGreenQuicksandBold('VERIFIED TRANSACTIONS', fontSize: 28)
-            : quicksandWhiteBold('VERIFIED TRANSACTIONS', fontSize: 28),
+        child: Row(
+          children: [
+            currentlyViewing == 'TRANSACTIONS'
+                ? forestGreenQuicksandBold('VERIFIED TRANSACTIONS: ',
+                    fontSize: 28)
+                : quicksandWhiteBold('VERIFIED TRANSACTIONS: ', fontSize: 28),
+            quicksandCoralRedBold(
+                ref
+                    .read(transactionsProvider)
+                    .transactionDocs
+                    .length
+                    .toString(),
+                fontSize: 28)
+          ],
+        ),
       ),
     );
   }
@@ -147,6 +219,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ref.read(ordersProvider).orderDocs.isNotEmpty
             ? _orderEntries()
             : viewContentUnavailable(context, text: 'NO COMPLETED ORDERS'),
+        if (ref.read(ordersProvider).orderDocs.length > 10)
+          pageNavigatorButtons(
+              currentPage: currentPage,
+              maxPage: maxPage,
+              onPreviousPage: () {
+                currentPage--;
+                setState(() {
+                  setDisplayedOrders();
+                });
+              },
+              onNextPage: () {
+                currentPage++;
+                setState(() {
+                  setDisplayedOrders();
+                });
+              })
       ],
     );
   }
@@ -165,17 +253,17 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   Widget _orderEntries() {
     return ListView.builder(
         shrinkWrap: true,
-        itemCount: ref.read(ordersProvider).orderDocs.length,
+        itemCount: currentDisplayedOrders.length,
         itemBuilder: (context, index) {
-          final orderData = ref.read(ordersProvider).orderDocs[index].data()
-              as Map<dynamic, dynamic>;
+          final orderData =
+              currentDisplayedOrders[index].data() as Map<dynamic, dynamic>;
           String clientID = orderData[OrderFields.clientID];
           String windowID = orderData[OrderFields.itemID];
           DateTime dateCreated =
               (orderData[OrderFields.dateCreated] as Timestamp).toDate();
           num itemOverallPrice = orderData[OrderFields.quotation]
               [QuotationFields.itemOverallPrice];
-
+          String orderStatus = orderData[OrderFields.orderStatus];
           Map<String, dynamic> quotation =
               orderData[OrderFields.quotation] ?? [];
 
@@ -205,9 +293,15 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
                       List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
-                      List<dynamic> accessoryFields =
-                          itemData[ItemFields.accessoryFields];
-
+                      List<dynamic> accessoryFields = [];
+                      if (itemType != ItemTypes.rawMaterial)
+                        accessoryFields = itemData[ItemFields.accessoryFields];
+                      num laborPrice = itemType != ItemTypes.rawMaterial
+                          ? quotation[QuotationFields.laborPrice]
+                          : 0;
+                      num additionalServicePrice =
+                          quotation[QuotationFields.additionalServicePrice] ??
+                              0;
                       return viewContentEntryRow(context, children: [
                         viewFlexTextCell(formattedName,
                             flex: 2,
@@ -223,11 +317,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             backgroundColor: backgroundColor,
                             textColor: entryColor),
                         viewFlexTextCell(
-                            'PHP ${formatPrice(itemOverallPrice.toDouble())}',
+                            'PHP ${formatPrice((itemOverallPrice + laborPrice + additionalServicePrice).toDouble())}',
                             flex: 2,
                             backgroundColor: backgroundColor,
                             textColor: entryColor),
-                        viewFlexTextCell('COMPLETED',
+                        viewFlexTextCell(orderStatus,
                             flex: 2,
                             backgroundColor: backgroundColor,
                             textColor: entryColor),
@@ -276,17 +370,30 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   //============================================================================
 
   Widget _transactionsContainer() {
-    return viewContentContainer(
-      context,
-      child: Column(
-        children: [
-          _transactionsLabelRow(),
-          ref.read(transactionsProvider).transactionDocs.isNotEmpty
-              ? _transactionEntries()
-              : viewContentUnavailable(context,
-                  text: 'NO AVAILABLE TRANSACTIONS'),
-        ],
-      ),
+    return Column(
+      children: [
+        _transactionsLabelRow(),
+        ref.read(transactionsProvider).transactionDocs.isNotEmpty
+            ? _transactionEntries()
+            : viewContentUnavailable(context,
+                text: 'NO AVAILABLE TRANSACTIONS'),
+        if (ref.read(transactionsProvider).transactionDocs.length > 10)
+          pageNavigatorButtons(
+              currentPage: currentPage,
+              maxPage: maxPage,
+              onPreviousPage: () {
+                currentPage--;
+                setState(() {
+                  setDisplayedTransactions();
+                });
+              },
+              onNextPage: () {
+                currentPage++;
+                setState(() {
+                  setDisplayedTransactions();
+                });
+              })
+      ],
     );
   }
 
@@ -306,12 +413,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       height: 500,
       child: ListView.builder(
           shrinkWrap: true,
-          itemCount: ref.read(transactionsProvider).transactionDocs.length,
+          itemCount: currentDisplayedTransactions.length,
           itemBuilder: (context, index) {
-            final paymentData = ref
-                .read(transactionsProvider)
-                .transactionDocs[index]
-                .data() as Map<dynamic, dynamic>;
+            final paymentData = currentDisplayedTransactions[index].data()
+                as Map<dynamic, dynamic>;
             bool paymentVerified =
                 paymentData[TransactionFields.paymentVerified];
             String clientID = paymentData[TransactionFields.clientID];
@@ -324,6 +429,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     .toDate();
             String proofOfPayment =
                 paymentData[TransactionFields.proofOfPayment];
+            String transactionStatus =
+                paymentData[TransactionFields.transactionStatus];
+            String denialReason = paymentData[TransactionFields.denialReason];
             return FutureBuilder(
                 future: getThisUserDoc(clientID),
                 builder: (context, snapshot) {
@@ -367,67 +475,63 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                           decoration: BoxDecoration(
                               border: Border.all(color: Colors.white)),
                           child: IconButton(
-                              onPressed: () {
-                                showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (_) => Dialog(
-                                          child: SizedBox(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.4,
-                                            child: SingleChildScrollView(
-                                                child: Column(children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
-                                                children: [
-                                                  TextButton(
-                                                      onPressed: () =>
-                                                          GoRouter.of(context)
-                                                              .pop(),
-                                                      child: quicksandBlackBold(
-                                                          'X'))
-                                                ],
-                                              ),
-                                              Container(
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.3,
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.3,
-                                                decoration: BoxDecoration(
-                                                    image: DecorationImage(
-                                                        fit: BoxFit.contain,
-                                                        image: NetworkImage(
-                                                            proofOfPayment))),
-                                              ),
-                                              vertical20Pix(
-                                                  child: ElevatedButton(
-                                                      onPressed: () =>
-                                                          launchThisURL(context,
-                                                              proofOfPayment),
-                                                      child: quicksandWhiteBold(
-                                                          'DOWNLOAD')))
-                                            ])),
-                                          ),
-                                        ));
-                              },
+                              onPressed: () => showProofOfPaymentDialog(context,
+                                  proofOfPayment: proofOfPayment),
                               icon: Icon(Icons.visibility_outlined,
                                   color: Colors.white)),
                         )
                       ], flex: 2, backgroundColor: backgroundColor),
                       viewFlexActionsCell([
-                        if (paymentVerified) quicksandWhiteBold('VERIFIED'),
+                        if (transactionStatus == TransactionStatuses.approved)
+                          quicksandWhiteBold('APPROVED')
+                        else if (transactionStatus ==
+                            TransactionStatuses.denied)
+                          ElevatedButton(
+                              onPressed: () => showDenialReasonDialog(context,
+                                  denialReason: denialReason),
+                              child: quicksandWhiteRegular('VIEW DENIAL REASON',
+                                  fontSize: 12))
                       ], flex: 2, backgroundColor: backgroundColor)
                     ],
                   );
                 });
           }),
     );
+  }
+
+  void showProofOfPaymentDialog(BuildContext context,
+      {required String proofOfPayment}) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => Dialog(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.4,
+                child: SingleChildScrollView(
+                    child: Column(children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                          onPressed: () => GoRouter.of(context).pop(),
+                          child: quicksandBlackBold('X'))
+                    ],
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width * 0.3,
+                    height: MediaQuery.of(context).size.width * 0.3,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            fit: BoxFit.contain,
+                            image: NetworkImage(proofOfPayment))),
+                  ),
+                  vertical20Pix(
+                      child: ElevatedButton(
+                          onPressed: () =>
+                              launchThisURL(context, proofOfPayment),
+                          child: quicksandWhiteBold('DOWNLOAD')))
+                ])),
+              ),
+            ));
   }
 }

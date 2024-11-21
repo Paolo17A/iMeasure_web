@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/text_widgets.dart';
 
 import '../utils/go_router_util.dart';
@@ -29,17 +30,21 @@ Widget leftNavigator(BuildContext context, {required String path}) {
             listTile(context,
                 label: 'Items', thisPath: GoRoutes.windows, currentPath: path),
             listTile(context,
-                label: 'Orders', thisPath: GoRoutes.orders, currentPath: path),
+                label: 'Orders',
+                thisPath: GoRoutes.orders,
+                currentPath: path,
+                streamWidget:
+                    uncompletedOrdersStreamBuilder(displayifEmpty: false)),
             listTile(context,
                 label: 'Users', thisPath: GoRoutes.users, currentPath: path),
-            listTile(context,
-                label: 'Transactions',
-                thisPath: GoRoutes.transactions,
-                currentPath: path),
-            listTile(context,
-                label: 'Pending Labor',
-                thisPath: GoRoutes.pendingLabor,
-                currentPath: path),
+            // listTile(context,
+            //     label: 'Transactions',
+            //     thisPath: GoRoutes.transactions,
+            //     currentPath: path),
+            // listTile(context,
+            //     label: 'Pending Labor',
+            //     thisPath: GoRoutes.pendingLabor,
+            //     currentPath: path),
             listTile(context,
                 label: 'Gallery',
                 thisPath: GoRoutes.gallery,
@@ -49,6 +54,10 @@ Widget leftNavigator(BuildContext context, {required String path}) {
             listTile(context,
                 label: 'History',
                 thisPath: GoRoutes.history,
+                currentPath: path),
+            listTile(context,
+                label: 'Appointments',
+                thisPath: GoRoutes.viewAppointments,
                 currentPath: path),
           ],
         )),
@@ -68,11 +77,18 @@ Widget leftNavigator(BuildContext context, {required String path}) {
 Widget listTile(BuildContext context,
     {required String label,
     required String thisPath,
-    required String currentPath}) {
+    required String currentPath,
+    StreamBuilder? streamWidget}) {
   return ListTile(
-      title: thisPath == currentPath
-          ? forestGreenQuicksandBold(label, textAlign: TextAlign.left)
-          : quicksandWhiteBold(label, textAlign: TextAlign.left),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          thisPath == currentPath
+              ? forestGreenQuicksandBold(label, textAlign: TextAlign.left)
+              : quicksandWhiteBold(label, textAlign: TextAlign.left),
+          if (streamWidget != null) streamWidget
+        ],
+      ),
       onTap: () {
         GoRouter.of(context).goNamed(thisPath);
         if (thisPath == GoRoutes.home) {

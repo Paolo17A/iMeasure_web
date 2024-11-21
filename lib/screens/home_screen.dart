@@ -92,13 +92,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             } else {
               itemNameAndOrderMap[name] = 1;
             }
+
+            Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
+            if (!quotation.containsKey(QuotationFields.requestDenialReason)) {
+              quotation[QuotationFields.requestDenialReason] = '';
+
+              await FirebaseFirestore.instance
+                  .collection(Collections.orders)
+                  .doc(order.id)
+                  .update({OrderFields.quotation: quotation});
+            }
           }
+
           // Calculate the total count
           double total =
               itemNameAndOrderMap.values.fold(0, (sum, value) => sum + value);
 
           // Convert each count to a percentage
           itemNameAndOrderMap.updateAll((key, value) => (value / total) * 100);
+
+          // List<DocumentSnapshot> transactions = await getAllTransactionDocs();
+          // for (var transaction in transactions) {
+          //   final transactionData = transaction.data() as Map<dynamic, dynamic>;
+          //   if (!transactionData.containsKey(TransactionFields.denialReason)) {
+          //     if (transactionData[TransactionFields.transactionStatus] ==
+          //         TransactionStatuses.denied) {
+          //       await FirebaseFirestore.instance
+          //           .collection(Collections.transactions)
+          //           .doc(transaction.id)
+          //           .update({TransactionFields.denialReason: 'N/A'});
+          //     } else {
+          //       await FirebaseFirestore.instance
+          //           .collection(Collections.transactions)
+          //           .doc(transaction.id)
+          //           .update({TransactionFields.denialReason: ''});
+          //     }
+          //   }
+          // }
         } else if (ref.read(userDataProvider).userType == UserTypes.client) {
           serviceDocs = await getAllServiceGalleryDocs();
           serviceDocs.shuffle();
@@ -411,8 +441,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Color entryColor = Colors.white;
                       Color backgroundColor = Colors.transparent;
                       List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
-                      List<dynamic> accessoryFields =
-                          itemData[ItemFields.accessoryFields];
+                      List<dynamic> accessoryFields = [];
+                      if (itemType != ItemTypes.rawMaterial)
+                        accessoryFields = itemData[ItemFields.accessoryFields];
                       return viewContentEntryRow(context, children: [
                         viewFlexTextCell(formattedName,
                             flex: 2,
@@ -636,7 +667,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               PathParameters.itemID: itemDoc.id
                             });
                       } else if (itemType == ItemTypes.rawMaterial) {
-                        addRawMaterialToCart(context, ref, itemID: itemDoc.id);
+                        GoRouter.of(context).goNamed(
+                            GoRoutes.selectedRawMaterial,
+                            pathParameters: {
+                              PathParameters.itemID: itemDoc.id
+                            });
                       }
                     },
                     child: square300NetworkImage(

@@ -6,14 +6,20 @@ import '../utils/string_util.dart';
 
 class CartNotifier extends ChangeNotifier {
   List<DocumentSnapshot> _cartItems = [];
-  //List<DocumentSnapshot> _itemDocs = [];
+  List<DocumentSnapshot> _noAdditionalCostRequestedCartItems = [];
+  List<DocumentSnapshot> _pendingAdditionalCostCartItems = [];
+  List<DocumentSnapshot> _forCheckoutCartItems = [];
   String _selectedPaymentMethod = '';
   List<String> _selectedCartItemIDs = [];
   String _selectedGlassType = '';
   String _selectedColor = '';
 
   List<DocumentSnapshot> get cartItems => _cartItems;
-  //List<DocumentSnapshot> get itemDocs => _itemDocs;
+  List<DocumentSnapshot> get noAdditionalCostRequestedCartItems =>
+      _noAdditionalCostRequestedCartItems;
+  List<DocumentSnapshot> get pendingAdditionalCostCartItems =>
+      _pendingAdditionalCostCartItems;
+  List<DocumentSnapshot> get forCheckoutCartItems => _forCheckoutCartItems;
   String get selectedPaymentMethod => _selectedPaymentMethod;
   List<String> get selectedCartItemIDs => _selectedCartItemIDs;
   String get selectedGlassType => _selectedGlassType;
@@ -21,13 +27,53 @@ class CartNotifier extends ChangeNotifier {
 
   void setCartItems(List<DocumentSnapshot> items) {
     _cartItems = items;
+    updateCartSubLists();
     notifyListeners();
   }
 
-  /*void setItemDocs(List<DocumentSnapshot> items) {
-    _itemDocs = items;
+  void updateCartSubLists() {
+    _noAdditionalCostRequestedCartItems = _cartItems.where((cart) {
+      final cartData = cart.data() as Map<dynamic, dynamic>;
+      String itemType = cartData[CartFields.itemType];
+      Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+      String requestStatus = quotation[QuotationFields.requestStatus];
+      bool isRequestingAdditionalService =
+          quotation[QuotationFields.isRequestingAdditionalService];
+      bool isFurniture =
+          (itemType == ItemTypes.window || itemType == ItemTypes.door);
+      return (isFurniture && requestStatus.isEmpty) ||
+          (!isFurniture &&
+              isRequestingAdditionalService &&
+              requestStatus.isEmpty);
+    }).toList();
+
+    _pendingAdditionalCostCartItems = _cartItems.where((cart) {
+      final cartData = cart.data() as Map<dynamic, dynamic>;
+      Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+      String requestStatus = quotation[QuotationFields.requestStatus];
+      return requestStatus == RequestStatuses.pending;
+    }).toList();
+
+    _forCheckoutCartItems = _cartItems.where((cart) {
+      final cartData = cart.data() as Map<dynamic, dynamic>;
+      String itemType = cartData[CartFields.itemType];
+      Map<dynamic, dynamic> quotation = cartData[CartFields.quotation];
+      String requestStatus = quotation[QuotationFields.requestStatus];
+      bool isRequestingAdditionalService =
+          quotation[QuotationFields.isRequestingAdditionalService];
+      bool isFurniture =
+          (itemType == ItemTypes.window || itemType == ItemTypes.door);
+      return (isFurniture &&
+              (requestStatus == RequestStatuses.approved ||
+                  requestStatus == RequestStatuses.denied)) ||
+          (!isFurniture && !isRequestingAdditionalService) ||
+          (!isFurniture &&
+              isRequestingAdditionalService &&
+              (requestStatus == RequestStatuses.approved ||
+                  requestStatus == RequestStatuses.denied));
+    }).toList();
     notifyListeners();
-  }*/
+  }
 
   void addCartItem(dynamic item) {
     _cartItems.add(item);

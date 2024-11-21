@@ -25,10 +25,12 @@ import 'package:imeasure/screens/profile_screen.dart';
 import 'package:imeasure/screens/register_screen.dart';
 import 'package:imeasure/screens/search_result_screen.dart';
 import 'package:imeasure/screens/shop_screen.dart';
+import 'package:imeasure/screens/view_appointments_screen.dart';
 import 'package:imeasure/screens/view_doors_screen.dart';
 import 'package:imeasure/screens/view_gallery_screen.dart';
 import 'package:imeasure/screens/view_generated_order_screen.dart';
 import 'package:imeasure/screens/view_orders_screen.dart';
+import 'package:imeasure/screens/view_pending_delivery_screen.dart';
 import 'package:imeasure/screens/view_pending_labor_screen.dart';
 import 'package:imeasure/screens/view_portfolio_screen.dart';
 import 'package:imeasure/screens/view_raw_materials_screen.dart';
@@ -96,9 +98,11 @@ class GoRoutes {
   static const addPortfolio = 'addPortfolio';
   static const editPortfolio = 'editPortfolio';
   static const pendingLabor = 'pendingLabor';
+  static const pendingDelivery = 'pendingDelivery';
   static const help = 'help';
   static const history = 'history';
   static const completedOrders = 'completedOrders';
+  static const viewAppointments = 'viewAppointments';
 }
 
 final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
@@ -364,6 +368,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             pageBuilder: (context, state) => customTransition(
                 context, state, const ViewPendingLaborScreen())),
         GoRoute(
+            name: GoRoutes.pendingDelivery,
+            path: GoRoutes.pendingDelivery,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const ViewPendingDeliveryScreen())),
+        GoRoute(
             name: GoRoutes.help,
             path: GoRoutes.help,
             pageBuilder: (context, state) =>
@@ -378,6 +387,11 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
             path: GoRoutes.completedOrders,
             pageBuilder: (context, state) => customTransition(
                 context, state, const CompletedOrdersScreen())),
+        GoRoute(
+            name: GoRoutes.viewAppointments,
+            path: GoRoutes.viewAppointments,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const ViewAppointmentsScreen())),
       ])
 ]);
 

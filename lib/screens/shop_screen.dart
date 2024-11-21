@@ -174,12 +174,17 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     String name = itemData[ItemFields.name];
     String itemType = itemData[ItemFields.itemType];
     return Container(
+      width: MediaQuery.of(context).size.width * 0.15,
       decoration: BoxDecoration(border: Border.all(color: Colors.white)),
       padding: EdgeInsets.all(12),
       child: Column(
         children: [
           square300NetworkImage(imageURLs.first),
-          vertical10Pix(child: quicksandWhiteBold(name)),
+          vertical10Pix(
+              child: SizedBox(
+                  height: 60,
+                  child: quicksandWhiteBold(name,
+                      maxLines: 2, textOverflow: TextOverflow.ellipsis))),
           //if (itemType == ItemTypes.rawMaterial)
           vertical10Pix(
             child: FutureBuilder(
