@@ -87,6 +87,7 @@ class _ViewWindowsScreenState extends ConsumerState<ViewWindowsScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(itemsProvider);
+    setDisplayedItems();
     return Scaffold(
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,

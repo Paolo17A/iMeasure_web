@@ -78,6 +78,7 @@ class _ViewDoorsScreenState extends ConsumerState<ViewDoorsScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(itemsProvider);
+    setDisplayedItems();
     return Scaffold(
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,

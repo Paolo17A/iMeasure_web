@@ -56,7 +56,7 @@ class _ViewAppointmentsScreenState
             .floor();
         if (ref.read(appointmentsProvider).appointmentDocs.length % 10 == 0)
           maxPage--;
-        setDisplayedPayments();
+        setDisplayedAppointments();
         ref.read(loadingProvider.notifier).toggleLoading(false);
       } catch (error) {
         scaffoldMessenger.showSnackBar(
@@ -66,7 +66,7 @@ class _ViewAppointmentsScreenState
     });
   }
 
-  void setDisplayedPayments() {
+  void setDisplayedAppointments() {
     if (ref.read(appointmentsProvider).appointmentDocs.length > 10) {
       currentDisplayedAppointments = ref
           .read(appointmentsProvider)
@@ -85,6 +85,7 @@ class _ViewAppointmentsScreenState
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(appointmentsProvider);
+    setDisplayedAppointments();
     return Scaffold(
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
@@ -141,13 +142,13 @@ class _ViewAppointmentsScreenState
                 onPreviousPage: () {
                   currentPage--;
                   setState(() {
-                    setDisplayedPayments();
+                    setDisplayedAppointments();
                   });
                 },
                 onNextPage: () {
                   currentPage++;
                   setState(() {
-                    setDisplayedPayments();
+                    setDisplayedAppointments();
                   });
                 })
         ],

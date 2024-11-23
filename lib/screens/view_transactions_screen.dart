@@ -86,6 +86,7 @@ class _ViewTransactionsScreenState
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(transactionsProvider);
+    setDisplayedPayments();
     return Scaffold(
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
@@ -190,10 +191,8 @@ class _ViewTransactionsScreenState
           shrinkWrap: true,
           itemCount: currentDisplayedTransactions.length,
           itemBuilder: (context, index) {
-            final paymentData = ref
-                .read(transactionsProvider)
-                .transactionDocs[index]
-                .data() as Map<dynamic, dynamic>;
+            final paymentData = currentDisplayedTransactions[index].data()
+                as Map<dynamic, dynamic>;
             String transactionID = currentDisplayedTransactions[index].id;
             bool paymentVerified =
                 paymentData[TransactionFields.paymentVerified];

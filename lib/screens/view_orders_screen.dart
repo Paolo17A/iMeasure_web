@@ -90,6 +90,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(ordersProvider);
+    setDisplayedOrders();
     return Scaffold(
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
