@@ -48,9 +48,11 @@ Text quicksandWhiteRegular(String label,
     {double fontSize = 20,
     TextAlign textAlign = TextAlign.center,
     TextOverflow? textOverflow,
+    int? maxLines,
     TextDecoration? decoration}) {
   return Text(label,
       textAlign: textAlign,
+      maxLines: maxLines,
       style: GoogleFonts.quicksand(
           fontSize: fontSize,
           color: Colors.white,

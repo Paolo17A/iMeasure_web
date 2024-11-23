@@ -148,7 +148,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       submitButton(context,
           label: 'EDIT PROFILE',
           onPress: () => GoRouter.of(context).goNamed(GoRoutes.editProfile)),
-      submitButton(context, label: 'TRANSACTION HISTORY', onPress: () {}),
+      submitButton(context,
+          label: 'TRANSACTION HISTORY',
+          onPress: () =>
+              GoRouter.of(context).goNamed(GoRoutes.transactionHistory)),
       Stack(
         children: [
           submitButton(context,
@@ -163,12 +166,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           label: 'COMPLETED',
           onPress: () =>
               GoRouter.of(context).goNamed(GoRoutes.completedOrders)),
-      Stack(
-        children: [
-          submitButton(context, label: 'APPOINTMENTS', onPress: () {}),
-          Positioned(right: 10, top: 10, child: Container())
-        ],
-      ),
+      submitButton(context,
+          label: 'APPOINTMENTS',
+          onPress: () =>
+              GoRouter.of(context).goNamed(GoRoutes.appointmentHistory)),
       Gap(16),
       all20Pix(
         child: ElevatedButton(

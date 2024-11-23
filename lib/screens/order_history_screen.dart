@@ -114,8 +114,8 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                   ),
                 )
               : vertical20Pix(
-                  child: quicksandWhiteBold(
-                      'You have not yet ordered any items yet.'))
+                  child:
+                      quicksandWhiteBold('You have not ordered any items yet.'))
         ]));
   }
 

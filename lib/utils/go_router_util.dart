@@ -7,6 +7,7 @@ import 'package:imeasure/screens/add_raw_material_screen.dart';
 import 'package:imeasure/screens/add_service_screen.dart';
 import 'package:imeasure/screens/add_testimonial_screen.dart';
 import 'package:imeasure/screens/add_window_screen.dart';
+import 'package:imeasure/screens/appointment_history_screen.dart';
 import 'package:imeasure/screens/cart_screen.dart';
 import 'package:imeasure/screens/completed_orders_screen.dart';
 import 'package:imeasure/screens/edit_door_screen.dart';
@@ -25,6 +26,7 @@ import 'package:imeasure/screens/profile_screen.dart';
 import 'package:imeasure/screens/register_screen.dart';
 import 'package:imeasure/screens/search_result_screen.dart';
 import 'package:imeasure/screens/shop_screen.dart';
+import 'package:imeasure/screens/transaction_history_screen.dart';
 import 'package:imeasure/screens/view_appointments_screen.dart';
 import 'package:imeasure/screens/view_doors_screen.dart';
 import 'package:imeasure/screens/view_gallery_screen.dart';
@@ -66,6 +68,8 @@ class GoRoutes {
   static const editProfile = 'editProfile';
   static const orderHistory = 'orderHistory';
   static const search = 'search';
+  static const transactionHistory = 'transactionHistory';
+  static const appointmentHistory = 'appointmentHistory';
   //  ADMIN
   static const users = 'users';
   static const selectedUser = 'selectedUser';
@@ -171,6 +175,16 @@ final GoRouter goRoutes = GoRouter(initialLocation: GoRoutes.home, routes: [
                 SearchResultScreen(
                     searchInput:
                         state.pathParameters[PathParameters.searchInput]!))),
+        GoRoute(
+            name: GoRoutes.transactionHistory,
+            path: GoRoutes.transactionHistory,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const TransactionHistoryScreen())),
+        GoRoute(
+            name: GoRoutes.appointmentHistory,
+            path: GoRoutes.appointmentHistory,
+            pageBuilder: (context, state) => customTransition(
+                context, state, const AppointmentHistoryScreen())),
         GoRoute(
             name: GoRoutes.users,
             path: GoRoutes.users,

@@ -852,6 +852,17 @@ Future<List<DocumentSnapshot>> getAllTransactionDocs() async {
       .toList();
 }
 
+Future<List<DocumentSnapshot>> getAllUserTransactionDocs() async {
+  final transactions = await FirebaseFirestore.instance
+      .collection(Collections.transactions)
+      .where(TransactionFields.clientID,
+          isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+      .get();
+  return transactions.docs
+      .map((transaction) => transaction as DocumentSnapshot)
+      .toList();
+}
+
 Future<List<DocumentSnapshot>> getAllVerifiedTransactionDocs() async {
   final transactions = await FirebaseFirestore.instance
       .collection(Collections.transactions)
@@ -2451,7 +2462,8 @@ Future requestForAppointment(BuildContext context, WidgetRef ref,
       AppointmentFields.proposedDates: requestedDates,
       AppointmentFields.appointmentStatus: AppointmentStatuses.pending,
       AppointmentFields.selectedDate: DateTime.now(),
-      AppointmentFields.denialReason: ''
+      AppointmentFields.denialReason: '',
+      AppointmentFields.dateCreated: DateTime.now()
     });
     ref.read(loadingProvider).toggleLoading(false);
     scaffoldMessenger.showSnackBar(

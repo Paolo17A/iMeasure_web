@@ -274,6 +274,7 @@ class AppointmentFields {
   static const String selectedDate = 'selectedDate';
   static const String appointmentStatus = 'appointmentStatus';
   static const String denialReason = 'denialReason';
+  static const String dateCreated = 'dateCreated';
 }
 
 class AppointmentStatuses {
