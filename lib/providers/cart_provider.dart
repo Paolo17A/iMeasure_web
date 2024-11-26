@@ -27,6 +27,11 @@ class CartNotifier extends ChangeNotifier {
 
   void setCartItems(List<DocumentSnapshot> items) {
     _cartItems = items;
+    _cartItems.sort((a, b) {
+      DateTime aTime = (a[CartFields.dateLastModified] as Timestamp).toDate();
+      DateTime bTime = (b[CartFields.dateLastModified] as Timestamp).toDate();
+      return aTime.compareTo(bTime);
+    });
     updateCartSubLists();
     notifyListeners();
   }

@@ -342,7 +342,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         sideTitles: SideTitles(
                           getTitlesWidget: leftTitleWidgets,
                           showTitles: true,
-                          interval: 1,
+                          //interval: 1,
                           reservedSize: 22,
                         ),
                       ),
@@ -355,7 +355,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     minX: 1,
                     maxX: DateTime.now().month + 1,
                     minY: 0,
-                    maxY: 20),
+                    maxY: 60),
                 duration: Duration.zero),
           ),
         ],

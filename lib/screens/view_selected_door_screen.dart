@@ -49,7 +49,10 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
   //  USER VARIABLES
   final widthController = TextEditingController();
   final heightController = TextEditingController();
-  final addressController = TextEditingController();
+  final streetController = TextEditingController();
+  final barangayController = TextEditingController();
+  final municipalityController = TextEditingController();
+  final zipCodeController = TextEditingController();
   final contactNumberController = TextEditingController();
   List<dynamic> mandatoryWindowFields = [];
   List<Map<dynamic, dynamic>> optionalWindowFields = [];
@@ -531,10 +534,11 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   quicksandWhiteBold('Installation Address'),
-                  CustomTextField(
-                      text: 'Installation Address',
-                      controller: addressController,
-                      textInputType: TextInputType.streetAddress),
+                  addressGroup(context,
+                      streetController: streetController,
+                      barangayController: barangayController,
+                      municipalityController: municipalityController,
+                      zipCodeController: zipCodeController),
                   Gap(20),
                   quicksandWhiteBold('Mobile Number'),
                   CustomTextField(
@@ -607,7 +611,10 @@ class _SelectedDoorScreenState extends ConsumerState<ViewSelectedDoorScreen> {
                               oldOptionalWindowFields: optionalWindowFields),
                           accessoryFields: accesoryFields,
                           requestingService: requestingService,
-                          addressController: addressController,
+                          streetController: streetController,
+                          barangayController: barangayController,
+                          municipalityController: municipalityController,
+                          zipCodeController: zipCodeController,
                           contactNumberController: contactNumberController);
                     } else {
                       if (double.parse(widthController.text.trim()) <

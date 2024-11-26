@@ -1018,6 +1018,26 @@ StreamBuilder uncompletedOrdersStreamBuilder({bool displayifEmpty = true}) {
   );
 }
 
+StreamBuilder pendingAppointmentsStreamBuilder({bool displayifEmpty = true}) {
+  return StreamBuilder(
+    stream: FirebaseFirestore.instance
+        .collection(Collections.appointments)
+        .where(AppointmentFields.appointmentStatus,
+            isEqualTo: AppointmentStatuses.pending)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting ||
+          snapshot.hasError ||
+          !snapshot.hasData) return Container();
+      List<dynamic> appointments = snapshot.data!.docs;
+
+      return (appointments.isNotEmpty || displayifEmpty)
+          ? quicksandCoralRedBold(appointments.length.toString(), fontSize: 28)
+          : Container();
+    },
+  );
+}
+
 StreamBuilder windowItemsStreamBuilder() {
   return StreamBuilder(
     stream: FirebaseFirestore.instance
@@ -1090,6 +1110,126 @@ void showDenialReasonDialog(BuildContext context,
                     Gap(12),
                     quicksandBlackRegular(denialReason,
                         textAlign: TextAlign.left)
+                  ],
+                ),
+              ),
+            ),
+          ));
+}
+
+Widget addressGroup(BuildContext context,
+    {required TextEditingController streetController,
+    required TextEditingController barangayController,
+    required TextEditingController municipalityController,
+    required TextEditingController zipCodeController,
+    bool isWhite = true}) {
+  return Container(
+    width: MediaQuery.of(context).size.width * 0.5,
+    padding: EdgeInsets.all(20),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            isWhite
+                ? quicksandWhiteBold('Street Number & Name')
+                : quicksandBlackBold('Street Number & Name'),
+            CustomTextField(
+                text: 'Street number & Name',
+                controller: streetController,
+                textInputType: TextInputType.text)
+          ],
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            isWhite
+                ? quicksandWhiteBold('Barangay')
+                : quicksandBlackBold('Barangay'),
+            CustomTextField(
+                text: 'Barangay',
+                controller: barangayController,
+                textInputType: TextInputType.text)
+          ],
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            isWhite
+                ? quicksandWhiteBold('Municipality')
+                : quicksandBlackBold('Municipality'),
+            CustomTextField(
+                text: 'Municipality',
+                controller: municipalityController,
+                textInputType: TextInputType.text)
+          ],
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            isWhite
+                ? quicksandWhiteBold('Zip Code')
+                : quicksandBlackBold('Zip Code'),
+            CustomTextField(
+                text: 'Zip Code',
+                controller: zipCodeController,
+                textInputType: TextInputType.number)
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+void showRequestDetails(BuildContext context,
+    {required String requestStatus,
+    required String address,
+    required String contactNumber,
+    required String denialReason}) {
+  showDialog(
+      context: context,
+      builder: (_) => Dialog(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.5,
+              padding: EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                      TextButton(
+                          onPressed: () => GoRouter.of(context).pop(),
+                          child: quicksandBlackBold('X'))
+                    ]),
+                    vertical20Pix(
+                        child: quicksandBlackBold('REQUEST DETAILS',
+                            fontSize: 36)),
+                    Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(children: [
+                              quicksandBlackBold('Request Status: '),
+                              quicksandBlackRegular(requestStatus)
+                            ]),
+                            Row(children: [
+                              quicksandBlackBold('Address: '),
+                              quicksandBlackRegular(address)
+                            ]),
+                            Row(children: [
+                              quicksandBlackBold('Contact Number: '),
+                              quicksandBlackRegular(contactNumber)
+                            ]),
+                            if (requestStatus == RequestStatuses.denied) ...[
+                              quicksandBlackBold('Denial Reason: '),
+                              quicksandBlackRegular(denialReason,
+                                  textAlign: TextAlign.left)
+                            ]
+                          ],
+                        )
+                      ],
+                    )
                   ],
                 ),
               ),

@@ -58,6 +58,8 @@ Widget leftNavigator(BuildContext context, {required String path}) {
             listTile(context,
                 label: 'Appointments',
                 thisPath: GoRoutes.viewAppointments,
+                streamWidget:
+                    pendingAppointmentsStreamBuilder(displayifEmpty: false),
                 currentPath: path),
           ],
         )),

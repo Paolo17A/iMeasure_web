@@ -14,6 +14,7 @@ import 'package:intl/intl.dart';
 
 import '../utils/color_util.dart';
 import '../utils/string_util.dart';
+import '../widgets/custom_text_field_widget.dart';
 
 class HelpScreen extends ConsumerStatefulWidget {
   const HelpScreen({super.key});
@@ -25,6 +26,11 @@ class HelpScreen extends ConsumerStatefulWidget {
 class _HelpScreenState extends ConsumerState<HelpScreen> {
   List<DocumentSnapshot> faqDocs = [];
   List<DateTime> proposedDates = [];
+  final streetController = TextEditingController();
+  final barangayController = TextEditingController();
+  final municipalityController = TextEditingController();
+  final zipCodeController = TextEditingController();
+  final contactNumberController = TextEditingController();
 
   @override
   void initState() {
@@ -270,12 +276,36 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                         ))
                                     .toList()),
                           ),
+                          addressGroup(context,
+                              streetController: streetController,
+                              barangayController: barangayController,
+                              municipalityController: municipalityController,
+                              zipCodeController: zipCodeController,
+                              isWhite: false),
+                          all20Pix(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  quicksandBlackBold('Mobile Number'),
+                                  CustomTextField(
+                                      text: 'Contact Number',
+                                      controller: contactNumberController,
+                                      textInputType: TextInputType.phone)
+                                ]),
+                          ),
                           if (proposedDates.isNotEmpty)
                             vertical20Pix(
                                 child: ElevatedButton(
                                     onPressed: () => requestForAppointment(
                                         context, ref,
-                                        requestedDates: proposedDates),
+                                        requestedDates: proposedDates,
+                                        streetController: streetController,
+                                        barangayController: barangayController,
+                                        municipalityController:
+                                            municipalityController,
+                                        zipCodeController: zipCodeController,
+                                        contactNumberController:
+                                            contactNumberController),
                                     child: quicksandWhiteRegular(
                                         'REQUEST FOR AN APPOINTMENT')))
                         ],

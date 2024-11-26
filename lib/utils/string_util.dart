@@ -275,12 +275,14 @@ class AppointmentFields {
   static const String appointmentStatus = 'appointmentStatus';
   static const String denialReason = 'denialReason';
   static const String dateCreated = 'dateCreated';
+  static const String address = 'address';
 }
 
 class AppointmentStatuses {
   static const String pending = 'PENDING';
   static const String approved = 'APPROVED';
   static const String denied = 'DENIED';
+  static const String cancelled = 'CANCELLED';
 }
 
 class PathParameters {

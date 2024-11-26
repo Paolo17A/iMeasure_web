@@ -76,7 +76,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ref.watch(userDataProvider);
     ref.watch(appointmentsProvider);
     return Scaffold(
-      appBar: topUserNavigator(context, path: GoRoutes.profile),
+      appBar: hasLoggedInUser()
+          ? topUserNavigator(context, path: GoRoutes.profile)
+          : topGuestNavigator(context, path: GoRoutes.home),
       body: switchedLoadingContainer(
           ref.read(loadingProvider).isLoading,
           Container(

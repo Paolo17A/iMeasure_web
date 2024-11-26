@@ -37,7 +37,10 @@ class _SelectedRawMaterialScreenState
   bool isAvailable = false;
   num price = 0;
   bool requestingService = false;
-  final addressController = TextEditingController();
+  final streetController = TextEditingController();
+  final barangayController = TextEditingController();
+  final municipalityController = TextEditingController();
+  final zipCodeController = TextEditingController();
   final contactNumberController = TextEditingController();
 
   List<dynamic> imageURLs = [];
@@ -366,10 +369,11 @@ class _SelectedRawMaterialScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   quicksandWhiteBold('Installation Address'),
-                  CustomTextField(
-                      text: 'Installation Address',
-                      controller: addressController,
-                      textInputType: TextInputType.streetAddress),
+                  addressGroup(context,
+                      streetController: streetController,
+                      barangayController: barangayController,
+                      municipalityController: municipalityController,
+                      zipCodeController: zipCodeController),
                   Gap(20),
                   quicksandWhiteBold('Mobile Number'),
                   CustomTextField(
@@ -393,7 +397,10 @@ class _SelectedRawMaterialScreenState
                   addRawMaterialToCart(context, ref,
                       itemID: widget.itemID,
                       requestingService: requestingService,
-                      addressController: addressController,
+                      streetController: streetController,
+                      barangayController: barangayController,
+                      municipalityController: municipalityController,
+                      zipCodeController: zipCodeController,
                       itemOverallPrice: price,
                       contactNumberController: contactNumberController);
                 }

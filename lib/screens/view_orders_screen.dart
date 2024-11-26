@@ -212,6 +212,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
       viewFlexLabelTextCell('Cost', 2),
       viewFlexLabelTextCell('Status', 2),
       viewFlexLabelTextCell('Quotation', 2),
+      viewFlexLabelTextCell('Additional Service', 2),
     ]);
   }
 
@@ -308,6 +309,10 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
         quotation[QuotationFields.additionalServicePrice] ?? 0;
     List<dynamic> requestedDates =
         quotation[QuotationFields.requestedDates] ?? [];
+    String address = quotation[QuotationFields.requestAddress] ?? '';
+    String contactNumber =
+        quotation[QuotationFields.requestContactNumber] ?? '';
+    String denialReason = quotation[QuotationFields.requestDenialReason] ?? '';
     return viewContentEntryRow(context, children: [
       viewFlexTextCell(formattedName,
           flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
@@ -428,6 +433,18 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
         else
           quicksandWhiteBold('N/A')
       ], flex: 2, backgroundColor: backgroundColor),
+      viewFlexActionsCell([
+        if (isRequestingAdditionalService)
+          ElevatedButton(
+              onPressed: () => showRequestDetails(context,
+                  requestStatus: requestStatus,
+                  address: address,
+                  contactNumber: contactNumber,
+                  denialReason: denialReason),
+              child: quicksandWhiteRegular('VIEW DETAILS', fontSize: 12))
+        else
+          quicksandWhiteBold('N/A')
+      ], flex: 2, backgroundColor: backgroundColor)
     ]);
   }
 

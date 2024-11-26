@@ -51,7 +51,7 @@ class _ViewAppointmentsScreenState
 
         ref
             .read(appointmentsProvider)
-            .setAppointmentDocs(await getAllAppointments());
+            .setAppointmentDocs(await getPendingAppointments());
         maxPage = (ref.read(appointmentsProvider).appointmentDocs.length / 10)
             .floor();
         if (ref.read(appointmentsProvider).appointmentDocs.length % 10 == 0)
@@ -187,6 +187,7 @@ class _ViewAppointmentsScreenState
             DateTime selectedDate =
                 (appointmentData[AppointmentFields.selectedDate] as Timestamp)
                     .toDate();
+            String address = appointmentData[AppointmentFields.address];
             return FutureBuilder(
                 future: getThisUserDoc(clientID),
                 builder: (context, snapshot) {
@@ -209,6 +210,7 @@ class _ViewAppointmentsScreenState
                       requestedDates: requestedDates,
                       selectedDate: selectedDate,
                       status: appointmentStatus,
+                      address: address,
                       denialReason: denialReason);
                 });
           }),
@@ -223,6 +225,7 @@ class _ViewAppointmentsScreenState
       required DateTime selectedDate,
       required String status,
       required List<dynamic> requestedDates,
+      required String address,
       required String denialReason}) {
     return viewContentEntryRow(
       context,
@@ -239,39 +242,30 @@ class _ViewAppointmentsScreenState
         viewFlexTextCell(status,
             flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
         viewFlexActionsCell([
-          if (status == RequestStatuses.pending) ...[
+          if (status == AppointmentStatuses.pending) ...[
             TextButton(
                 onPressed: () => _showProposedDates(
                     appointmentID: appointmentID,
+                    address: address,
                     requestedDates: requestedDates),
                 child: Icon(Icons.check, color: CustomColors.lavenderMist)),
             TextButton(
                 onPressed: () => showDenialReasonInputDialog(
                     appointmentID: appointmentID,
+                    address: address,
                     formattedName: formattedName,
                     proposedDates: requestedDates),
                 child: Icon(Icons.block, color: CustomColors.coralRed))
-          ] else if (status == RequestStatuses.denied)
-            Container(
-              decoration:
-                  BoxDecoration(border: Border.all(color: Colors.white)),
-              child: TextButton(
-                  onPressed: () => showDenialReasonDialog(context,
-                      denialReason: denialReason),
-                  child:
-                      quicksandWhiteBold('VIEW DENIAL REASON', fontSize: 12)),
-            )
-          else
-            quicksandWhiteBold('N/A')
+          ]
         ], flex: 2, backgroundColor: backgroundColor)
       ],
     );
   }
 
-  void _showProposedDates({
-    required String appointmentID,
-    required List<dynamic> requestedDates,
-  }) {
+  void _showProposedDates(
+      {required String appointmentID,
+      required List<dynamic> requestedDates,
+      required String address}) {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -290,6 +284,11 @@ class _ViewAppointmentsScreenState
                                   onPressed: () => GoRouter.of(context).pop(),
                                   child: quicksandBlackBold('X'))
                             ]),
+                        Row(children: [
+                          quicksandBlackBold('Client Address: '),
+                          quicksandBlackRegular(address,
+                              textAlign: TextAlign.left)
+                        ]),
                         vertical10Pix(
                             child: quicksandBlackBold(
                                 'SELECT ONE OF THE FOLLOWING DATES FOR APPOINTMENT',
@@ -321,6 +320,7 @@ class _ViewAppointmentsScreenState
   void showDenialReasonInputDialog(
       {required String appointmentID,
       required String formattedName,
+      required String address,
       required List<dynamic> proposedDates}) {
     denialReasonController.clear();
     showDialog(
@@ -343,8 +343,13 @@ class _ViewAppointmentsScreenState
                           child: quicksandBlackBold(
                               'You will deny this appointment request.')),
                       Row(children: [
-                        quicksandBlackBold('Buyer Name: '),
+                        quicksandBlackBold('Client Name: '),
                         quicksandBlackRegular(formattedName),
+                      ]),
+                      Row(children: [
+                        quicksandBlackBold('Client Address: '),
+                        quicksandBlackRegular(address,
+                            textAlign: TextAlign.left)
                       ]),
                       Row(children: [quicksandBlackBold('Proposed Dates: ')]),
                       Row(

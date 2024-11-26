@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imeasure/providers/appointments_provider.dart';
+import 'package:imeasure/utils/delete_entry_dialog_util.dart';
 import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/top_navigator_widget.dart';
 import 'package:intl/intl.dart';
@@ -25,7 +27,6 @@ class AppointmentHistoryScreen extends ConsumerStatefulWidget {
 
 class _AppointmentHistoryScreenState
     extends ConsumerState<AppointmentHistoryScreen> {
-  List<DocumentSnapshot> appointmentDocs = [];
   @override
   void initState() {
     super.initState();
@@ -48,8 +49,10 @@ class _AppointmentHistoryScreenState
           goRouter.goNamed(GoRoutes.home);
           return;
         }
-        appointmentDocs = await getAllUserAppointments();
-        appointmentDocs.sort((a, b) {
+        ref
+            .read(appointmentsProvider)
+            .setAppointmentDocs(await getAllUserAppointments());
+        ref.read(appointmentsProvider).appointmentDocs.sort((a, b) {
           DateTime aTime =
               (a[AppointmentFields.dateCreated] as Timestamp).toDate();
           DateTime bTime =
@@ -69,6 +72,7 @@ class _AppointmentHistoryScreenState
   Widget build(BuildContext context) {
     ref.watch(loadingProvider);
     ref.watch(userDataProvider);
+    ref.watch(appointmentsProvider);
     return Scaffold(
       appBar: topUserNavigator(context, path: GoRoutes.profile),
       body: switchedLoadingContainer(
@@ -94,13 +98,15 @@ class _AppointmentHistoryScreenState
         child: Column(
           children: [
             quicksandWhiteBold('APPOINTMENT HISTORY', fontSize: 40),
-            appointmentDocs.isNotEmpty
+            ref.read(appointmentsProvider).appointmentDocs.isNotEmpty
                 ? Row(
                     children: [
                       Wrap(
                         spacing: 40,
                         runSpacing: 40,
-                        children: appointmentDocs
+                        children: ref
+                            .read(appointmentsProvider)
+                            .appointmentDocs
                             .map((appointmentDoc) =>
                                 _appointmentEntry(appointmentDoc))
                             .toList(),
@@ -121,44 +127,82 @@ class _AppointmentHistoryScreenState
     DateTime selectedDate =
         (appointmentData[AppointmentFields.selectedDate] as Timestamp).toDate();
     String appointmentStatus =
-        appointmentData[AppointmentFields.appointmentStatus];
-    String denialReason = appointmentData[AppointmentFields.denialReason];
+        appointmentData[AppointmentFields.appointmentStatus] ?? '';
+    String denialReason = appointmentData[AppointmentFields.denialReason] ?? '';
+    String address = appointmentData[AppointmentFields.address] ?? '';
+    bool mayStillCancel =
+        DateTime.now().difference(selectedDate).inHours.abs() > 12;
     return Container(
         width: 400,
-        height: 150,
+        height: 200,
         decoration: BoxDecoration(border: Border.all(color: Colors.white)),
         padding: EdgeInsets.all(10),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (appointmentStatus == AppointmentStatuses.approved)
-            Wrap(children: [
-              quicksandWhiteBold('Selected Date: '),
-              quicksandWhiteRegular(
-                  DateFormat('MMM dd, yyyy').format(selectedDate))
-            ])
-          else ...[
-            quicksandWhiteBold('Requested Dates: '),
-            Column(
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: proposedDates
-                    .map((proposedDate) => quicksandWhiteRegular(
-                        '\t\t${DateFormat('MMM dd, yyyy').format((proposedDate as Timestamp).toDate())}',
-                        fontSize: 15,
-                        textAlign: TextAlign.left))
-                    .toList())
-          ],
-          Wrap(children: [
-            quicksandWhiteBold('Status: '),
-            quicksandWhiteRegular(appointmentStatus)
-          ]),
-          if (appointmentStatus == AppointmentStatuses.denied)
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              quicksandWhiteBold('Denial Reason: '),
-              quicksandWhiteRegular(denialReason,
-                  textAlign: TextAlign.left,
-                  textOverflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                  fontSize: 14)
-            ])
-        ]));
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (appointmentStatus == AppointmentStatuses.approved)
+                    Wrap(children: [
+                      quicksandWhiteBold('Selected Date: '),
+                      quicksandWhiteRegular(
+                          DateFormat('MMM dd, yyyy').format(selectedDate))
+                    ])
+                  else ...[
+                    quicksandWhiteBold('Requested Dates: '),
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: proposedDates
+                            .map((proposedDate) => quicksandWhiteRegular(
+                                '\t\t${DateFormat('MMM dd, yyyy').format((proposedDate as Timestamp).toDate())}',
+                                fontSize: 15,
+                                textAlign: TextAlign.left))
+                            .toList())
+                  ],
+                  Wrap(children: [
+                    quicksandWhiteBold('Status: '),
+                    quicksandWhiteRegular(appointmentStatus)
+                  ]),
+                  if (appointmentStatus == AppointmentStatuses.denied)
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          quicksandWhiteBold('Denial Reason: '),
+                          quicksandWhiteRegular(denialReason,
+                              textAlign: TextAlign.left,
+                              textOverflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              fontSize: 14)
+                        ]),
+                  Wrap(children: [
+                    quicksandWhiteBold('Address: '),
+                    quicksandWhiteRegular(address.isNotEmpty ? address : 'N/A',
+                        textAlign: TextAlign.left,
+                        textOverflow: TextOverflow.ellipsis,
+                        maxLines: 2)
+                  ])
+                ],
+              ),
+              if (appointmentStatus == AppointmentStatuses.pending ||
+                  (appointmentStatus == AppointmentStatuses.approved &&
+                      mayStillCancel))
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () => displayDeleteEntryDialog(context,
+                            message:
+                                'Are you sure you wish to cancel this appointment?',
+                            deleteWord: 'Confirm',
+                            deleteEntry: () => cancelPendingAppointment(
+                                context, ref,
+                                appointmentID: appointmentDoc.id)),
+                        child: quicksandWhiteBold('CANCEL')),
+                  ],
+                )
+            ]));
   }
 }

@@ -50,7 +50,11 @@ class _SelectedWindowScreenState
   //  USER VARIABLES
   final widthController = TextEditingController();
   final heightController = TextEditingController();
-  final addressController = TextEditingController();
+
+  final streetController = TextEditingController();
+  final barangayController = TextEditingController();
+  final municipalityController = TextEditingController();
+  final zipCodeController = TextEditingController();
   final contactNumberController = TextEditingController();
   List<dynamic> mandatoryWindowFields = [];
   List<Map<dynamic, dynamic>> optionalWindowFields = [];
@@ -574,10 +578,11 @@ class _SelectedWindowScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   quicksandWhiteBold('Installation Address'),
-                  CustomTextField(
-                      text: 'Installation Address',
-                      controller: addressController,
-                      textInputType: TextInputType.streetAddress),
+                  addressGroup(context,
+                      streetController: streetController,
+                      barangayController: barangayController,
+                      municipalityController: municipalityController,
+                      zipCodeController: zipCodeController),
                   Gap(20),
                   quicksandWhiteBold('Mobile Number'),
                   CustomTextField(
@@ -649,7 +654,10 @@ class _SelectedWindowScreenState
                           oldOptionalWindowFields: optionalWindowFields),
                       accessoryFields: accesoryFields,
                       requestingService: requestingService,
-                      addressController: addressController,
+                      streetController: streetController,
+                      barangayController: barangayController,
+                      municipalityController: municipalityController,
+                      zipCodeController: zipCodeController,
                       contactNumberController: contactNumberController);
                 } else {
                   if (double.tryParse(widthController.text) == null ||

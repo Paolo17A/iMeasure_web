@@ -244,6 +244,9 @@ class _CartScreenState extends ConsumerState<CartScreen>
           quotation[QuotationFields.additionalServicePrice];
       isRequestingAdditionalService =
           quotation[QuotationFields.isRequestingAdditionalService];
+      String requestAddress = quotation[QuotationFields.requestAddress];
+      String requestContactNumber =
+          quotation[QuotationFields.requestContactNumber];
       //num price = associatedItemDoc[ItemFields.price];
       return all10Pix(
           child: Stack(
@@ -274,6 +277,8 @@ class _CartScreenState extends ConsumerState<CartScreen>
                       quotation: quotation,
                       color: color,
                       cartDoc: cartDoc,
+                      address: requestAddress,
+                      requestContactNumber: requestContactNumber,
                       isRequestingAdditionalService:
                           isRequestingAdditionalService,
                       accessoryField: accessoryField),
@@ -339,6 +344,8 @@ class _CartScreenState extends ConsumerState<CartScreen>
       required List<dynamic> accessoryField,
       required DocumentSnapshot cartDoc,
       required bool isRequestingAdditionalService,
+      required String address,
+      required String requestContactNumber,
       double? width}) {
     String requestStatus = quotation[QuotationFields.requestStatus];
     return Flexible(
@@ -347,7 +354,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            //crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
@@ -383,26 +390,50 @@ class _CartScreenState extends ConsumerState<CartScreen>
                   if (isRequestingAdditionalService) ...[
                     if ((itemType == ItemTypes.window ||
                             itemType == ItemTypes.door) &&
+                        (requestStatus == RequestStatuses.pending ||
+                            requestStatus == RequestStatuses.approved))
+                      quicksandWhiteRegular(
+                          'Installation Address:\n${address} ',
+                          fontSize: 14,
+                          textAlign: TextAlign.left)
+                    else if (itemType == ItemTypes.rawMaterial &&
+                        (requestStatus == RequestStatuses.pending ||
+                            requestStatus == RequestStatuses.approved))
+                      quicksandWhiteRegular('Delivery Address:\n${address}',
+                          textAlign: TextAlign.left, fontSize: 12),
+                    if (requestStatus == RequestStatuses.pending ||
+                        requestStatus == RequestStatuses.approved)
+                      quicksandWhiteRegular(
+                          'Contact Number: ${requestContactNumber}',
+                          textAlign: TextAlign.left,
+                          fontSize: 14),
+                    if ((itemType == ItemTypes.window ||
+                            itemType == ItemTypes.door) &&
                         requestStatus == RequestStatuses.approved)
                       quicksandWhiteRegular(
                           'Installation Fee: PHP ${formatPrice(additionalServicePrice.toDouble())} ',
-                          fontSize: 14)
-                    else if ((itemType == ItemTypes.window ||
-                            itemType == ItemTypes.door) &&
-                        requestStatus == RequestStatuses.denied)
-                      quicksandWhiteRegular(
-                          'Installation Request Denied: ${quotation[QuotationFields.requestDenialReason]}',
                           fontSize: 14)
                     else if (itemType == ItemTypes.rawMaterial &&
                         (requestStatus == RequestStatuses.approved))
                       quicksandWhiteRegular(
                           'Delivery Fee: PHP ${formatPrice(additionalServicePrice.toDouble())} ',
                           fontSize: 14)
+                    else if ((itemType == ItemTypes.window ||
+                            itemType == ItemTypes.door) &&
+                        requestStatus == RequestStatuses.denied)
+                      quicksandWhiteRegular(
+                          'Installation Request Denied: ${quotation[QuotationFields.requestDenialReason]}',
+                          textAlign: TextAlign.left,
+                          fontSize: 14)
                     else if (itemType == ItemTypes.rawMaterial &&
                         (requestStatus == RequestStatuses.denied))
-                      quicksandWhiteRegular(
-                          'Delivery Request Denied: ${quotation[QuotationFields.requestDenialReason]}',
-                          fontSize: 14)
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        child: quicksandWhiteRegular(
+                            'Delivery Request Denied: ${quotation[QuotationFields.requestDenialReason]}',
+                            textAlign: TextAlign.left,
+                            fontSize: 14),
+                      )
                   ]
                 ],
               ),
@@ -419,7 +450,10 @@ class _CartScreenState extends ConsumerState<CartScreen>
           if (itemType != ItemTypes.rawMaterial)
             _showQuotationButton(
                 itemType, quotation, name, imageURLs, accessoryField, color)
-          else
+          else if (!ref
+              .read(cartProvider)
+              .forCheckoutCartItems
+              .contains(cartDoc))
             Gap(190)
         ],
       ),
@@ -631,7 +665,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
           child: dropdownWidget(ref.read(cartProvider).selectedPaymentMethod,
               (newVal) {
             ref.read(cartProvider).setSelectedPaymentMethod(newVal!);
-          }, ['GCASH', 'PAYMAYA'], 'Select your payment method', false),
+          }, ['GCASH', 'BANK TRANSFER'], 'Select your payment method', false),
         )
       ],
     ));
@@ -652,11 +686,9 @@ class _CartScreenState extends ConsumerState<CartScreen>
                   quicksandWhiteRegular('GCASH:\n\t09484548667\n\tJonas Banca',
                       fontSize: 14, textAlign: TextAlign.left)
                 else if (ref.read(cartProvider).selectedPaymentMethod ==
-                    'PAYMAYA')
-                  quicksandWhiteRegular(
-                      'PAYMAYA:\n\t09484548667\n\tJonas Banca',
-                      fontSize: 14,
-                      textAlign: TextAlign.left)
+                    'BANK TRANSFER')
+                  quicksandWhiteBold('CIMB HASC:\n20867602518671\nTERENCE SY',
+                      fontSize: 14, textAlign: TextAlign.left)
               ],
             )
           ],

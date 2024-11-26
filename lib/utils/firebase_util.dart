@@ -1143,7 +1143,7 @@ Future markOrderAsPendingInstallation(BuildContext context, WidgetRef ref,
     ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
     ref.read(ordersProvider).sortOrdersByDate();
     scaffoldMessenger.showSnackBar(SnackBar(
-        content: Text('Successfully marked order as ready for pick up.')));
+        content: Text('Successfully marked order as pending installation.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
   } catch (error) {
     scaffoldMessenger.showSnackBar(SnackBar(
@@ -1165,7 +1165,7 @@ Future markOrderAsPendingDelivery(BuildContext context, WidgetRef ref,
     ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
     ref.read(ordersProvider).sortOrdersByDate();
     scaffoldMessenger.showSnackBar(SnackBar(
-        content: Text('Successfully marked order as ready for pick up.')));
+        content: Text('Successfully marked order as pending delivery.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
   } catch (error) {
     scaffoldMessenger.showSnackBar(SnackBar(
@@ -1303,6 +1303,36 @@ Future markOrderAsPendingDeliveryApproval(BuildContext context, WidgetRef ref,
     scaffoldMessenger.showSnackBar(SnackBar(
         content:
             Text('Error marking order as pending delivery approval: $error')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  }
+}
+
+Future cancelOrderDeliveryService(BuildContext context, WidgetRef ref,
+    {required String orderID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider.notifier).toggleLoading(true);
+    final order = await getThisOrderDoc(orderID);
+    final orderData = order.data() as Map<dynamic, dynamic>;
+    Map<dynamic, dynamic> quotation = orderData[OrderFields.quotation];
+    quotation[QuotationFields.isRequestingAdditionalService] = false;
+    await FirebaseFirestore.instance
+        .collection(Collections.orders)
+        .doc(orderID)
+        .update({
+      OrderFields.orderStatus: OrderStatuses.forPickUp,
+      OrderFields.quotation: quotation
+    });
+    ref.read(ordersProvider).setOrderDocs(
+        await getAllClientUncompletedOrderDocs(
+            FirebaseAuth.instance.currentUser!.uid));
+    ref.read(ordersProvider).sortOrdersByDate();
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully cancelled additional service.')));
+    ref.read(loadingProvider.notifier).toggleLoading(false);
+  } catch (error) {
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error cancelling additional service: $error')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
   }
 }
@@ -1817,7 +1847,10 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
     required List<Map<dynamic, dynamic>> optionalWindowFields,
     required List<dynamic> accessoryFields,
     required bool requestingService,
-    required TextEditingController addressController,
+    required TextEditingController streetController,
+    required TextEditingController barangayController,
+    required TextEditingController municipalityController,
+    required TextEditingController zipCodeController,
     required TextEditingController contactNumberController}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
@@ -1827,7 +1860,11 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
     return;
   }
   if (requestingService &&
-      (addressController.text.isEmpty ||
+      (streetController.text.isEmpty ||
+          barangayController.text.isEmpty ||
+          municipalityController.text.isEmpty ||
+          zipCodeController.text.isEmpty ||
+          double.tryParse(zipCodeController.text) == null ||
           contactNumberController.text.isEmpty)) {
     scaffoldMessenger.showSnackBar(const SnackBar(
         content: Text('Please provide a valid address and contact number.')));
@@ -2096,7 +2133,8 @@ Future addFurnitureItemToCart(BuildContext context, WidgetRef ref,
         //REQUESTS
         QuotationFields.isRequestingAdditionalService: requestingService,
         QuotationFields.additionalServicePrice: 0,
-        QuotationFields.requestAddress: addressController.text.trim(),
+        QuotationFields.requestAddress:
+            '${streetController.text.trim()}, ${barangayController.text.trim()}, ${municipalityController.text.trim()}, ${zipCodeController.text.trim()}',
         QuotationFields.requestContactNumber:
             contactNumberController.text.trim(),
         QuotationFields.requestStatus: '',
@@ -2119,12 +2157,19 @@ Future addRawMaterialToCart(BuildContext context, WidgetRef ref,
     {required String itemID,
     required bool requestingService,
     required num itemOverallPrice,
-    required TextEditingController addressController,
+    required TextEditingController streetController,
+    required TextEditingController barangayController,
+    required TextEditingController municipalityController,
+    required TextEditingController zipCodeController,
     required TextEditingController contactNumberController}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
     if (requestingService &&
-        (addressController.text.isEmpty ||
+        (streetController.text.isEmpty ||
+            barangayController.text.isEmpty ||
+            municipalityController.text.isEmpty ||
+            zipCodeController.text.isEmpty ||
+            double.tryParse(zipCodeController.text) == null ||
             contactNumberController.text.isEmpty)) {
       scaffoldMessenger.showSnackBar(const SnackBar(
           content: Text('Please provide a valid address and contact number.')));
@@ -2145,7 +2190,8 @@ Future addRawMaterialToCart(BuildContext context, WidgetRef ref,
       CartFields.quotation: {
         QuotationFields.isRequestingAdditionalService: requestingService,
         QuotationFields.additionalServicePrice: 0,
-        QuotationFields.requestAddress: addressController.text.trim(),
+        QuotationFields.requestAddress:
+            '${streetController.text.trim()}, ${barangayController.text.trim()}, ${municipalityController.text.trim()}, ${zipCodeController.text.trim()}',
         QuotationFields.requestContactNumber:
             contactNumberController.text.trim(),
         QuotationFields.requestStatus: '',
@@ -2442,6 +2488,24 @@ Future<List<DocumentSnapshot>> getAllAppointments() async {
   return appointments.docs.map((e) => e as DocumentSnapshot).toList();
 }
 
+Future<List<DocumentSnapshot>> getNotPendingAppointments() async {
+  final appointments = await FirebaseFirestore.instance
+      .collection(Collections.appointments)
+      .where(AppointmentFields.appointmentStatus,
+          isNotEqualTo: AppointmentStatuses.pending)
+      .get();
+  return appointments.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
+Future<List<DocumentSnapshot>> getPendingAppointments() async {
+  final appointments = await FirebaseFirestore.instance
+      .collection(Collections.appointments)
+      .where(AppointmentFields.appointmentStatus,
+          isEqualTo: AppointmentStatuses.pending)
+      .get();
+  return appointments.docs.map((e) => e as DocumentSnapshot).toList();
+}
+
 Future<List<DocumentSnapshot>> getAllUserAppointments() async {
   final appointments = await FirebaseFirestore.instance
       .collection(Collections.appointments)
@@ -2452,8 +2516,23 @@ Future<List<DocumentSnapshot>> getAllUserAppointments() async {
 }
 
 Future requestForAppointment(BuildContext context, WidgetRef ref,
-    {required List<DateTime> requestedDates}) async {
+    {required List<DateTime> requestedDates,
+    required TextEditingController streetController,
+    required TextEditingController barangayController,
+    required TextEditingController municipalityController,
+    required TextEditingController zipCodeController,
+    required TextEditingController contactNumberController}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
+  if ((streetController.text.isEmpty ||
+      barangayController.text.isEmpty ||
+      municipalityController.text.isEmpty ||
+      zipCodeController.text.isEmpty ||
+      double.tryParse(zipCodeController.text) == null ||
+      contactNumberController.text.isEmpty)) {
+    scaffoldMessenger.showSnackBar(const SnackBar(
+        content: Text('Please provide a valid address and contact number.')));
+    return;
+  }
   try {
     GoRouter.of(context).pop();
     ref.read(loadingProvider).toggleLoading(true);
@@ -2463,7 +2542,9 @@ Future requestForAppointment(BuildContext context, WidgetRef ref,
       AppointmentFields.appointmentStatus: AppointmentStatuses.pending,
       AppointmentFields.selectedDate: DateTime.now(),
       AppointmentFields.denialReason: '',
-      AppointmentFields.dateCreated: DateTime.now()
+      AppointmentFields.dateCreated: DateTime.now(),
+      AppointmentFields.address:
+          '${streetController.text.trim()}, ${barangayController.text.trim()}, ${municipalityController.text.trim()}, ${zipCodeController.text.trim()}'
     });
     ref.read(loadingProvider).toggleLoading(false);
     scaffoldMessenger.showSnackBar(
@@ -2476,7 +2557,7 @@ Future requestForAppointment(BuildContext context, WidgetRef ref,
   }
 }
 
-Future deletePendingAppointment(BuildContext context, WidgetRef ref,
+Future cancelPendingAppointment(BuildContext context, WidgetRef ref,
     {required String appointmentID}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
@@ -2484,12 +2565,19 @@ Future deletePendingAppointment(BuildContext context, WidgetRef ref,
     await FirebaseFirestore.instance
         .collection(Collections.appointments)
         .doc(appointmentID)
-        .delete();
+        .update({
+      AppointmentFields.appointmentStatus: AppointmentStatuses.cancelled
+    });
     ref
         .read(appointmentsProvider)
         .setAppointmentDocs(await getAllUserAppointments());
+    ref.read(appointmentsProvider).appointmentDocs.sort((a, b) {
+      DateTime aTime = (a[AppointmentFields.dateCreated] as Timestamp).toDate();
+      DateTime bTime = (b[AppointmentFields.dateCreated] as Timestamp).toDate();
+      return bTime.compareTo(aTime);
+    });
     scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Successfully deleted this appointment.')));
+        SnackBar(content: Text('Successfully cancelled this appointment.')));
     ref.read(loadingProvider).toggleLoading(false);
   } catch (error) {
     ref.read(loadingProvider).toggleLoading(false);
@@ -2513,7 +2601,7 @@ Future approveThisAppointment(BuildContext context, WidgetRef ref,
     });
     ref
         .read(appointmentsProvider)
-        .setAppointmentDocs(await getAllAppointments());
+        .setAppointmentDocs(await getPendingAppointments());
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully approved this appointment.')));
     ref.read(loadingProvider).toggleLoading(false);
@@ -2547,7 +2635,7 @@ Future denyThisAppointment(BuildContext context, WidgetRef ref,
     });
     ref
         .read(appointmentsProvider)
-        .setAppointmentDocs(await getAllAppointments());
+        .setAppointmentDocs(await getPendingAppointments());
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully denied this appointment.')));
     ref.read(loadingProvider).toggleLoading(false);
