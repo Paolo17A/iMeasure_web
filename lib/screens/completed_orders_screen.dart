@@ -52,7 +52,7 @@ class _CompletedOrdersScreenState extends ConsumerState<CompletedOrdersScreen> {
         ref.read(ordersProvider).setOrderDocs(
             await getAllClientCompletedOrderDocs(
                 FirebaseAuth.instance.currentUser!.uid));
-        ref.read(ordersProvider).sortOrdersByDate();
+        ref.read(ordersProvider).sortFromLatestToEarliest();
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);

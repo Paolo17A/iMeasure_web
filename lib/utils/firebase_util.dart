@@ -330,7 +330,6 @@ Future<List<DocumentSnapshot>> getSelectedItemDocs(
 
 Future<List<DocumentSnapshot>> searchForTheseItems(String input) async {
   String searchInput = input.toLowerCase().trim();
-  print('searchInput: $searchInput');
   final items =
       await FirebaseFirestore.instance.collection(Collections.items).get();
   List<DocumentSnapshot> filteredItems = items.docs.where((item) {
@@ -1131,7 +1130,8 @@ Future purchaseSelectedCartItems(BuildContext context, WidgetRef ref,
 }
 
 Future markOrderAsPendingInstallation(BuildContext context, WidgetRef ref,
-    {required String orderID}) async {
+    {required String orderID,
+    required Map<String, String> orderIDandNameMap}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
@@ -1141,7 +1141,10 @@ Future markOrderAsPendingInstallation(BuildContext context, WidgetRef ref,
         .doc(orderID)
         .update({OrderFields.orderStatus: OrderStatuses.pendingInstallation});
     ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
-    ref.read(ordersProvider).sortOrdersByDate();
+    String sortingMethod = ref.read(ordersProvider).sortingMethod;
+    ref
+        .read(ordersProvider)
+        .setOrderMethodAndSort(sortingMethod, orderIDandNameMap);
     scaffoldMessenger.showSnackBar(SnackBar(
         content: Text('Successfully marked order as pending installation.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1153,7 +1156,8 @@ Future markOrderAsPendingInstallation(BuildContext context, WidgetRef ref,
 }
 
 Future markOrderAsPendingDelivery(BuildContext context, WidgetRef ref,
-    {required String orderID}) async {
+    {required String orderID,
+    required Map<String, String> orderIDandNameMap}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
@@ -1163,7 +1167,10 @@ Future markOrderAsPendingDelivery(BuildContext context, WidgetRef ref,
         .doc(orderID)
         .update({OrderFields.orderStatus: OrderStatuses.pendingDelivery});
     ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
-    ref.read(ordersProvider).sortOrdersByDate();
+    String sortingMethod = ref.read(ordersProvider).sortingMethod;
+    ref
+        .read(ordersProvider)
+        .setOrderMethodAndSort(sortingMethod, orderIDandNameMap);
     scaffoldMessenger.showSnackBar(SnackBar(
         content: Text('Successfully marked order as pending delivery.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1175,7 +1182,9 @@ Future markOrderAsPendingDelivery(BuildContext context, WidgetRef ref,
 }
 
 Future markOrderAsForInstallation(BuildContext context, WidgetRef ref,
-    {required String orderID, required Timestamp selectedDate}) async {
+    {required String orderID,
+    required Timestamp selectedDate,
+    required Map<String, String> orderIDandNameMap}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
@@ -1191,7 +1200,10 @@ Future markOrderAsForInstallation(BuildContext context, WidgetRef ref,
       OrderFields.quotation: quotation
     });
     ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
-    ref.read(ordersProvider).sortOrdersByDate();
+    String sortingMethod = ref.read(ordersProvider).sortingMethod;
+    ref
+        .read(ordersProvider)
+        .setOrderMethodAndSort(sortingMethod, orderIDandNameMap);
     scaffoldMessenger.showSnackBar(SnackBar(
         content: Text('Successfully marked order as ready for installation.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1203,7 +1215,9 @@ Future markOrderAsForInstallation(BuildContext context, WidgetRef ref,
 }
 
 Future markOrderAsForDelivery(BuildContext context, WidgetRef ref,
-    {required String orderID, required Timestamp selectedDate}) async {
+    {required String orderID,
+    required Timestamp selectedDate,
+    required Map<String, String> orderIDandNameMap}) async {
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   try {
     ref.read(loadingProvider.notifier).toggleLoading(true);
@@ -1219,7 +1233,10 @@ Future markOrderAsForDelivery(BuildContext context, WidgetRef ref,
       OrderFields.quotation: quotation
     });
     ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
-    ref.read(ordersProvider).sortOrdersByDate();
+    String sortingMethod = ref.read(ordersProvider).sortingMethod;
+    ref
+        .read(ordersProvider)
+        .setOrderMethodAndSort(sortingMethod, orderIDandNameMap);
     scaffoldMessenger.showSnackBar(SnackBar(
         content: Text('Successfully marked order as ready for delivery.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1326,7 +1343,7 @@ Future cancelOrderDeliveryService(BuildContext context, WidgetRef ref,
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientUncompletedOrderDocs(
             FirebaseAuth.instance.currentUser!.uid));
-    ref.read(ordersProvider).sortOrdersByDate();
+    ref.read(ordersProvider).sortFromLatestToEarliest();
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully cancelled additional service.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1350,7 +1367,7 @@ Future markOrderAsReadyForPickUp(BuildContext context, WidgetRef ref,
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientUncompletedOrderDocs(
             FirebaseAuth.instance.currentUser!.uid));
-    ref.read(ordersProvider).sortOrdersByDate();
+    ref.read(ordersProvider).sortFromLatestToEarliest();
     scaffoldMessenger.showSnackBar(SnackBar(
         content: Text('Successfully marked order as ready for pick up.')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1376,7 +1393,7 @@ Future markOrderAsPickedUp(BuildContext context, WidgetRef ref,
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientUncompletedOrderDocs(
             FirebaseAuth.instance.currentUser!.uid));
-    ref.read(ordersProvider).sortOrdersByDate();
+    ref.read(ordersProvider).sortFromLatestToEarliest();
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as picked up')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1402,7 +1419,7 @@ Future markOrderAsInstalled(BuildContext context, WidgetRef ref,
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientUncompletedOrderDocs(
             FirebaseAuth.instance.currentUser!.uid));
-    ref.read(ordersProvider).sortOrdersByDate();
+    ref.read(ordersProvider).sortFromLatestToEarliest();
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as picked up')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1428,7 +1445,7 @@ Future markOrderAsDelivered(BuildContext context, WidgetRef ref,
     ref.read(ordersProvider).setOrderDocs(
         await getAllClientUncompletedOrderDocs(
             FirebaseAuth.instance.currentUser!.uid));
-    ref.read(ordersProvider).sortOrdersByDate();
+    ref.read(ordersProvider).sortFromLatestToEarliest();
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as picked up')));
     ref.read(loadingProvider.notifier).toggleLoading(false);
@@ -1450,7 +1467,7 @@ Future markOrderAsCompleted(BuildContext context, WidgetRef ref,
         .doc(orderID)
         .update({OrderFields.orderStatus: OrderStatuses.completed});
     ref.read(ordersProvider).setOrderDocs(await getAllUncompletedOrderDocs());
-    ref.read(ordersProvider).sortOrdersByDate();
+    ref.read(ordersProvider).sortFromLatestToEarliest();
 
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully marked order as completed.')));
@@ -2325,9 +2342,10 @@ Future setCartItemLaborPrice(BuildContext context, WidgetRef ref,
     ref
         .read(cartProvider)
         .setCartItems(await getAllCartItemsWithNoLaborPrice());
+    bool isChronological = ref.read(cartProvider).isChronological;
+    ref.read(cartProvider).setIsChronological(isChronological);
     ref.read(loadingProvider).toggleLoading(false);
   } catch (error) {
-    print(error);
     ref.read(loadingProvider).toggleLoading(false);
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Error setting item labor price: $error')));
@@ -2371,6 +2389,8 @@ Future setCartItemDeliveryPrice(BuildContext context, WidgetRef ref,
     ref
         .read(cartProvider)
         .setCartItems(await getAllCartItemsWithNoDeliveryPrice());
+    bool isChronological = ref.read(cartProvider).isChronological;
+    ref.read(cartProvider).setIsChronological(isChronological);
     ref.read(loadingProvider).toggleLoading(false);
   } catch (error) {
     ref.read(loadingProvider).toggleLoading(false);
@@ -2412,6 +2432,8 @@ Future denyCartItemDeliveryRequest(BuildContext context, WidgetRef ref,
     ref
         .read(cartProvider)
         .setCartItems(await getAllCartItemsWithNoDeliveryPrice());
+    bool isChronological = ref.read(cartProvider).isChronological;
+    ref.read(cartProvider).setIsChronological(isChronological);
     ref.read(loadingProvider).toggleLoading(false);
   } catch (error) {
     ref.read(loadingProvider).toggleLoading(false);

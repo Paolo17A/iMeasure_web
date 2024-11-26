@@ -12,6 +12,7 @@ import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:intl/intl.dart';
 
 import '../providers/user_data_provider.dart';
+import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../utils/quotation_dialog_util.dart';
@@ -68,13 +69,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ref
             .read(transactionsProvider)
             .setTransactionDocs(await getAllVerifiedTransactionDocs());
-        ref.read(transactionsProvider).transactionDocs.sort((a, b) {
-          DateTime aTime =
-              (a[TransactionFields.dateApproved] as Timestamp).toDate();
-          DateTime bTime =
-              (b[TransactionFields.dateApproved] as Timestamp).toDate();
-          return bTime.compareTo(aTime);
-        });
+        ref.read(transactionsProvider).setIsChronological(false);
+        // ref.read(transactionsProvider).transactionDocs.sort((a, b) {
+        //   DateTime aTime =
+        //       (a[TransactionFields.dateApproved] as Timestamp).toDate();
+        //   DateTime bTime =
+        //       (b[TransactionFields.dateApproved] as Timestamp).toDate();
+        //   return bTime.compareTo(aTime);
+        // });
         ref
             .read(appointmentsProvider)
             .setAppointmentDocs(await getNotPendingAppointments());
@@ -179,10 +181,49 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   //ORDERS======================================================================
   //============================================================================
   Widget _optionsWidgets() {
-    return Wrap(children: [
+    return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
       _ordersButton(),
       _transactionsButton(),
-      _appointmentsButton()
+      _appointmentsButton(),
+      //Gap(20),
+      // Sorting pop-up
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          quicksandWhiteBold('Sort:'),
+          PopupMenuButton(
+              color: CustomColors.forestGreen,
+              iconColor: Colors.white,
+              onSelected: (value) {
+                if (currentlyViewing == 'ORDERS') {
+                  ref
+                      .read(ordersProvider)
+                      .setIsChronological(bool.parse(value));
+                  setDisplayedOrders();
+                } else if (currentlyViewing == 'TRANSACTIONS') {
+                  ref
+                      .read(transactionsProvider)
+                      .setIsChronological(bool.parse(value));
+                  setDisplayedTransactions();
+                } else if (currentlyViewing == 'APPOINTMENTS') {
+                  ref
+                      .read(appointmentsProvider)
+                      .setIsChronological(bool.parse(value));
+                  setDisplayedAppointments();
+                }
+
+                currentPage = 0;
+              },
+              itemBuilder: (context) => [
+                    PopupMenuItem(
+                        value: false.toString(),
+                        child: quicksandWhiteBold('Newest to Oldest')),
+                    PopupMenuItem(
+                        value: true.toString(),
+                        child: quicksandWhiteBold('Oldest to Newest')),
+                  ]),
+        ],
+      )
     ]);
   }
 
@@ -202,8 +243,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             currentlyViewing == 'ORDERS'
-                ? forestGreenQuicksandBold('COMPLETED ORDERS: ', fontSize: 28)
-                : quicksandWhiteBold('COMPLETED ORDERS: ', fontSize: 28),
+                ? forestGreenQuicksandBold('COMPLETED ORDERS: ', fontSize: 24)
+                : quicksandWhiteBold('COMPLETED ORDERS: ', fontSize: 24),
             //Gap(8),
             quicksandCoralRedBold(
                 ref.read(ordersProvider).orderDocs.length.toString(),
@@ -235,14 +276,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             currentlyViewing == 'TRANSACTIONS'
                 ? forestGreenQuicksandBold('VERIFIED TRANSACTIONS: ',
                     fontSize: 28)
-                : quicksandWhiteBold('VERIFIED TRANSACTIONS: ', fontSize: 28),
+                : quicksandWhiteBold('VERIFIED TRANSACTIONS: ', fontSize: 24),
             quicksandCoralRedBold(
                 ref
                     .read(transactionsProvider)
                     .transactionDocs
                     .length
                     .toString(),
-                fontSize: 28)
+                fontSize: 24)
           ],
         ),
       ),
@@ -270,14 +311,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             currentlyViewing == 'APPOINTMENTS'
                 ? forestGreenQuicksandBold('FINALIZED APPOINTMENTS: ',
                     fontSize: 28)
-                : quicksandWhiteBold('FINALIZED APPOINTMENTS: ', fontSize: 28),
+                : quicksandWhiteBold('FINALIZED APPOINTMENTS: ', fontSize: 24),
             quicksandCoralRedBold(
                 ref
                     .read(appointmentsProvider)
                     .appointmentDocs
                     .length
                     .toString(),
-                fontSize: 28)
+                fontSize: 24)
           ],
         ),
       ),
@@ -494,8 +535,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     return viewContentLabelRow(context, children: [
       viewFlexLabelTextCell('Buyer', 3),
       viewFlexLabelTextCell('Amount Paid', 2),
-      viewFlexLabelTextCell('Dater Created', 2),
-      viewFlexLabelTextCell('Dater Settled', 2),
+      viewFlexLabelTextCell('Date Created', 2),
+      viewFlexLabelTextCell('Date Settled', 2),
       viewFlexLabelTextCell('Payment', 2),
       viewFlexLabelTextCell('Actions', 2)
     ]);
@@ -666,6 +707,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   Widget _appointmentsLabelRow() {
     return viewContentLabelRow(context, children: [
       viewFlexLabelTextCell('Buyer', 3),
+      viewFlexLabelTextCell('Date Created', 2),
       viewFlexLabelTextCell('Selected Date', 2),
       viewFlexLabelTextCell('Status', 2),
       viewFlexLabelTextCell('Actions', 2)
@@ -694,6 +736,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             DateTime selectedDate =
                 (appointmentData[AppointmentFields.selectedDate] as Timestamp)
                     .toDate();
+            DateTime dateCreated =
+                (appointmentData[AppointmentFields.dateCreated] as Timestamp)
+                    .toDate();
             String address = appointmentData[AppointmentFields.address];
             return FutureBuilder(
                 future: getThisUserDoc(clientID),
@@ -716,6 +761,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       entryColor: entryColor,
                       requestedDates: requestedDates,
                       selectedDate: selectedDate,
+                      dateCreated: dateCreated,
                       status: appointmentStatus,
                       address: address,
                       denialReason: denialReason);
@@ -730,6 +776,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       required Color backgroundColor,
       required Color entryColor,
       required DateTime selectedDate,
+      required DateTime dateCreated,
       required String status,
       required List<dynamic> requestedDates,
       required String address,
@@ -739,6 +786,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       children: [
         viewFlexTextCell(formattedName,
             flex: 3, backgroundColor: backgroundColor, textColor: entryColor),
+        viewFlexTextCell(DateFormat('MMM dd, yyyy').format(dateCreated),
+            flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
         viewFlexTextCell(
             status == AppointmentStatuses.approved
                 ? DateFormat('MMM dd, yyyy').format(selectedDate)

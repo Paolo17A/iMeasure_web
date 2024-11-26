@@ -202,7 +202,6 @@ void showCartQuotationDialog(BuildContext context, WidgetRef ref,
     //required String glass,
     required List<dynamic> imageURLs,
     required String itemName}) {
-  print(color);
   showDialog(
       context: context,
       barrierDismissible: false,

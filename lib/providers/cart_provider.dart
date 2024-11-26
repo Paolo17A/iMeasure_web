@@ -13,6 +13,7 @@ class CartNotifier extends ChangeNotifier {
   List<String> _selectedCartItemIDs = [];
   String _selectedGlassType = '';
   String _selectedColor = '';
+  bool isChronological = false;
 
   List<DocumentSnapshot> get cartItems => _cartItems;
   List<DocumentSnapshot> get noAdditionalCostRequestedCartItems =>
@@ -27,13 +28,36 @@ class CartNotifier extends ChangeNotifier {
 
   void setCartItems(List<DocumentSnapshot> items) {
     _cartItems = items;
+    // _cartItems.sort((a, b) {
+    //   DateTime aTime = (a[CartFields.dateLastModified] as Timestamp).toDate();
+    //   DateTime bTime = (b[CartFields.dateLastModified] as Timestamp).toDate();
+    //   return aTime.compareTo(bTime);
+    // });
+    isChronological ? sortChronologically() : sortNotChronologically();
+    updateCartSubLists();
+    notifyListeners();
+  }
+
+  setIsChronological(bool value) {
+    isChronological = value;
+    isChronological ? sortChronologically() : sortNotChronologically();
+    notifyListeners();
+  }
+
+  void sortNotChronologically() {
     _cartItems.sort((a, b) {
       DateTime aTime = (a[CartFields.dateLastModified] as Timestamp).toDate();
       DateTime bTime = (b[CartFields.dateLastModified] as Timestamp).toDate();
       return aTime.compareTo(bTime);
     });
-    updateCartSubLists();
-    notifyListeners();
+  }
+
+  void sortChronologically() {
+    _cartItems.sort((a, b) {
+      DateTime aTime = (a[CartFields.dateLastModified] as Timestamp).toDate();
+      DateTime bTime = (b[CartFields.dateLastModified] as Timestamp).toDate();
+      return bTime.compareTo(aTime);
+    });
   }
 
   void updateCartSubLists() {

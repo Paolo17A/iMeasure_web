@@ -6,15 +6,34 @@ import '../utils/string_util.dart';
 
 class TransactionsNotifier extends ChangeNotifier {
   List<DocumentSnapshot> transactionDocs = [];
+  bool isChronological = false;
 
   void setTransactionDocs(List<DocumentSnapshot> transactions) {
     transactionDocs = transactions;
+    isChronological ? sortFromEarliestToLatest() : sortFromLatestToEarliest();
+    notifyListeners();
+  }
+
+  setIsChronological(bool value) {
+    isChronological = value;
+    isChronological ? sortFromEarliestToLatest() : sortFromLatestToEarliest();
+    notifyListeners();
+  }
+
+  sortFromLatestToEarliest() {
     transactionDocs.sort((a, b) {
       DateTime aTime = (a[TransactionFields.dateCreated] as Timestamp).toDate();
       DateTime bTime = (b[TransactionFields.dateCreated] as Timestamp).toDate();
       return bTime.compareTo(aTime);
     });
-    notifyListeners();
+  }
+
+  sortFromEarliestToLatest() {
+    transactionDocs.sort((a, b) {
+      DateTime aTime = (a[TransactionFields.dateCreated] as Timestamp).toDate();
+      DateTime bTime = (b[TransactionFields.dateCreated] as Timestamp).toDate();
+      return aTime.compareTo(bTime);
+    });
   }
 }
 

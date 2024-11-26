@@ -61,7 +61,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
         ref.read(ordersProvider).setOrderDocs(
             await getAllClientUncompletedOrderDocs(
                 FirebaseAuth.instance.currentUser!.uid));
-        ref.read(ordersProvider).sortOrdersByDate();
+        ref.read(ordersProvider).sortFromLatestToEarliest();
         ref.read(loadingProvider).toggleLoading(false);
       } catch (error) {
         ref.read(loadingProvider).toggleLoading(false);

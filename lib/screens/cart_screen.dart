@@ -421,10 +421,14 @@ class _CartScreenState extends ConsumerState<CartScreen>
                     else if ((itemType == ItemTypes.window ||
                             itemType == ItemTypes.door) &&
                         requestStatus == RequestStatuses.denied)
-                      quicksandWhiteRegular(
-                          'Installation Request Denied: ${quotation[QuotationFields.requestDenialReason]}',
-                          textAlign: TextAlign.left,
-                          fontSize: 14)
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.2,
+                        //decoration: BoxDecoration(border: Border.all()),
+                        child: quicksandWhiteRegular(
+                            'Installation Request Denied: ${quotation[QuotationFields.requestDenialReason]}',
+                            textAlign: TextAlign.left,
+                            fontSize: 14),
+                      )
                     else if (itemType == ItemTypes.rawMaterial &&
                         (requestStatus == RequestStatuses.denied))
                       Container(

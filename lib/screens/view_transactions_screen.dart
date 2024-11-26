@@ -124,6 +124,32 @@ class _ViewTransactionsScreenState
                 _unverifiedTransactions()
               ]),
         ),
+        Gap(20),
+        // Sorting pop-up
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            quicksandWhiteBold('Sort:'),
+            PopupMenuButton(
+                color: CustomColors.forestGreen,
+                iconColor: Colors.white,
+                onSelected: (value) {
+                  ref
+                      .read(transactionsProvider)
+                      .setIsChronological(bool.parse(value));
+                  currentPage = 0;
+                  setDisplayedPayments();
+                },
+                itemBuilder: (context) => [
+                      PopupMenuItem(
+                          value: false.toString(),
+                          child: quicksandWhiteBold('Newest to Oldest')),
+                      PopupMenuItem(
+                          value: true.toString(),
+                          child: quicksandWhiteBold('Oldest to Newest')),
+                    ]),
+          ],
+        )
       ],
     );
   }

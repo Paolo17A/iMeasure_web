@@ -29,7 +29,7 @@ class ViewOrdersScreen extends ConsumerStatefulWidget {
 }
 
 class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
-  String sortingMethod = 'DATE';
+  //String sortingMethod = 'DATE';
   Map<String, String> orderIDandNameMap = {};
   List<DocumentSnapshot> currentDisplayedOrders = [];
   int currentPage = 0;
@@ -59,7 +59,10 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
         ref
             .read(ordersProvider)
             .setOrderDocs(await getAllUncompletedOrderDocs());
-        ref.read(ordersProvider).sortOrdersByDate();
+        ref
+            .read(ordersProvider)
+            .setOrderMethodAndSort('DATE', orderIDandNameMap);
+        //ref.read(ordersProvider).sortOrdersByDate();
         maxPage = (ref.read(ordersProvider).orderDocs.length / 10).floor();
         if (ref.read(ordersProvider).orderDocs.length % 10 == 0) maxPage--;
         setDisplayedOrders();
@@ -140,13 +143,16 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                   color: CustomColors.forestGreen,
                   iconColor: Colors.white,
                   onSelected: (value) {
-                    if (value == 'NAME') {
-                      ref
-                          .read(ordersProvider)
-                          .sortOrdersByClientName(orderIDandNameMap);
-                    } else if (value == 'DATE') {
-                      ref.read(ordersProvider).sortOrdersByDate();
-                    }
+                    ref
+                        .read(ordersProvider)
+                        .setOrderMethodAndSort(value, orderIDandNameMap);
+                    // if (value == 'NAME') {
+                    //   ref
+                    //       .read(ordersProvider)
+                    //       .sortOrdersByClientName(orderIDandNameMap);
+                    // } else if (value == 'DATE') {
+                    //   ref.read(ordersProvider).sortOrdersByDate();
+                    // }
                     currentPage = 0;
                     setDisplayedOrders();
                   },
@@ -349,7 +355,8 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                       if (isRequestingAdditionalService &&
                           requestStatus == RequestStatuses.approved) {
                         markOrderAsPendingInstallation(context, ref,
-                            orderID: orderID);
+                            orderID: orderID,
+                            orderIDandNameMap: orderIDandNameMap);
                       } else
                         markOrderAsReadyForPickUp(context, ref,
                             orderID: orderID);
@@ -369,7 +376,8 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                       if (isRequestingAdditionalService &&
                           requestStatus == RequestStatuses.approved) {
                         markOrderAsPendingDelivery(context, ref,
-                            orderID: orderID);
+                            orderID: orderID,
+                            orderIDandNameMap: orderIDandNameMap);
                       } else
                         markOrderAsReadyForPickUp(context, ref,
                             orderID: orderID);
@@ -486,13 +494,17 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                                             markOrderAsForInstallation(
                                                 context, ref,
                                                 orderID: orderID,
-                                                selectedDate: requestedDate);
+                                                selectedDate: requestedDate,
+                                                orderIDandNameMap:
+                                                    orderIDandNameMap);
                                           } else if (orderStatus ==
                                               OrderStatuses
                                                   .deliveryPendingApproval) {
                                             markOrderAsForDelivery(context, ref,
                                                 orderID: orderID,
-                                                selectedDate: requestedDate);
+                                                selectedDate: requestedDate,
+                                                orderIDandNameMap:
+                                                    orderIDandNameMap);
                                           }
                                         },
                                         child: quicksandWhiteRegular(
@@ -509,11 +521,13 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
                               if (orderStatus ==
                                   OrderStatuses.installationPendingApproval)
                                 markOrderAsPendingInstallation(context, ref,
-                                    orderID: orderID);
+                                    orderID: orderID,
+                                    orderIDandNameMap: orderIDandNameMap);
                               else if (orderStatus ==
                                   OrderStatuses.deliveryPendingApproval)
                                 markOrderAsPendingDelivery(context, ref,
-                                    orderID: orderID);
+                                    orderID: orderID,
+                                    orderIDandNameMap: orderIDandNameMap);
                             },
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: CustomColors.coralRed),

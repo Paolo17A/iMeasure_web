@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -9,7 +10,9 @@ import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
+import 'package:intl/intl.dart';
 
+import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../widgets/custom_button_widgets.dart';
@@ -82,6 +85,33 @@ class _ViewPendingDeliveryScreenState
                                       transactionsButton(context)
                                     ]),
                               ),
+                              Gap(20),
+                              // Sorting pop-up
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  quicksandWhiteBold('Sort:'),
+                                  PopupMenuButton(
+                                      color: CustomColors.forestGreen,
+                                      iconColor: Colors.white,
+                                      onSelected: (value) {
+                                        ref
+                                            .read(cartProvider)
+                                            .setIsChronological(
+                                                bool.parse(value));
+                                      },
+                                      itemBuilder: (context) => [
+                                            PopupMenuItem(
+                                                value: false.toString(),
+                                                child: quicksandWhiteBold(
+                                                    'Newest to Oldest')),
+                                            PopupMenuItem(
+                                                value: true.toString(),
+                                                child: quicksandWhiteBold(
+                                                    'Oldest to Newest')),
+                                          ]),
+                                ],
+                              )
                             ],
                           ),
                           _ordersContainer()
@@ -126,6 +156,7 @@ class _ViewPendingDeliveryScreenState
       viewFlexLabelTextCell('Item', 2),
       viewFlexLabelTextCell('Cost', 2),
       viewFlexLabelTextCell('Quantity', 1),
+      viewFlexLabelTextCell('Date Requested', 2),
       viewFlexLabelTextCell('Action', 3),
     ]);
   }
@@ -143,7 +174,8 @@ class _ViewPendingDeliveryScreenState
           num itemOverallPrice =
               cartData[OrderFields.quotation][QuotationFields.itemOverallPrice];
           dynamic quotation = cartData[CartFields.quotation];
-
+          DateTime dateLastModified =
+              (cartData[CartFields.dateLastModified] as Timestamp).toDate();
           String requestedAddress =
               quotation[QuotationFields.requestAddress] ?? '';
           return FutureBuilder(
@@ -183,6 +215,7 @@ class _ViewPendingDeliveryScreenState
                           cartID: ref.read(cartProvider).cartItems[index].id,
                           quotation: quotation,
                           imageURLs: imageURLs,
+                          dateLastModified: dateLastModified,
                           requestedAddress: requestedAddress);
                     });
                 //  Item Variables
@@ -200,6 +233,7 @@ class _ViewPendingDeliveryScreenState
       required num quantity,
       required String cartID,
       required Map<dynamic, dynamic> quotation,
+      required DateTime dateLastModified,
       required List<dynamic> imageURLs,
       required String requestedAddress}) {
     return viewContentEntryRow(context, children: [
@@ -211,6 +245,8 @@ class _ViewPendingDeliveryScreenState
           flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
       viewFlexTextCell(quantity.toString(),
           flex: 1, backgroundColor: backgroundColor, textColor: entryColor),
+      viewFlexTextCell(DateFormat('MMM dd, yyyy').format(dateLastModified),
+          flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
       viewFlexActionsCell([
         Container(
           decoration: BoxDecoration(border: Border.all(color: Colors.white)),

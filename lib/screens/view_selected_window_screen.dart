@@ -313,7 +313,6 @@ class _SelectedWindowScreenState
 
         final clientData = snapshot.data!.data() as Map<dynamic, dynamic>;
         String profileImageURL = clientData[UserFields.profileImageURL];
-        print(profileImageURL);
         String firstName = clientData[UserFields.firstName];
         String lastName = clientData[UserFields.lastName];
 

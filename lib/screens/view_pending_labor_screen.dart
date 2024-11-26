@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -10,7 +11,9 @@ import 'package:imeasure/widgets/custom_miscellaneous_widgets.dart';
 import 'package:imeasure/widgets/custom_padding_widgets.dart';
 import 'package:imeasure/widgets/custom_text_field_widget.dart';
 import 'package:imeasure/widgets/left_navigator_widget.dart';
+import 'package:intl/intl.dart';
 
+import '../utils/color_util.dart';
 import '../utils/firebase_util.dart';
 import '../utils/go_router_util.dart';
 import '../widgets/custom_button_widgets.dart';
@@ -102,6 +105,33 @@ class _ViewPendingLaborScreenState
                                       transactionsButton(context)
                                     ]),
                               ),
+                              Gap(20),
+                              // Sorting pop-up
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  quicksandWhiteBold('Sort:'),
+                                  PopupMenuButton(
+                                      color: CustomColors.forestGreen,
+                                      iconColor: Colors.white,
+                                      onSelected: (value) {
+                                        ref
+                                            .read(cartProvider)
+                                            .setIsChronological(
+                                                bool.parse(value));
+                                      },
+                                      itemBuilder: (context) => [
+                                            PopupMenuItem(
+                                                value: false.toString(),
+                                                child: quicksandWhiteBold(
+                                                    'Newest to Oldest')),
+                                            PopupMenuItem(
+                                                value: true.toString(),
+                                                child: quicksandWhiteBold(
+                                                    'Oldest to Newest')),
+                                          ]),
+                                ],
+                              )
                             ],
                           ),
                           _ordersContainer()
@@ -147,6 +177,7 @@ class _ViewPendingLaborScreenState
       viewFlexLabelTextCell('Item', 2),
       viewFlexLabelTextCell('Cost', 2),
       viewFlexLabelTextCell('Quantity', 2),
+      viewFlexLabelTextCell('Date Requested', 2),
       viewFlexLabelTextCell('Status', 2),
       viewFlexLabelTextCell('Quotation', 2),
     ]);
@@ -162,6 +193,8 @@ class _ViewPendingLaborScreenState
           String clientID = cartData[CartFields.clientID];
           String itemID = cartData[CartFields.itemID];
           num quantity = cartData[CartFields.quantity];
+          DateTime dateLastModified =
+              (cartData[CartFields.dateLastModified] as Timestamp).toDate();
           num itemOverallPrice =
               cartData[OrderFields.quotation][QuotationFields.itemOverallPrice];
           dynamic quotation = cartData[CartFields.quotation];
@@ -208,6 +241,7 @@ class _ViewPendingLaborScreenState
                           quotation: quotation,
                           accessoryFields: accessoryFields,
                           imageURLs: imageURLs,
+                          dateLastModified: dateLastModified,
                           isRequestingAdditionalService:
                               isRequestingAdditionalService,
                           requestedAddress: requestedAddress);
@@ -229,6 +263,7 @@ class _ViewPendingLaborScreenState
       required Map<dynamic, dynamic> quotation,
       required List<dynamic> accessoryFields,
       required List<dynamic> imageURLs,
+      required DateTime dateLastModified,
       required bool isRequestingAdditionalService,
       required String requestedAddress}) {
     return viewContentEntryRow(context, children: [
@@ -239,6 +274,8 @@ class _ViewPendingLaborScreenState
       viewFlexTextCell('PHP ${formatPrice(itemOverallPrice.toDouble())}',
           flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
       viewFlexTextCell(quantity.toString(),
+          flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
+      viewFlexTextCell(DateFormat('MMM dd, yyyy').format(dateLastModified),
           flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
       viewFlexActionsCell([
         Container(

@@ -115,14 +115,52 @@ class _ViewAppointmentsScreenState
 
   Widget _appointmentsHeader() {
     return vertical20Pix(
-        child: Row(
-      children: [
-        quicksandWhiteBold('APPOINTMENTS: ', fontSize: 36),
-        quicksandCoralRedBold(
-            ref.read(appointmentsProvider).appointmentDocs.length.toString(),
-            fontSize: 36)
-      ],
-    ));
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                quicksandWhiteBold('APPOINTMENTS: ', fontSize: 36),
+                quicksandCoralRedBold(
+                    ref
+                        .read(appointmentsProvider)
+                        .appointmentDocs
+                        .length
+                        .toString(),
+                    fontSize: 36)
+              ],
+            ),
+          ),
+          Gap(20),
+          // Sorting pop-up
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              quicksandWhiteBold('Sort:'),
+              PopupMenuButton(
+                  color: CustomColors.forestGreen,
+                  iconColor: Colors.white,
+                  onSelected: (value) {
+                    ref
+                        .read(appointmentsProvider)
+                        .setIsChronological(bool.parse(value));
+                    currentPage = 0;
+                    setDisplayedAppointments();
+                  },
+                  itemBuilder: (context) => [
+                        PopupMenuItem(
+                            value: false.toString(),
+                            child: quicksandWhiteBold('Newest to Oldest')),
+                        PopupMenuItem(
+                            value: true.toString(),
+                            child: quicksandWhiteBold('Oldest to Newest')),
+                      ]),
+            ],
+          )
+        ],
+      ),
+    );
   }
 
   Widget _appointmentsContainer() {
@@ -159,6 +197,7 @@ class _ViewAppointmentsScreenState
   Widget _appointmentsLabelRow() {
     return viewContentLabelRow(context, children: [
       viewFlexLabelTextCell('Buyer', 3),
+      viewFlexLabelTextCell('Date Created', 2),
       viewFlexLabelTextCell('Selected Date', 2),
       viewFlexLabelTextCell('Status', 2),
       viewFlexLabelTextCell('Actions', 2)
@@ -187,6 +226,9 @@ class _ViewAppointmentsScreenState
             DateTime selectedDate =
                 (appointmentData[AppointmentFields.selectedDate] as Timestamp)
                     .toDate();
+            DateTime dateCreated =
+                (appointmentData[AppointmentFields.dateCreated] as Timestamp)
+                    .toDate();
             String address = appointmentData[AppointmentFields.address];
             return FutureBuilder(
                 future: getThisUserDoc(clientID),
@@ -209,6 +251,7 @@ class _ViewAppointmentsScreenState
                       entryColor: entryColor,
                       requestedDates: requestedDates,
                       selectedDate: selectedDate,
+                      dateCreated: dateCreated,
                       status: appointmentStatus,
                       address: address,
                       denialReason: denialReason);
@@ -223,6 +266,7 @@ class _ViewAppointmentsScreenState
       required Color backgroundColor,
       required Color entryColor,
       required DateTime selectedDate,
+      required DateTime dateCreated,
       required String status,
       required List<dynamic> requestedDates,
       required String address,
@@ -232,6 +276,8 @@ class _ViewAppointmentsScreenState
       children: [
         viewFlexTextCell(formattedName,
             flex: 3, backgroundColor: backgroundColor, textColor: entryColor),
+        viewFlexTextCell(DateFormat('MMM dd, yyyy').format(dateCreated),
+            flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
         viewFlexTextCell(
             status == AppointmentStatuses.approved
                 ? DateFormat('MMM dd, yyyy').format(selectedDate)
