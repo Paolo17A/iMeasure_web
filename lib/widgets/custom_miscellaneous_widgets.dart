@@ -1022,9 +1022,10 @@ StreamBuilder pendingAppointmentsStreamBuilder({bool displayifEmpty = true}) {
   return StreamBuilder(
     stream: FirebaseFirestore.instance
         .collection(Collections.appointments)
-        .where(AppointmentFields.appointmentStatus,
-            isEqualTo: AppointmentStatuses.pending)
-        .snapshots(),
+        .where(AppointmentFields.appointmentStatus, whereIn: [
+      AppointmentStatuses.pending,
+      AppointmentStatuses.approved
+    ]).snapshots(),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting ||
           snapshot.hasError ||
@@ -1085,6 +1086,43 @@ StreamBuilder rawMaterialItemsStreamBuilder() {
       List<dynamic> items = snapshot.data!.docs;
 
       return quicksandCoralRedBold(items.length.toString());
+    },
+  );
+}
+
+StreamBuilder approvedAppointmentsStreamBuilder() {
+  return StreamBuilder(
+    stream: FirebaseFirestore.instance
+        .collection(Collections.appointments)
+        .where(AppointmentFields.clientID,
+            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting ||
+          !snapshot.hasData ||
+          snapshot.hasError) return Container();
+      List<DocumentSnapshot> filteredAppointments = snapshot.data!.docs;
+
+      filteredAppointments = filteredAppointments.where((appointment) {
+        final appointmentData = appointment.data() as Map<dynamic, dynamic>;
+        String appointmentStatus =
+            appointmentData[AppointmentFields.appointmentStatus];
+        return appointmentStatus == AppointmentStatuses.approved;
+      }).toList();
+
+      if (filteredAppointments.length > 0)
+        return Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle, color: CustomColors.coralRed),
+            child: Center(
+                child: quicksandWhiteRegular(
+                    filteredAppointments.length.toString(),
+                    fontSize: 12)));
+      else {
+        return Container();
+      }
     },
   );
 }

@@ -79,7 +79,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         // });
         ref
             .read(appointmentsProvider)
-            .setAppointmentDocs(await getNotPendingAppointments());
+            .setAppointmentDocs(await getFinalizedAppointments());
         ref.read(appointmentsProvider).appointmentDocs.sort((a, b) {
           DateTime aTime =
               (a[AppointmentFields.dateCreated] as Timestamp).toDate();

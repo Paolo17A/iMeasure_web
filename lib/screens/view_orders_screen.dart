@@ -32,6 +32,7 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   //String sortingMethod = 'DATE';
   Map<String, String> orderIDandNameMap = {};
   List<DocumentSnapshot> currentDisplayedOrders = [];
+  List<DocumentSnapshot> associatedUserDocuments = [];
   int currentPage = 0;
   int maxPage = 0;
   @override
@@ -59,6 +60,17 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
         ref
             .read(ordersProvider)
             .setOrderDocs(await getAllUncompletedOrderDocs());
+        //  GET ALL USER DOCS AND CREATE THE MAP
+        for (var orderDoc in ref.read(ordersProvider).orderDocs) {
+          final orderData = orderDoc.data() as Map<dynamic, dynamic>;
+          String clientID = orderData[OrderFields.clientID];
+
+          final user = await getThisUserDoc(clientID);
+          final userData = user.data() as Map<dynamic, dynamic>;
+          String formattedName =
+              '${userData[UserFields.firstName]} ${userData[UserFields.lastName]}';
+          orderIDandNameMap[orderDoc.id] = formattedName;
+        }
         ref
             .read(ordersProvider)
             .setOrderMethodAndSort('DATE', orderIDandNameMap);
@@ -223,14 +235,13 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
   }
 
   Widget _orderEntries() {
-    orderIDandNameMap.clear();
+    //orderIDandNameMap.clear();
     return ListView.builder(
         shrinkWrap: true,
         itemCount: currentDisplayedOrders.length,
         itemBuilder: (context, index) {
           final orderData =
               currentDisplayedOrders[index].data() as Map<dynamic, dynamic>;
-          String clientID = orderData[OrderFields.clientID];
           String windowID = orderData[OrderFields.itemID];
           String status = orderData[OrderFields.orderStatus];
           DateTime dateCreated =
@@ -239,54 +250,38 @@ class _ViewOrdersScreenState extends ConsumerState<ViewOrdersScreen> {
               [QuotationFields.itemOverallPrice];
 
           Map<String, dynamic> quotation =
-              orderData[OrderFields.quotation] ?? [];
-
+              orderData[OrderFields.quotation] ?? {};
           return FutureBuilder(
-              future: getThisUserDoc(clientID),
+              future: getThisItemDoc(windowID),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting ||
                     !snapshot.hasData ||
                     snapshot.hasError) return Container();
 
-                final clientData =
-                    snapshot.data!.data() as Map<dynamic, dynamic>;
-                String formattedName =
-                    '${clientData[UserFields.firstName]} ${clientData[UserFields.lastName]}';
-
-                orderIDandNameMap
-                    .addAll({currentDisplayedOrders[index].id: formattedName});
-                return FutureBuilder(
-                    future: getThisItemDoc(windowID),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting ||
-                          !snapshot.hasData ||
-                          snapshot.hasError) return Container();
-
-                      final itemData =
-                          snapshot.data!.data() as Map<dynamic, dynamic>;
-                      String name = itemData[WindowFields.name];
-                      String itemType = itemData[ItemFields.itemType];
-                      Color entryColor = Colors.white;
-                      Color backgroundColor = Colors.transparent;
-                      List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
-                      List<dynamic> accessoryFields = [];
-                      if (itemType != ItemTypes.rawMaterial)
-                        accessoryFields = itemData[ItemFields.accessoryFields];
-                      return _orderEntry(
-                          formattedName: formattedName,
-                          backgroundColor: backgroundColor,
-                          entryColor: entryColor,
-                          dateCreated: dateCreated,
-                          name: name,
-                          itemOverallPrice: itemOverallPrice,
-                          status: status,
-                          orderID: ref.read(ordersProvider).orderDocs[index].id,
-                          itemType: itemType,
-                          quotation: quotation,
-                          accessoryFields: accessoryFields,
-                          imageURLs: imageURLs);
-                    });
-                //  Item Variables
+                final itemData = snapshot.data!.data() as Map<dynamic, dynamic>;
+                String name = itemData[WindowFields.name];
+                String itemType = itemData[ItemFields.itemType];
+                Color entryColor = Colors.white;
+                Color backgroundColor = Colors.transparent;
+                List<dynamic> imageURLs = itemData[ItemFields.imageURLs];
+                List<dynamic> accessoryFields = [];
+                if (itemType != ItemTypes.rawMaterial)
+                  accessoryFields = itemData[ItemFields.accessoryFields];
+                return _orderEntry(
+                    formattedName:
+                        orderIDandNameMap[currentDisplayedOrders[index].id] ??
+                            '',
+                    backgroundColor: backgroundColor,
+                    entryColor: entryColor,
+                    dateCreated: dateCreated,
+                    name: name,
+                    itemOverallPrice: itemOverallPrice,
+                    status: status,
+                    orderID: ref.read(ordersProvider).orderDocs[index].id,
+                    itemType: itemType,
+                    quotation: quotation,
+                    accessoryFields: accessoryFields,
+                    imageURLs: imageURLs);
               });
           //  Client Variables
         });

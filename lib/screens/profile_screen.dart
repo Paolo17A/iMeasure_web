@@ -160,18 +160,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               label: 'ORDER HISTORY',
               onPress: () =>
                   GoRouter.of(context).goNamed(GoRoutes.orderHistory)),
-          Positioned(
-              right: 10, top: 10, child: pendingPickUpOrdersStreamBuilder())
+          if (hasLoggedInUser())
+            Positioned(
+                right: 10, top: 10, child: pendingPickUpOrdersStreamBuilder())
         ],
       ),
       submitButton(context,
           label: 'COMPLETED',
           onPress: () =>
               GoRouter.of(context).goNamed(GoRoutes.completedOrders)),
-      submitButton(context,
-          label: 'APPOINTMENTS',
-          onPress: () =>
-              GoRouter.of(context).goNamed(GoRoutes.appointmentHistory)),
+      Stack(
+        children: [
+          submitButton(context,
+              label: 'APPOINTMENTS',
+              onPress: () =>
+                  GoRouter.of(context).goNamed(GoRoutes.appointmentHistory)),
+          if (hasLoggedInUser())
+            Positioned(
+                right: 10, top: 10, child: approvedAppointmentsStreamBuilder())
+        ],
+      ),
       Gap(16),
       all20Pix(
         child: ElevatedButton(

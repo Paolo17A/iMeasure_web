@@ -51,7 +51,7 @@ class _ViewAppointmentsScreenState
 
         ref
             .read(appointmentsProvider)
-            .setAppointmentDocs(await getPendingAppointments());
+            .setAppointmentDocs(await getNotFinalizedAppointments());
         maxPage = (ref.read(appointmentsProvider).appointmentDocs.length / 10)
             .floor();
         if (ref.read(appointmentsProvider).appointmentDocs.length % 10 == 0)
@@ -302,7 +302,11 @@ class _ViewAppointmentsScreenState
                     formattedName: formattedName,
                     proposedDates: requestedDates),
                 child: Icon(Icons.block, color: CustomColors.coralRed))
-          ]
+          ] else if (status == AppointmentStatuses.approved)
+            ElevatedButton(
+                onPressed: () => completeThisAppointment(context, ref,
+                    appointmentID: appointmentID),
+                child: quicksandWhiteRegular('MARK AS DONE', fontSize: 12))
         ], flex: 2, backgroundColor: backgroundColor)
       ],
     );

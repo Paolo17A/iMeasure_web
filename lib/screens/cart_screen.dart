@@ -58,6 +58,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
           goRouter.goNamed(GoRoutes.home);
           return;
         }
+        ref.read(cartProvider).setIsChronological(true);
         ref.read(cartProvider).setCartItems(await getCartEntries(context));
         associatedItemDocs = await getSelectedItemDocs(
             ref.read(cartProvider).cartItems.map((cartDoc) {

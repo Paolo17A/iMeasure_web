@@ -2510,21 +2510,42 @@ Future<List<DocumentSnapshot>> getAllAppointments() async {
   return appointments.docs.map((e) => e as DocumentSnapshot).toList();
 }
 
-Future<List<DocumentSnapshot>> getNotPendingAppointments() async {
+// Future<List<DocumentSnapshot>> getNotPendingAppointments() async {
+//   final appointments = await FirebaseFirestore.instance
+//       .collection(Collections.appointments)
+//       .where(AppointmentFields.appointmentStatus,
+//           isNotEqualTo: AppointmentStatuses.pending)
+//       .get();
+//   return appointments.docs.map((e) => e as DocumentSnapshot).toList();
+// }
+
+// Future<List<DocumentSnapshot>> getPendingAppointments() async {
+//   final appointments = await FirebaseFirestore.instance
+//       .collection(Collections.appointments)
+//       .where(AppointmentFields.appointmentStatus,
+//           isEqualTo: AppointmentStatuses.pending)
+//       .get();
+//   return appointments.docs.map((e) => e as DocumentSnapshot).toList();
+// }
+
+Future<List<DocumentSnapshot>> getFinalizedAppointments() async {
   final appointments = await FirebaseFirestore.instance
       .collection(Collections.appointments)
-      .where(AppointmentFields.appointmentStatus,
-          isNotEqualTo: AppointmentStatuses.pending)
-      .get();
+      .where(AppointmentFields.appointmentStatus, whereIn: [
+    AppointmentStatuses.completed,
+    AppointmentStatuses.denied,
+    AppointmentStatuses.cancelled
+  ]).get();
   return appointments.docs.map((e) => e as DocumentSnapshot).toList();
 }
 
-Future<List<DocumentSnapshot>> getPendingAppointments() async {
+Future<List<DocumentSnapshot>> getNotFinalizedAppointments() async {
   final appointments = await FirebaseFirestore.instance
       .collection(Collections.appointments)
-      .where(AppointmentFields.appointmentStatus,
-          isEqualTo: AppointmentStatuses.pending)
-      .get();
+      .where(AppointmentFields.appointmentStatus, whereIn: [
+    AppointmentStatuses.approved,
+    AppointmentStatuses.pending
+  ]).get();
   return appointments.docs.map((e) => e as DocumentSnapshot).toList();
 }
 
@@ -2623,7 +2644,7 @@ Future approveThisAppointment(BuildContext context, WidgetRef ref,
     });
     ref
         .read(appointmentsProvider)
-        .setAppointmentDocs(await getPendingAppointments());
+        .setAppointmentDocs(await getNotFinalizedAppointments());
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully approved this appointment.')));
     ref.read(loadingProvider).toggleLoading(false);
@@ -2631,6 +2652,30 @@ Future approveThisAppointment(BuildContext context, WidgetRef ref,
     ref.read(loadingProvider).toggleLoading(false);
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Error approved pending appointment.')));
+  }
+}
+
+Future completeThisAppointment(BuildContext context, WidgetRef ref,
+    {required String appointmentID}) async {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+  try {
+    ref.read(loadingProvider).toggleLoading(true);
+    await FirebaseFirestore.instance
+        .collection(Collections.appointments)
+        .doc(appointmentID)
+        .update({
+      AppointmentFields.appointmentStatus: AppointmentStatuses.completed
+    });
+    ref
+        .read(appointmentsProvider)
+        .setAppointmentDocs(await getNotFinalizedAppointments());
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Successfully completed this appointment.')));
+    ref.read(loadingProvider).toggleLoading(false);
+  } catch (error) {
+    ref.read(loadingProvider).toggleLoading(false);
+    scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Error completing this appointment.')));
   }
 }
 
@@ -2657,7 +2702,7 @@ Future denyThisAppointment(BuildContext context, WidgetRef ref,
     });
     ref
         .read(appointmentsProvider)
-        .setAppointmentDocs(await getPendingAppointments());
+        .setAppointmentDocs(await getNotFinalizedAppointments());
     scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Successfully denied this appointment.')));
     ref.read(loadingProvider).toggleLoading(false);
