@@ -198,9 +198,10 @@ class _ViewAppointmentsScreenState
     return viewContentLabelRow(context, children: [
       viewFlexLabelTextCell('Buyer', 3),
       viewFlexLabelTextCell('Date Created', 2),
-      viewFlexLabelTextCell('Selected Date', 2),
+      //viewFlexLabelTextCell('Selected Date', 2),
       viewFlexLabelTextCell('Status', 2),
-      viewFlexLabelTextCell('Actions', 2)
+      viewFlexLabelTextCell('Actions', 2),
+      viewFlexLabelTextCell('Details', 2)
     ]);
   }
 
@@ -278,13 +279,13 @@ class _ViewAppointmentsScreenState
             flex: 3, backgroundColor: backgroundColor, textColor: entryColor),
         viewFlexTextCell(DateFormat('MMM dd, yyyy').format(dateCreated),
             flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
-        viewFlexTextCell(
-            status == AppointmentStatuses.approved
-                ? DateFormat('MMM dd, yyyy').format(selectedDate)
-                : 'N/A',
-            flex: 2,
-            backgroundColor: backgroundColor,
-            textColor: entryColor),
+        // viewFlexTextCell(
+        //     status != AppointmentStatuses.denied
+        //         ? DateFormat('MMM dd, yyyy').format(selectedDate)
+        //         : 'N/A',
+        //     flex: 2,
+        //     backgroundColor: backgroundColor,
+        //     textColor: entryColor),
         viewFlexTextCell(status,
             flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
         viewFlexActionsCell([
@@ -307,6 +308,22 @@ class _ViewAppointmentsScreenState
                 onPressed: () => completeThisAppointment(context, ref,
                     appointmentID: appointmentID),
                 child: quicksandWhiteRegular('MARK AS DONE', fontSize: 12))
+        ], flex: 2, backgroundColor: backgroundColor),
+        viewFlexActionsCell([
+          if (status == AppointmentStatuses.approved)
+            Container(
+              decoration:
+                  BoxDecoration(border: Border.all(color: Colors.white)),
+              child: TextButton(
+                  onPressed: () => showServiceDetails(context,
+                      appointmentStatus: status,
+                      selectedDate: selectedDate,
+                      address: address),
+                  child: quicksandWhiteBold('VIEW APPOINTMENT DETAILS',
+                      fontSize: 12)),
+            )
+          else
+            quicksandWhiteBold('N/A')
         ], flex: 2, backgroundColor: backgroundColor)
       ],
     );

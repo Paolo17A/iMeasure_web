@@ -789,7 +789,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         viewFlexTextCell(DateFormat('MMM dd, yyyy').format(dateCreated),
             flex: 2, backgroundColor: backgroundColor, textColor: entryColor),
         viewFlexTextCell(
-            status == AppointmentStatuses.approved
+            status != AppointmentStatuses.denied
                 ? DateFormat('MMM dd, yyyy').format(selectedDate)
                 : 'N/A',
             flex: 2,
@@ -823,51 +823,5 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ], flex: 2, backgroundColor: backgroundColor)
       ],
     );
-  }
-
-  void showServiceDetails(BuildContext context,
-      {required String appointmentStatus,
-      required DateTime selectedDate,
-      required String address}) {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => Dialog(
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.5,
-                padding: EdgeInsets.all(20),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                        TextButton(
-                            onPressed: () => GoRouter.of(context).pop(),
-                            child: quicksandBlackBold('X'))
-                      ]),
-                      quicksandBlackBold('APPOINTMENT DETAILS', fontSize: 28),
-                      Row(children: [
-                        Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  quicksandBlackBold('Selected Date: '),
-                                  quicksandBlackRegular(
-                                      DateFormat('MMM dd, yyyy')
-                                          .format(selectedDate))
-                                ],
-                              ),
-                              Row(children: [
-                                quicksandBlackBold('Client Address: '),
-                                quicksandBlackRegular(address,
-                                    textAlign: TextAlign.left)
-                              ]),
-                            ])
-                      ])
-                    ],
-                  ),
-                ),
-              ),
-            ));
   }
 }
