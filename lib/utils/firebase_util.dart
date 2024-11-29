@@ -2587,7 +2587,8 @@ Future requestForAppointment(BuildContext context, WidgetRef ref,
       AppointmentFields.denialReason: '',
       AppointmentFields.dateCreated: DateTime.now(),
       AppointmentFields.address:
-          '${streetController.text.trim()}, ${barangayController.text.trim()}, ${municipalityController.text.trim()}, ${zipCodeController.text.trim()}'
+          '${streetController.text.trim()}, ${barangayController.text.trim()}, ${municipalityController.text.trim()}, ${zipCodeController.text.trim()}',
+      AppointmentFields.contactNumber: contactNumberController.text.trim()
     });
     ref.read(loadingProvider).toggleLoading(false);
     scaffoldMessenger.showSnackBar(

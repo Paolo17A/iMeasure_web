@@ -230,7 +230,10 @@ class _ViewAppointmentsScreenState
             DateTime dateCreated =
                 (appointmentData[AppointmentFields.dateCreated] as Timestamp)
                     .toDate();
-            String address = appointmentData[AppointmentFields.address];
+            String address =
+                appointmentData[AppointmentFields.address] ?? 'N/A';
+            String contactNumber =
+                appointmentData[AppointmentFields.contactNumber] ?? 'N/A';
             return FutureBuilder(
                 future: getThisUserDoc(clientID),
                 builder: (context, snapshot) {
@@ -255,6 +258,7 @@ class _ViewAppointmentsScreenState
                       dateCreated: dateCreated,
                       status: appointmentStatus,
                       address: address,
+                      contactNumber: contactNumber,
                       denialReason: denialReason);
                 });
           }),
@@ -271,6 +275,7 @@ class _ViewAppointmentsScreenState
       required String status,
       required List<dynamic> requestedDates,
       required String address,
+      required String contactNumber,
       required String denialReason}) {
     return viewContentEntryRow(
       context,
@@ -318,6 +323,7 @@ class _ViewAppointmentsScreenState
                   onPressed: () => showServiceDetails(context,
                       appointmentStatus: status,
                       selectedDate: selectedDate,
+                      contactNumber: contactNumber,
                       address: address),
                   child: quicksandWhiteBold('VIEW APPOINTMENT DETAILS',
                       fontSize: 12)),

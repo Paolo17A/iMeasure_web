@@ -276,6 +276,7 @@ class AppointmentFields {
   static const String denialReason = 'denialReason';
   static const String dateCreated = 'dateCreated';
   static const String address = 'address';
+  static const String contactNumber = 'contactNumber';
 }
 
 class AppointmentStatuses {

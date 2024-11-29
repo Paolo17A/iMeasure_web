@@ -1279,7 +1279,8 @@ void showRequestDetails(BuildContext context,
 void showServiceDetails(BuildContext context,
     {required String appointmentStatus,
     required DateTime selectedDate,
-    required String address}) {
+    required String address,
+    required String contactNumber}) {
   showDialog(
       context: context,
       barrierDismissible: false,
@@ -1310,6 +1311,11 @@ void showServiceDetails(BuildContext context,
                             Row(children: [
                               quicksandBlackBold('Client Address: '),
                               quicksandBlackRegular(address,
+                                  textAlign: TextAlign.left)
+                            ]),
+                            Row(children: [
+                              quicksandBlackBold('Contact Number: '),
+                              quicksandBlackRegular(contactNumber,
                                   textAlign: TextAlign.left)
                             ]),
                           ])

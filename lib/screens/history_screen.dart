@@ -740,6 +740,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 (appointmentData[AppointmentFields.dateCreated] as Timestamp)
                     .toDate();
             String address = appointmentData[AppointmentFields.address];
+            String contactNumber =
+                appointmentData[AppointmentFields.contactNumber] ?? 'N/A';
             return FutureBuilder(
                 future: getThisUserDoc(clientID),
                 builder: (context, snapshot) {
@@ -763,6 +765,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       selectedDate: selectedDate,
                       dateCreated: dateCreated,
                       status: appointmentStatus,
+                      contactNumber: contactNumber,
                       address: address,
                       denialReason: denialReason);
                 });
@@ -780,6 +783,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       required String status,
       required List<dynamic> requestedDates,
       required String address,
+      required String contactNumber,
       required String denialReason}) {
     return viewContentEntryRow(
       context,
@@ -816,6 +820,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   onPressed: () => showServiceDetails(context,
                       appointmentStatus: status,
                       selectedDate: selectedDate,
+                      contactNumber: contactNumber,
                       address: address),
                   child: quicksandWhiteBold('VIEW APPOINTMENT DETAILS',
                       fontSize: 12)),
