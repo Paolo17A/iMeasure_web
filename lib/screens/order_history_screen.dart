@@ -135,9 +135,12 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
         quotation[QuotationFields.additionalServicePrice] ?? 0;
     bool isRequestingAdditionalService =
         quotation[QuotationFields.isRequestingAdditionalService] ?? false;
+    String requestStatus = quotation[QuotationFields.requestStatus] ?? '';
     String requestAddress = quotation[QuotationFields.requestAddress] ?? '';
     String requestContactNumber =
         quotation[QuotationFields.requestContactNumber] ?? '';
+    String requestDenialReason =
+        quotation[QuotationFields.requestDenialReason] ?? 'N/A';
     return FutureBuilder(
         future: getThisItemDoc(itemID),
         builder: (context, snapshot) {
@@ -211,6 +214,32 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                     quicksandWhiteRegular(
                                         'Contact Number: ${requestContactNumber}',
                                         fontSize: 14),
+                                    if (requestStatus == RequestStatuses.denied)
+                                      GestureDetector(
+                                        onTap: requestDenialReason.length > 30
+                                            ? () => showDialog(
+                                                context: context,
+                                                builder: (_) => Dialog(
+                                                      child:
+                                                          SingleChildScrollView(
+                                                        child: Column(
+                                                          children: [
+                                                            quicksandBlackBold(
+                                                                'DENIAL REASION'),
+                                                            quicksandBlackRegular(
+                                                                requestDenialReason)
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ))
+                                            : null,
+                                        child: quicksandWhiteRegular(
+                                            'Denial Reason: $requestDenialReason',
+                                            maxLines: 2,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.left,
+                                            fontSize: 14),
+                                      ),
                                     Divider(),
                                   ],
                                 ),

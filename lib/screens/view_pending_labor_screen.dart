@@ -124,11 +124,11 @@ class _ViewPendingLaborScreenState
                                             PopupMenuItem(
                                                 value: false.toString(),
                                                 child: quicksandWhiteBold(
-                                                    'Newest to Oldest')),
+                                                    'Oldest to Newest')),
                                             PopupMenuItem(
                                                 value: true.toString(),
                                                 child: quicksandWhiteBold(
-                                                    'Oldest to Newest')),
+                                                    'Newest to Oldest')),
                                           ]),
                                 ],
                               )

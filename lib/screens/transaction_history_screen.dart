@@ -123,9 +123,11 @@ class _TransactionHistoryScreenState
         transactionData[TransactionFields.transactionStatus];
     num paidAmount = transactionData[TransactionFields.paidAmount];
     String paymentMethod = transactionData[TransactionFields.paymentMethod];
+    String denialReason =
+        transactionData[TransactionFields.denialReason] ?? 'N/A';
     return Container(
         width: 400,
-        height: 150,
+        height: 155,
         decoration: BoxDecoration(border: Border.all(color: Colors.white)),
         padding: EdgeInsets.all(10),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -140,34 +142,61 @@ class _TransactionHistoryScreenState
                         fit: BoxFit.cover))),
           ),
           Gap(12),
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Wrap(children: [
-              quicksandWhiteBold('Paid Amount: ', fontSize: 15),
-              quicksandWhiteRegular('PHP ${formatPrice(paidAmount.toDouble())}',
-                  fontSize: 15)
-            ]),
-            Wrap(children: [
-              quicksandWhiteBold('Payment Method: ', fontSize: 15),
-              quicksandWhiteRegular(paymentMethod, fontSize: 15)
-            ]),
-            Wrap(children: [
-              quicksandWhiteBold('Date Created: ', fontSize: 15),
-              quicksandWhiteRegular(
-                  DateFormat('MMM dd, yyyy').format(dateCreated),
-                  fontSize: 15)
-            ]),
-            if (transactionStatus == TransactionStatuses.approved)
+          SizedBox(
+            width: 215,
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Wrap(children: [
-                quicksandWhiteBold('Date Approved: ', fontSize: 15),
+                quicksandWhiteBold('Paid Amount: ', fontSize: 15),
                 quicksandWhiteRegular(
-                    DateFormat('MMM dd, yyyy').format(dateApproved),
+                    'PHP ${formatPrice(paidAmount.toDouble())}',
                     fontSize: 15)
               ]),
-            Wrap(children: [
-              quicksandWhiteBold('Status:  ', fontSize: 15),
-              quicksandWhiteRegular(transactionStatus, fontSize: 15)
-            ])
-          ])
+              Wrap(children: [
+                quicksandWhiteBold('Payment Method: ', fontSize: 15),
+                quicksandWhiteRegular(paymentMethod, fontSize: 15)
+              ]),
+              Wrap(children: [
+                quicksandWhiteBold('Date Created: ', fontSize: 15),
+                quicksandWhiteRegular(
+                    DateFormat('MMM dd, yyyy').format(dateCreated),
+                    fontSize: 15)
+              ]),
+              if (transactionStatus == TransactionStatuses.approved)
+                Wrap(children: [
+                  quicksandWhiteBold('Date Approved: ', fontSize: 15),
+                  quicksandWhiteRegular(
+                      DateFormat('MMM dd, yyyy').format(dateApproved),
+                      fontSize: 15)
+                ]),
+              Wrap(children: [
+                quicksandWhiteBold('Status:  ', fontSize: 15),
+                quicksandWhiteRegular(transactionStatus, fontSize: 15)
+              ]),
+              if (transactionStatus == TransactionStatuses.denied)
+                GestureDetector(
+                  onTap: denialReason.length > 30
+                      ? () => showDialog(
+                          context: context,
+                          builder: (_) => Dialog(
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      quicksandBlackBold('DENIAL REASION'),
+                                      quicksandBlackRegular(denialReason)
+                                    ],
+                                  ),
+                                ),
+                              ))
+                      : null,
+                  child: quicksandWhiteRegular('Denial Reason: $denialReason',
+                      maxLines: 2,
+                      textOverflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.left,
+                      fontSize: 14),
+                )
+            ]),
+          )
         ]));
   }
 }
