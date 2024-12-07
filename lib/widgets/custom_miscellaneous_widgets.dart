@@ -931,8 +931,8 @@ Widget userReviews(List<DocumentSnapshot> orderDocs) {
                 String clientID = orderData[OrderFields.clientID];
                 Map<String, dynamic> review = orderData[OrderFields.review];
                 num rating = review[ReviewFields.rating];
-                List<dynamic> imageURLs = review[ReviewFields.imageURLs];
-                String reviewText = review[ReviewFields.review];
+                List<dynamic> imageURLs = review[ReviewFields.imageURLs] ?? [];
+                String reviewText = review[ReviewFields.review] ?? '';
                 return all4Pix(
                   child: Container(
                       //height: 100,

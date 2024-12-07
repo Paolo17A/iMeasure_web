@@ -41,19 +41,19 @@ Future registerNewUser(BuildContext context, WidgetRef ref,
   final scaffoldMessenger = ScaffoldMessenger.of(context);
   final goRouter = GoRouter.of(context);
   try {
-    if (emailController.text.isEmpty ||
-        passwordController.text.isEmpty ||
-        confirmPasswordController.text.isEmpty ||
-        firstNameController.text.isEmpty ||
-        lastNameController.text.isEmpty ||
-        mobileNumberController.text.isEmpty ||
-        addressController.text.isEmpty) {
+    if (emailController.text.trim().isEmpty ||
+        passwordController.text.trim().isEmpty ||
+        confirmPasswordController.text.trim().isEmpty ||
+        firstNameController.text.trim().isEmpty ||
+        lastNameController.text.trim().isEmpty ||
+        mobileNumberController.text.trim().isEmpty ||
+        addressController.text.trim().isEmpty) {
       scaffoldMessenger.showSnackBar(
           const SnackBar(content: Text('Please fill up all given fields.')));
       return;
     }
-    if (!emailController.text.contains('@') ||
-        !emailController.text.contains('.com')) {
+    if (!emailController.text.trim().contains('@') ||
+        !emailController.text.trim().contains('.com')) {
       scaffoldMessenger.showSnackBar(
           const SnackBar(content: Text('Please input a valid email address')));
       return;
